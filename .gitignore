@@ -1,0 +1,8 @@
+# Bỏ qua các thư mục và tệp không cần thiết
+/node_modules/
+.env
+dist/
+build/
+*.log
+*.tmp
+*.bak
