@@ -57,7 +57,7 @@ router.post('/login', authController.login);
 /**
  * @swagger
  * /api/auth/logout:
- *   post:
+ *   get:
  *     summary: Đăng xuất
  *     tags: [Auth]
  *     responses:
@@ -83,7 +83,7 @@ router.post('/login', authController.login);
  *                   example: Không thể đăng xuất!
  */
 
-router.post('/logout', authController.logout);
+router.get('/logout', authController.logout);
 router.get('/protected', authMiddleware.protect, (req, res) => {
     res.status(200).json({ message: 'Bạn đã truy cập vào route được bảo vệ!', user: req.session.user });
 });

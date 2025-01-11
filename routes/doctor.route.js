@@ -60,7 +60,7 @@ const doctorController = require('../controllers/doctor.controller');
  * /api/doctor:
  *   get:
  *     summary: Lấy danh sách tất cả bác sĩ
- *     description: API này trả về danh sách toàn bộ bác sĩ, bao gồm thông tin liên quan từ bảng User.
+ *     tags: [Doctor]
  *     responses:
  *       200:
  *         description: Danh sách bác sĩ được trả về thành công.
@@ -79,7 +79,7 @@ router.get('/', doctorController.getAllDoctor);
  * /api/doctor/{doctorID}:
  *   get:
  *     summary: Lấy thông tin chi tiết của một bác sĩ
- *     description: API này trả về thông tin chi tiết của một bác sĩ dựa trên mã bác sĩ (doctorID).
+ *     tags: [Doctor]
  *     parameters:
  *       - in: path
  *         name: doctorID
@@ -98,5 +98,80 @@ router.get('/', doctorController.getAllDoctor);
  *         description: Lỗi từ server khi xử lý yêu cầu.
  */
 router.get('/:doctorID', doctorController.getDoctorInfo);
+/**
+ * @swagger
+ * /api/doctor/change_info:
+ *   post:
+ *     summary: Cập nhật thông tin cá nhân cho bác sĩ
+ *     tags: [Doctor]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               doctorID:
+ *                 type: string
+ *                 description: Doctor's unique identifier (e.g., "BS12345").
+ *                 example: "BS0000001"
+ *               email:
+ *                 type: string
+ *                 description: Doctor's email address.
+ *                 example: "doctor@example.com"
+ *               fullName:
+ *                 type: string
+ *                 description: Doctor's full name.
+ *                 example: "Nguyen Van A"
+ *               phoneNumber:
+ *                 type: string
+ *                 description: Doctor's phone number.
+ *                 example: "0123456789"
+ *               birthDay:
+ *                 type: string
+ *                 format: date
+ *                 description: Doctor's date of birth in yyyy-mm-dd format.
+ *                 example: "1985-05-10"
+ *               gender:
+ *                 type: string
+ *                 description: Doctor's gender (e.g., "Nam" or "Nữ").
+ *                 example: "Nam"
+ *               description:
+ *                 type: string
+ *                 description: Additional description about the doctor.
+ *                 example: "Thạc sĩ Y học chuyên ngành nội khoa"
+ *     responses:
+ *       200:
+ *         description: Cập nhật thông tin thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Information updated successfully"
+ *                 userChangedColumns:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   example: ["email", "ho_va_ten", "sdt", "ngay_sinh", "gioi_tinh"]
+ *                 doctorChangedColumns:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   example: ["mo_ta"]
+ *       500:
+ *         description: Lỗi từ server khi xử lý yêu cầu.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error"
+ */
 
+router.post('/change_info', doctorController.changeInfo);
 module.exports = router;

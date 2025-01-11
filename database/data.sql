@@ -98,3 +98,47 @@ WHERE "ma_qtv" = 'QT0000011';
 UPDATE "Quan_tri_vien"
 SET "que_quan" = 'Hải Phòng', "cccd" = '0123456712', "dan_toc" = 'Thái', "tam_tru" = 'Số 30, Đường C, Quận 3, TP HCM'
 WHERE "ma_qtv" = 'QT0000012';
+
+INSERT INTO "Ca_lam_viec_trong_tuan" ("ma_bac_si", "thu", "buoi_lam_viec", "lam_viec_onl", "cap_nhat_luc", "hieu_luc", "gia_tien")
+VALUES
+    -- Dữ liệu cho Thứ 2
+    ('BS0000001', 'T2', 'Sáng: 7-11h', FALSE, '2023-01-05', TRUE, NULL),
+    ('BS0000001', 'T2', 'Trưa: 11-13h', FALSE, '2023-01-05', TRUE, NULL),
+    ('BS0000001', 'T2', 'Chiều: 13-17h', FALSE, '2023-01-05', TRUE, NULL),
+    
+    -- Dữ liệu cho Thứ 3
+    ('BS0000001', 'T3', 'Sáng: 7-11h', FALSE, '2023-01-05', TRUE, NULL),
+    ('BS0000001', 'T3', 'Trưa: 11-13h', FALSE, '2023-01-05', TRUE, NULL),
+    ('BS0000001', 'T3', 'Chiều: 13-17h', FALSE, '2023-01-05', TRUE, NULL),
+    
+    -- Dữ liệu cho Thứ 4
+    ('BS0000001', 'T4', 'Sáng: 7-11h', FALSE, '2023-01-05', TRUE, NULL),
+    ('BS0000001', 'T4', 'Trưa: 11-13h', FALSE, '2023-01-05', TRUE, NULL),
+    ('BS0000001', 'T4', 'Chiều: 13-17h', FALSE, '2023-01-05', TRUE, NULL),
+    
+    -- Dữ liệu cho Thứ 5
+    ('BS0000001', 'T5', 'Sáng: 7-11h', FALSE, '2023-01-05', TRUE, NULL),
+    ('BS0000001', 'T5', 'Trưa: 11-13h', FALSE, '2023-01-05', TRUE, NULL),
+    ('BS0000001', 'T5', 'Chiều: 13-17h', FALSE, '2023-01-05', TRUE, NULL),
+    
+    -- Dữ liệu cho Thứ 6
+    ('BS0000001', 'T6', 'Sáng: 7-11h', FALSE, '2023-01-05', TRUE, NULL),
+    ('BS0000001', 'T6', 'Trưa: 11-13h', FALSE, '2023-01-05', TRUE, NULL),
+    ('BS0000001', 'T6', 'Chiều: 13-17h', FALSE, '2023-01-05', TRUE, NULL),
+    
+    -- Dữ liệu cho Thứ 7
+    ('BS0000001', 'T7', 'Sáng: 7-11h', FALSE, '2023-01-05', TRUE, NULL),
+    ('BS0000001', 'T7', 'Trưa: 11-13h', FALSE, '2023-01-05', TRUE, NULL),
+    ('BS0000001', 'T7', 'Chiều: 13-17h', FALSE, '2023-01-05', TRUE, NULL),
+    
+    -- Dữ liệu cho Chủ Nhật
+    ('BS0000001', 'CN', 'Sáng: 7-11h', TRUE, '2023-01-05', TRUE, NULL),
+    ('BS0000001', 'CN', 'Trưa: 11-13h', TRUE, '2023-01-05', TRUE, NULL);
+
+CALL auto_generate_appointments('2025-01-01', '2025-01-07', '15 minutes', 'BS0000001');
+
+call create_appointment('Bệnh nhân bị đau đầu và chóng mặt', 'Phòng khám B, Quận 2', 'Đang chờ', '2025-01-01 10:00:00', 'BS0000001', 'BN0000006', 50);
+-- insert into "Cuoc_hen" ("van_ban_bo_sung", "dia_chi_phong_kham", "trang_thai", "thoi_diem_tao", "ma_bac_si", "ma_benh_nhan_dat_hen")
+-- VALUES
+-- ;
+

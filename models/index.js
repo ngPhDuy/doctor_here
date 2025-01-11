@@ -129,11 +129,13 @@ Diagnosis.belongsTo(Appointment, {
 
 Appointment.belongsTo(Patient, {
   foreignKey: 'ma_benh_nhan_dat_hen',
+  targetKey: 'ma_benh_nhan',
   as: 'Benh_nhan',
 });
 
 Appointment.belongsTo(Doctor, {
   foreignKey: 'ma_bac_si',
+  targetKey: 'ma_bac_si',
   as: 'Bac_si',
 });
 

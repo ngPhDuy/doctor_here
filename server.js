@@ -8,6 +8,8 @@ const {sequelize} = require('./models/index');
 const authRoute = require('./routes/auth.route');
 const doctorRoute = require('./routes/doctor.route');
 const accountRoute = require('./routes/account.route');
+const appointmentRoute = require('./routes/appointment.route');
+const patientRoute = require('./routes/patient.route');
 
 // Khởi tạo ứng dụng Express
 const app = express();
@@ -23,7 +25,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/doctor', doctorRoute);
 app.use('/api/auth', authRoute);
 app.use('/api/account', accountRoute);
-
+app.use('/api/appointment', appointmentRoute);
+app.use('/api/patient', patientRoute);
 
 // Test kết nối CSDL
 (async () => {
