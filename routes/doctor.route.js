@@ -172,6 +172,88 @@ router.get('/:doctorID', doctorController.getDoctorInfo);
  *                   type: string
  *                   example: "Internal server error"
  */
-
 router.post('/change_info', doctorController.changeInfo);
+/**
+ * @swagger
+ * /api/doctor:
+ *   post:
+ *     summary: Thêm một bác sĩ mới
+ *     tags: [Doctor]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               tenDangNhap:
+ *                 type: string
+ *                 description: Tên đăng nhập của bác sĩ.
+ *                 example: "doctor123"
+ *               matKhau:
+ *                 type: string
+ *                 description: Mật khẩu của tài khoản bác sĩ.
+ *                 example: "securepassword123"
+ *               email:
+ *                 type: string
+ *                 description: Địa chỉ email của bác sĩ.
+ *                 example: "doctor@example.com"
+ *               sdt:
+ *                 type: string
+ *                 description: Số điện thoại của bác sĩ.
+ *                 example: "0912345678"
+ *               ngaySinh:
+ *                 type: string
+ *                 format: date
+ *                 description: Ngày sinh của bác sĩ (định dạng dd/mm/yyyy).
+ *                 example: "01/01/1980"
+ *               gioiTinh:
+ *                 type: string
+ *                 description: Giới tính của bác sĩ ("Nam", "Nữ", hoặc "Khác").
+ *                 example: "Nam"
+ *               hoVaTen:
+ *                 type: string
+ *                 description: Họ và tên đầy đủ của bác sĩ.
+ *                 example: "Nguyễn Văn A"
+ *               thoiDiemVaoNghe:
+ *                 type: string
+ *                 format: date
+ *                 description: Thời điểm bác sĩ bắt đầu hành nghề (định dạng dd/mm/yyyy).
+ *                 example: "01/01/2010"
+ *               trinhDoHocVan:
+ *                 type: string
+ *                 description: Trình độ học vấn của bác sĩ.
+ *                 example: "Thạc sĩ Y khoa"
+ *               moTa:
+ *                 type: string
+ *                 description: Mô tả ngắn về bác sĩ.
+ *                 example: "Chuyên gia phẫu thuật nội soi"
+ *               diaChiPhongKham:
+ *                 type: string
+ *                 description: Địa chỉ phòng khám của bác sĩ.
+ *                 example: "123 Đường Lý Thường Kiệt, Quận 10, TP.HCM"
+ *     responses:
+ *       200:
+ *         description: Thêm bác sĩ thành công.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Thêm bác sĩ thành công"
+ *       500:
+ *         description: Lỗi xảy ra khi thêm bác sĩ.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Lỗi xảy ra khi thêm bác sĩ"
+ */
+
+router.post('/', doctorController.insertDoctor);
 module.exports = router;

@@ -1,4 +1,4 @@
-const {Doctor, User} = require('../models');
+const { sequelize, Doctor, User} = require('../models');
 
 exports.getAllDoctor = async () => {
     const doctor = await Doctor.findAll({
@@ -28,7 +28,8 @@ exports.getDoctorInfo = async (doctorID) => {
     });
     return doctor;
 }
-/*props:
+/*
+props:
 doctorID:
 email
 fullName
@@ -73,4 +74,55 @@ exports.changeInfo = async (props) => {
         userChangedColumns,
         doctorChangedColumns,
     };
+}
+
+/*
+props:
+email
+matKhau
+tenDangNhap
+hoVaTen
+sdt
+gioiTinh
+thoiDiemVaoNghe: dd/mm/yyyy
+moTa
+diaChiPhongKham
+ngaySinh: dd/mm/yyyy
+trinhDoHocVan
+*/
+exports.insertDoctor = async (props) => {
+    try {
+        await sequelize.query(
+            `CALL insert_doctor(
+                :in_ten_dang_nhap,
+                :in_mat_khau,
+                :in_email,
+                :in_sdt,
+                :in_ngay_sinh,
+                :in_gioi_tinh,
+                :in_ho_va_ten,
+                :in_ngay_vao_nghe,
+                :in_trinh_do_hoc_van,
+                :in_mo_ta,
+                :in_dia_chi_pk
+            )`, {
+                replacements: {
+                    in_ten_dang_nhap: props.tenDangNhap,
+                    in_mat_khau: props.matKhau,
+                    in_email: props.email,
+                    in_sdt: props.sdt,
+                    in_ngay_sinh: new Date(props.ngaySinh),
+                    in_gioi_tinh: props.gioiTinh,
+                    in_ho_va_ten: props.hoVaTen,
+                    in_ngay_vao_nghe: new Date(props.thoiDiemVaoNghe),
+                    in_trinh_do_hoc_van: props.trinhDoHocVan,
+                    in_mo_ta: props.moTa,
+                    in_dia_chi_pk: props.diaChiPhongKham
+                }, 
+                type: sequelize.QueryTypes.RAW
+            }
+        )
+    } catch (error) {
+        throw new Error(error);
+    }
 }

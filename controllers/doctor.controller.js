@@ -40,3 +40,12 @@ exports.changeInfo = async (req, res) => {
         });
     }
 };
+
+exports.insertDoctor = async (req, res) => {
+    try {
+        const result = await doctorService.insertDoctor(req.body);
+        res.status(200).json({message: 'Thêm bác sĩ thành công'});
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}

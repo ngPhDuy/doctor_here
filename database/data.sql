@@ -1,103 +1,85 @@
-INSERT INTO "Tai_khoan" (ten_dang_nhap, mat_khau, active, thoi_diem_mo_tk) 
-VALUES 
-('bacsi1', 'bacsi1', true, '2023-12-01 10:15:30'),
-('bacsi2', 'bacsi2', true, '2023-12-02 14:20:00'),
-('bacsi3', 'bacsi3', true, '2023-12-03 18:35:45'),
-('bacsi4', 'bacsi4', true, '2023-12-04 22:10:20'),
-('bacsi5', 'bacsi5', true, '2023-12-05 09:05:10'),
-('nguoidung1', 'nguoidung1', true, '2023-12-01 10:15:30'),
-('nguoidung2', 'nguoidung2', true, '2023-12-02 14:20:00'),
-('nguoidung3', 'nguoidung3', true, '2023-12-03 18:35:45'),
-('nguoidung4', 'nguoidung4', true, '2023-12-04 22:10:20'),
-('nguoidung5', 'nguoidung5', true, '2023-12-05 09:05:10'),
-('admin1', 'admin1', true, '2023-12-04 22:10:20'),
-('admin2', 'admin2', true, '2023-12-05 09:05:10');
+CALL insert_doctor(
+    'bacsi1', 'bacsi1', 'bacsi1@example.com', '0123456789', 
+    '1985-01-15', 'Nam', 'Nguyễn Trung Hiếu', 
+    '2010-09-22', 'Thạc sĩ Y học', 'Được bệnh nhân đánh giá cao', 
+    'Phòng khám B, Quận 2'
+);
 
-CALL insert_user('bacsi1', 'bacsi1@example.com', '0123456789', '1985-01-15', 'Nam', 'bs', 'Nguyễn Trung Hiếu');
-CALL insert_user('bacsi2', 'bacsi2@example.com', '0123456790', '1990-02-20', 'Nam', 'bs', 'Nguyễn Trung Nghĩa');
-CALL insert_user('bacsi3', 'bacsi3@example.com', '0123456791', '1987-03-25', 'Nam', 'bs', 'Nguyễn Trung Thành');
-CALL insert_user('bacsi4', 'bacsi4@example.com', '0123456792', '1995-04-10', 'Nam', 'bs', 'Nguyễn Trung Dũng');
-CALL insert_user('bacsi5', 'bacsi5@example.com', '0123456793', '1992-05-30', 'Nam', 'bs', 'Nguyễn Trung Can');
-CALL insert_user('nguoidung1', 'nguoidung1@example.com', '0123456888', '1995-01-15', 'Nữ', 'bn', 'Nguyễn Thị Hiền');
-CALL insert_user('nguoidung2', 'nguoidung2@example.com', '0123456889', '1996-02-25', 'Nữ', 'bn', 'Nguyễn Thị Nghĩa');
-CALL insert_user('nguoidung3', 'nguoidung3@example.com', '0123456890', '1999-08-28', 'Nam', 'bn', 'Nguyễn Thành Danh');
-CALL insert_user('nguoidung4', 'nguoidung4@example.com', '0123456891', '1975-04-30', 'Nam', 'bn', 'Nguyễn Dũng Dinh');
-CALL insert_user('nguoidung5', 'nguoidung5@example.com', '0123456892', '1994-05-23', 'Nữ', 'bn', 'Nguyễn Can Can');
-CALL insert_user('admin1', 'admin1@example.com', '0123456999', '1986-07-19', 'Nam', 'qtv', 'Nguyễn Trung Hiếu');
-CALL insert_user('admin2', 'admin2@example.com', '0123456998', '1997-12-17', 'Nữ', 'qtv', 'Nguyễn Thị Loan');
+CALL insert_doctor(
+    'bacsi2', 'bacsi2', 'bacsi2@example.com', '0123456790', 
+    '1990-02-20', 'Nam', 'Nguyễn Trung Nghĩa', 
+    '2009-05-11', 'Thạc sĩ Y học', 'Chuyên gia hàng đầu', 
+    'Phòng khám B, Quận 2'
+);
 
-UPDATE "Bac_si"
-SET "ngay_vao_nghe" = '2010-09-22',
-    "trinh_do_hoc_van" = 'Thạc sĩ Y học',
-    "mo_ta" = 'Được bệnh nhân đánh giá cao',
-    "dia_chi_pk" = 'Phòng khám B, Quận 2'
-WHERE "ma_bac_si" = 'BS0000001';
+CALL insert_doctor(
+    'bacsi3', 'bacsi3', 'bacsi3@example.com', '0123456791', 
+    '1987-03-25', 'Nam', 'Nguyễn Trung Thành', 
+    '2010-04-13', 'Tiến sĩ Y học', 'Thành viên hội đồng y khoa', 
+    'Phòng khám C, Quận 3'
+);
 
-UPDATE "Bac_si"
-SET "ngay_vao_nghe" = '2009-05-11',
-    "trinh_do_hoc_van" = 'Thạc sĩ Y học',
-    "mo_ta" = 'Chuyên gia hàng đầu',
-    "dia_chi_pk" = 'Phòng khám B, Quận 2'
-WHERE "ma_bac_si" = 'BS0000002';
+CALL insert_doctor(
+    'bacsi4', 'bacsi4', 'bacsi4@example.com', '0123456792', 
+    '1995-04-10', 'Nam', 'Nguyễn Trung Dũng', 
+    '2003-11-09', 'Bác sĩ Chuyên khoa II', 'Tận tâm với nghề', 
+    'Phòng khám B, Quận 2'
+);
 
-UPDATE "Bac_si"
-SET "ngay_vao_nghe" = '2010-04-13',
-    "trinh_do_hoc_van" = 'Tiến sĩ Y học',
-    "mo_ta" = 'Thành viên hội đồng y khoa',
-    "dia_chi_pk" = 'Phòng khám C, Quận 3'
-WHERE "ma_bac_si" = 'BS0000003';
+CALL insert_doctor(
+    'bacsi5', 'bacsi5', 'bacsi5@example.com', '0123456793', 
+    '1992-05-30', 'Nam', 'Nguyễn Trung Can', 
+    '2006-10-27', 'Tiến sĩ Y học', 'Thành viên hội đồng y khoa', 
+    'Phòng khám C, Quận 3'
+);
 
-UPDATE "Bac_si"
-SET "ngay_vao_nghe" = '2003-11-09',
-    "trinh_do_hoc_van" = 'Bác sĩ Chuyên khoa II',
-    "mo_ta" = 'Tận tâm với nghề',
-    "dia_chi_pk" = 'Phòng khám B, Quận 2'
-WHERE "ma_bac_si" = 'BS0000004';
+CALL insert_patient(
+    'nguoidung1', 'nguoidung1', 'nguoidung1@example.com', '0123456888', 
+    '1995-01-15', 'Nữ', 'Nguyễn Thị Hiền', 
+    '0123456706', 'Tày', 'AB', 'Tiền sử tiểu đường tuýp 2', 
+    'Việt Nam', 'Số 20, Đường B, Quận 2, TP HCM'
+);
 
-UPDATE "Bac_si"
-SET "ngay_vao_nghe" = '2006-10-27',
-    "trinh_do_hoc_van" = 'Tiến sĩ Y học',
-    "mo_ta" = 'Thành viên hội đồng y khoa',
-    "dia_chi_pk" = 'Phòng khám C, Quận 3'
-WHERE "ma_bac_si" = 'BS0000005';
+CALL insert_patient(
+    'nguoidung2', 'nguoidung2', 'nguoidung2@example.com', '0123456889', 
+    '1996-02-25', 'Nữ', 'Nguyễn Thị Nghĩa', 
+    '0123456707', 'Kinh', 'O', 'Dị ứng thuốc nhẹ', 
+    'Việt Nam', 'Số 10, Đường A, Quận 1, TP HCM'
+);
 
-UPDATE "Benh_nhan"
-SET "cccd" = '0123456706', "dan_toc" = 'Tày', "diem_he_thong" = 39, 
-    "nhom_mau" = 'AB', "tien_su_benh" = 'Tiền sử tiểu đường tuýp 2', "quoc_tich" = 'Việt Nam', 
-    "dia_chi" = 'Số 20, Đường B, Quận 2, TP HCM'
-WHERE "ma_benh_nhan" = 'BN0000006';
+CALL insert_patient(
+    'nguoidung3', 'nguoidung3', 'nguoidung3@example.com', '0123456890', 
+    '1999-08-28', 'Nam', 'Nguyễn Thành Danh', 
+    '0123456708', 'Tày', 'A', 'Tiền sử tiểu đường tuýp 2', 
+    'Việt Nam', 'Số 20, Đường B, Quận 2, TP HCM'
+);
 
-UPDATE "Benh_nhan"
-SET "cccd" = '0123456707', "dan_toc" = 'Kinh', "diem_he_thong" = 14, 
-    "nhom_mau" = 'O', "tien_su_benh" = 'Dị ứng thuốc nhẹ', "quoc_tich" = 'Việt Nam', 
-    "dia_chi" = 'Số 10, Đường A, Quận 1, TP HCM'
-WHERE "ma_benh_nhan" = 'BN0000007';
+CALL insert_patient(
+    'nguoidung4', 'nguoidung4', 'nguoidung4@example.com', '0123456891', 
+    '1975-04-30', 'Nam', 'Nguyễn Dũng Dinh', 
+    '0123456709', 'Hoa', 'A', 'Tiền sử tiểu đường tuýp 2', 
+    'Việt Nam', 'Số 30, Đường C, Quận 3, TP HCM'
+);
 
-UPDATE "Benh_nhan"
-SET "cccd" = '0123456708', "dan_toc" = 'Tày', "diem_he_thong" = 84, 
-    "nhom_mau" = 'A', "tien_su_benh" = 'Tiền sử tiểu đường tuýp 2', "quoc_tich" = 'Việt Nam', 
-    "dia_chi" = 'Số 20, Đường B, Quận 2, TP HCM'
-WHERE "ma_benh_nhan" = 'BN0000008';
+CALL insert_patient(
+    'nguoidung5', 'nguoidung5', 'nguoidung5@example.com', '0123456892', 
+    '1994-05-23', 'Nữ', 'Nguyễn Can Can', 
+    '0123456710', 'Tày', 'A', 'Tiền sử tiểu đường tuýp 2', 
+    'Việt Nam', 'Số 40, Đường D, Quận 4, TP HCM'
+);
 
-UPDATE "Benh_nhan"
-SET "cccd" = '0123456709', "dan_toc" = 'Hoa', "diem_he_thong" = 5, 
-    "nhom_mau" = 'A', "tien_su_benh" = 'Tiền sử tiểu đường tuýp 2', "quoc_tich" = 'Việt Nam', 
-    "dia_chi" = 'Số 30, Đường C, Quận 3, TP HCM'
-WHERE "ma_benh_nhan" = 'BN0000009';
+CALL insert_admin(
+    'admin1', 'admin1', 'admin1@example.com', '0123456999', 
+    '1986-07-19', 'Nam', 'Nguyễn Trung Hiếu', 
+    'TP HCM', '0123456711', 'Hoa', 'Số 30, Đường C, Quận 3, TP HCM'
+);
 
-UPDATE "Benh_nhan"
-SET "cccd" = '0123456710', "dan_toc" = 'Tày', "diem_he_thong" = 60, 
-    "nhom_mau" = 'A', "tien_su_benh" = 'Tiền sử tiểu đường tuýp 2', "quoc_tich" = 'Việt Nam', 
-    "dia_chi" = 'Số 40, Đường D, Quận 4, TP HCM'
-WHERE "ma_benh_nhan" = 'BN0000010';
+CALL insert_admin(
+    'admin2', 'admin2', 'admin2@example.com', '0123456998', 
+    '1997-12-17', 'Nữ', 'Nguyễn Thị Loan', 
+    'Hải Phòng', '0123456712', 'Thái', 'Số 30, Đường C, Quận 3, TP HCM'
+);
 
-UPDATE "Quan_tri_vien"
-SET "que_quan" = 'TP HCM', "cccd" = '0123456711', "dan_toc" = 'Hoa', "tam_tru" = 'Số 30, Đường C, Quận 3, TP HCM'
-WHERE "ma_qtv" = 'QT0000011';
-
-UPDATE "Quan_tri_vien"
-SET "que_quan" = 'Hải Phòng', "cccd" = '0123456712', "dan_toc" = 'Thái', "tam_tru" = 'Số 30, Đường C, Quận 3, TP HCM'
-WHERE "ma_qtv" = 'QT0000012';
 
 INSERT INTO "Ca_lam_viec_trong_tuan" ("ma_bac_si", "thu", "buoi_lam_viec", "lam_viec_onl", "cap_nhat_luc", "hieu_luc", "gia_tien")
 VALUES
@@ -138,7 +120,4 @@ VALUES
 CALL auto_generate_appointments('2025-01-01', '2025-01-07', '15 minutes', 'BS0000001');
 
 call create_appointment('Bệnh nhân bị đau đầu và chóng mặt', 'Phòng khám B, Quận 2', 'Đang chờ', '2025-01-01 10:00:00', 'BS0000001', 'BN0000006', 50);
--- insert into "Cuoc_hen" ("van_ban_bo_sung", "dia_chi_phong_kham", "trang_thai", "thoi_diem_tao", "ma_bac_si", "ma_benh_nhan_dat_hen")
--- VALUES
--- ;
-
+call create_appointment('Bệnh nhân bị đau đầu và chóng mặt', '', 'Đang chờ', '2025-01-02 07:00:00', 'BS0000001', 'BN0000006', 162);

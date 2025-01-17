@@ -10,3 +10,15 @@ exports.changePassword = async (req, res) => {
         res.status(400).json({ message: 'Đổi mật khẩu thất bại!' });
     }
 }
+
+exports.toggleActive = async (req, res) => {
+    const { username } = req.body;
+    let result = await accountService.toggleActive(username);
+    if (result.result) {
+        res.status(200).json({ 
+            message: 'Thay đổi trạng thái thành công!' ,
+            new_active: result.new_active});
+    } else {
+        res.status(400).json({ message: 'Thay đổi trạng thái thất bại!' });
+    }
+}

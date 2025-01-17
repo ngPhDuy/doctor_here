@@ -13,5 +13,9 @@ exports.login = async (username, password) => {
         throw new Error('Mật khẩu không đúng');
     }
 
+    if (account.active === false) {
+        throw new Error('Tài khoản đã bị khóa');
+    }
+
     return account;
 };
