@@ -1,70 +1,132 @@
-# Getting Started with Create React App
+# **Hướng dẫn cài đặt dự án React + TypeScript với Vite và Tailwind CSS**
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## **1. Tạo dự án React + TypeScript bằng Vite**
 
-## Available Scripts
+Chạy lệnh sau để khởi tạo dự án mới:
 
-In the project directory, you can run:
+```bash
+npm create vite@latest my-app -- --template react-ts
+```
 
-### `npm start`
+Di chuyển vào thư mục dự án:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```bash
+cd my-app
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Cài đặt các dependencies:
 
-### `npm test`
+```bash
+npm install
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Chạy dự án:
 
-### `npm run build`
+```bash
+npm run dev
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Dự án sẽ chạy tại địa chỉ [http://localhost:5173](http://localhost:5173).
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+---
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## **2. Cài đặt Tailwind CSS**
 
-### `npm run eject`
+Cài đặt Tailwind CSS và các công cụ cần thiết:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+npm install tailwindcss postcss autoprefixer
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Khởi tạo file cấu hình Tailwind:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```bash
+npx tailwindcss init -p
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+---
 
-## Learn More
+## **3. Cấu hình Tailwind CSS**
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Mở file `tailwind.config.js` và cập nhật nội dung:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```js
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+```
 
-### Code Splitting
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## **4. Thêm Tailwind vào dự án**
 
-### Analyzing the Bundle Size
+Mở file `src/index.css` (hoặc tạo mới nếu chưa có) và thêm các dòng sau:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
 
-### Making a Progressive Web App
+Import file CSS vào dự án trong `src/main.tsx`:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```tsx
+import "./index.css";
 
-### Advanced Configuration
+function App() {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <h1 className="text-4xl font-bold text-blue-600">
+        Hello Tailwind CSS with Vite!
+      </h1>
+    </div>
+  );
+}
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+export default App;
+```
 
-### Deployment
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+## **5. Chạy lại dự án**
 
-### `npm run build` fails to minify
+Sau khi thiết lập Tailwind, chạy dự án bằng lệnh:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```bash
+npm run dev
+```
+
+Kiểm tra ứng dụng tại [http://localhost:5173](http://localhost:5173).
+
+---
+
+## **6. Build dự án cho production**
+
+Khi hoàn tất phát triển, build dự án bằng lệnh:
+
+```bash
+npm run build
+```
+
+Dữ liệu sẽ được tạo trong thư mục `dist`.
+
+---
+
+## **7. Xử lý lỗi phổ biến**
+
+Nếu gặp lỗi, thử các bước sau:
+
+```bash
+rm -rf node_modules package-lock.json
+npm cache clean --force
+npm install
+```
+
+---
+
+Chúc bạn cài đặt thành công dự án React + TypeScript với Tailwind CSS!
