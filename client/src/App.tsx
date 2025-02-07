@@ -2,8 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
-import DoctorListComponent from "./components/DoctorList";
-import DoctorInfo from "./components/DoctorInfo";
+import DoctorListComponent from "./components/AdminDoctor/DoctorList";
+import DoctorInfo from "./components/AdminDoctor/DoctorInfo";
 import Auth from "./components/Auth";
 
 const App: React.FC = () => {
@@ -17,16 +17,6 @@ const App: React.FC = () => {
             <Routes>
               <Route path="/" element={<DoctorListComponent />} />
               <Route path="/doctorInfo" element={<DoctorInfo />} />
-              <Route
-                path="/auth"
-                element={
-                  <Auth
-                    showModal={true}
-                    toggleLoginModal={() => {}}
-                    toggleRegisterModal={() => {}}
-                  />
-                }
-              />
             </Routes>
           </div>
         </div>

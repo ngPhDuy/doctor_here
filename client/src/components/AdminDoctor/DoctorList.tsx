@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import AddDoctorModal from "./AddDoctor";
 // Định nghĩa kiểu dữ liệu của một bác sĩ
 interface Doctor {
   id: number;
@@ -90,13 +91,11 @@ const DoctorListComponent: React.FC = () => {
   const navigate = useNavigate();
   const [doctors] = useState<Doctor[]>(initialDoctors);
   const [dropdownIndex, setDropdownIndex] = useState<number | null>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isAddDoctor, setIsAddDoctor] = useState(false);
 
-  // Toggle dropdown menu
-  const toggleDropdown = (index: number) => {
-    setDropdownIndex(dropdownIndex === index ? null : index);
+  const toggleAddDoctor = () => {
+    setIsAddDoctor(!isAddDoctor);
   };
-
   // Xử lý update
   const handleUpdate = (id: number) => {
     alert(`Update doctor with ID: ${id}`);
@@ -167,6 +166,11 @@ const DoctorListComponent: React.FC = () => {
           ))}
         </tbody>
       </table>
+      <AddDoctorModal
+        isOpen={isAddDoctor}
+        setIsOpen={toggleAddDoctor}
+        id={"5"}
+      />
     </div>
   );
 };
