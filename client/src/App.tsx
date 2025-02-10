@@ -3,9 +3,9 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import DoctorListComponent from "./components/AdminDoctor/DoctorList";
-import DoctorInfo from "./components/AdminDoctor/DoctorInfo";
-import Auth from "./components/Auth";
-
+import DoctorInfor from "./components/AdminDoctor/DoctorDetail";
+import PatientListComponent from "./components/AdminPatient/PatientList";
+import PatientInfor from "./components/AdminPatient/PatientInfor";
 const App: React.FC = () => {
   return (
     <Router>
@@ -16,7 +16,9 @@ const App: React.FC = () => {
           <div className="w-full p-4">
             <Routes>
               <Route path="/" element={<DoctorListComponent />} />
-              <Route path="/doctorInfo" element={<DoctorInfo />} />
+              <Route path="/doctorDetail" element={<DoctorInfor />} />
+              <Route path="/patientList" element={<PatientListComponent />} />
+              <Route path="/patientInfor" element={<PatientInfor />} />
             </Routes>
           </div>
         </div>

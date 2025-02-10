@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AddDoctorModal from "./AddDoctor";
 
 // Định nghĩa kiểu dữ liệu của một bác sĩ
-interface Doctor {
+interface Patient {
   id: number;
   code: string;
   name: string;
@@ -13,7 +12,7 @@ interface Doctor {
 }
 
 // Dữ liệu mẫu
-const initialDoctors: Doctor[] = [
+const initialPatients: Patient[] = [
   {
     id: 1,
     code: "BS001",
@@ -88,21 +87,16 @@ const initialDoctors: Doctor[] = [
   },
 ];
 
-const DoctorListComponent: React.FC = () => {
+const PatientListComponent: React.FC = () => {
   const navigate = useNavigate();
-  const [doctors] = useState<Doctor[]>(initialDoctors);
-  const [isAddDoctor, setIsAddDoctor] = useState(false);
-
-  const toggleAddDoctor = () => {
-    setIsAddDoctor(!isAddDoctor);
-  };
+  const [Patients] = useState<Patient[]>(initialPatients);
 
   return (
     <div className="p-5 h-full bg-gray-50">
-      <p className="font-bold text-xl mb-4">Danh sách bác sĩ</p>
+      <p className="font-bold text-xl mb-4">Danh sách bệnh nhân</p>
       <div className="flex items-center w-full pb-4 p-3 mb-4  justify-between bg-white">
         <div className="font-semibold text-lg mr-50">
-          <p>Số bác sĩ (430)</p>
+          <p>Số bệnh nhân (430)</p>
         </div>
 
         <div className="flex items-center space-x-3">
@@ -110,12 +104,6 @@ const DoctorListComponent: React.FC = () => {
             src="/images/AdminList/search.png"
             alt="Search"
             className="w-10 h-10 cursor-pointer hover:bg-gray-200"
-          />
-          <img
-            src="/images/AdminList/add.png"
-            alt="Add"
-            className="w-10 h-10 cursor-pointer hover:bg-gray-200"
-            onClick={toggleAddDoctor}
           />
           <img
             src="/images/AdminList/filter.png"
@@ -128,39 +116,40 @@ const DoctorListComponent: React.FC = () => {
         <thead className="text-gray-600 text-lg bg-gray-100">
           <tr>
             <th className="px-4 py-2">STT</th>
-            <th className="px-4 py-2">Mã số BS</th>
-            <th className="px-4 py-2">Tên BS</th>
+            <th className="px-4 py-2">Mã số BN</th>
+            <th className="px-4 py-2">Tên BN</th>
             <th className="px-4 py-2">Ngày tham gia</th>
             <th className="px-4 py-2">SĐT</th>
             <th className="px-4 py-2">Trạng thái</th>
           </tr>
         </thead>
         <tbody>
-          {doctors.map((doctor, index) => (
+          {Patients.map((Patient, index) => (
             <tr
-              key={doctor.id}
+              key={Patient.id}
               className="bg-white hover:bg-gray-100 cursor-pointer"
-              onClick={() => navigate(`/doctorDetail/`)}
+              onClick={() => navigate(`/PatientInfor/`)}
             >
               <td className="px-4 py-4">{index + 1}</td>
-              <td className="px-4 py-4">{doctor.code}</td>
-              <td className="px-4 py-4 truncate max-w-xs">{doctor.name}</td>
-              <td className="px-4 py-4">{doctor.joinDate}</td>
-              <td className="px-4 py-4">{doctor.phone}</td>
+              <td className="px-4 py-4">{Patient.code}</td>
+              <td className="px-4 py-4 truncate max-w-xs">{Patient.name}</td>
+              <td className="px-4 py-4">{Patient.joinDate}</td>
+              <td className="px-4 py-4">{Patient.phone}</td>
               <td
                 className={`px-4 py-4 ${
-                  doctor.status === "Active" ? "text-green-500" : "text-red-500"
+                  Patient.status === "Active"
+                    ? "text-green-500"
+                    : "text-red-500"
                 }`}
               >
-                {doctor.status}
+                {Patient.status}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <AddDoctorModal isOpen={isAddDoctor} setIsOpen={toggleAddDoctor} />
     </div>
   );
 };
 
-export default DoctorListComponent;
+export default PatientListComponent;
