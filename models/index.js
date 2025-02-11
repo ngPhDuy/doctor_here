@@ -23,8 +23,8 @@ const defineLoveList = require('./lovelist.model');
 const defineRating = require('./rating.model');
 const defineComment = require('./comment.model');
 const defineDoctorSpecialization = require('./doctorSpecialization.model');
-const defineOldSpecializationRequest = require('./oldSpecializationRequest.model');
-const defineNewSpecializationRequest = require('./newSpecializationRequest.model');
+// const defineOldSpecializationRequest = require('./oldSpecializationRequest.model');
+// const defineNewSpecializationRequest = require('./newSpecializationRequest.model');
 const defineImageAppointment = require('./imageAppointment.model');
 const defineImageResult = require('./imageResult.model');
 const definePrescription = require('./prescription.model');
@@ -40,6 +40,7 @@ const defineRelatives = require('./relatives.model');
 const sequelize = new Sequelize('doctor_here', 'postgres', 'doctor_here', {
   host: 'localhost',
   dialect: 'postgres',
+  timezone: "+07:00" // Múi giờ Việt Nam (GMT+7)
 });
 
 // Định nghĩa model Account
@@ -67,8 +68,8 @@ const LoveList = defineLoveList(sequelize);
 const Rating = defineRating(sequelize);
 const Comment = defineComment(sequelize);
 const DoctorSpecialization = defineDoctorSpecialization(sequelize);
-const OldSpecializationRequest = defineOldSpecializationRequest(sequelize);
-const NewSpecializationRequest = defineNewSpecializationRequest(sequelize);
+// const OldSpecializationRequest = defineOldSpecializationRequest(sequelize);
+// const NewSpecializationRequest = defineNewSpecializationRequest(sequelize);
 const ImageAppointment = defineImageAppointment(sequelize);
 const ImageResult = defineImageResult(sequelize);
 const Prescription = definePrescription(sequelize);
@@ -104,6 +105,7 @@ Patient.belongsTo(User, {
 
 UpdateRequest.belongsTo(Doctor, {
   foreignKey: 'ma_bac_si',
+  targetKey: 'ma_bac_si',
   as: 'Bac_si',
 });
 
@@ -189,9 +191,16 @@ BreathBeat.belongsTo(Patient, {
   as: 'Benh_nhan',
 });
 
-RequestHandle.belongsTo(Doctor, {
-  foreignKey: 'ma_bac_si',
-  as: 'Bac_si',
+RequestHandle.belongsTo(UpdateRequest, {
+  foreignKey: 'yeu_cau_cap_nhat',
+  targetKey: 'ma_yeu_cau',
+  as: 'Yeu_cau_cap_nhat_thong_tin',
+});
+
+RequestHandle.belongsTo(Admin, {
+  foreignKey: 'ma_qtv',
+  targetKey: 'ma_qtv',
+  as: 'Quan_tri_vien',
 });
 
 LoveList.belongsTo(Patient, {
@@ -229,15 +238,15 @@ DoctorSpecialization.belongsTo(Doctor, {
   as: 'Bac_si',
 });
 
-OldSpecializationRequest.belongsTo(Doctor, {
-  foreignKey: 'ma_yeu_cau',
-  as: 'Yeu_cau_cap_nhat_thong_tin',
-});
+// OldSpecializationRequest.belongsTo(UpdateRequest, {
+//   foreignKey: 'ma_yeu_cau',
+//   as: 'Yeu_cau_cap_nhat_thong_tin',
+// });
 
-NewSpecializationRequest.belongsTo(Doctor, {
-  foreignKey: 'ma_yeu_cau',
-  as: 'Yeu_cau_cap_nhat_thong_tin',
-});
+// NewSpecializationRequest.belongsTo(UpdateRequest, {
+//   foreignKey: 'ma_yeu_cau',
+//   as: 'Yeu_cau_cap_nhat_thong_tin',
+// });
 
 ImageAppointment.belongsTo(Appointment, {
   foreignKey: 'id_cuoc_hen',
@@ -296,8 +305,33 @@ Insurance.belongsTo(Patient, {
 
 ImageRequest.belongsTo(UpdateRequest, {
   foreignKey: 'ma_yeu_cau',
+  targetKey: 'ma_yeu_cau',
   as: 'Yeu_cau_cap_nhat_thong_tin',
 });
+
+UpdateRequest.hasMany(ImageRequest, {
+  foreignKey: 'ma_yeu_cau',  // Khóa ngoại trong bảng ImageRequest
+  sourceKey: 'ma_yeu_cau',   // Khóa chính trong bảng UpdateRequest
+  as: 'Anh_minh_chung'       // Alias sử dụng trong include
+});
+
+UpdateRequest.hasOne(RequestHandle, {
+  foreignKey: 'yeu_cau_cap_nhat',
+  sourceKey: 'ma_yeu_cau',
+  as: 'Duyet_yeu_cau_cap_nhat',
+}); 
+
+// UpdateRequest.hasMany(OldSpecializationRequest, {
+//   foreignKey: 'ma_yeu_cau',  // Khóa ngoại trong bảng OldSpecializationRequest
+//   sourceKey: 'ma_yeu_cau',   // Khóa chính trong bảng UpdateRequest
+//   as: 'Chuyen_khoa_cu'       // Alias sử dụng trong include
+// });
+
+// UpdateRequest.hasMany(NewSpecializationRequest, {
+//   foreignKey: 'ma_yeu_cau',  // Khóa ngoại trong bảng NewSpecializationRequest
+//   sourceKey: 'ma_yeu_cau',   // Khóa chính trong bảng UpdateRequest
+//   as: 'Chuyen_khoa_moi'      // Alias sử dụng trong include
+// });
 
 Relatives.belongsTo(Patient, {
   foreignKey: 'ma_benh_nhan_1',
@@ -309,4 +343,4 @@ Relatives.belongsTo(Patient, {
   as: 'Benh_nhan_2',
 });
 
-module.exports = { sequelize, Account, User, Doctor, Admin, Patient, UpdateRequest, WeeklyWork, Timeslot, Diagnosis, Appointment, Call, CallNoti, Conversation, Message, MessageNoti, DailyStep, BMI, HeartBeat, BreathBeat, RequestHandle, LoveList, Rating, Comment, DoctorSpecialization, OldSpecializationRequest, NewSpecializationRequest, ImageAppointment, ImageResult, Prescription, Medicine, PrescriptionContainsMedicine, MedicationSchedule, TimeslotAppointment, MedicineInSingleDose, Insurance, ImageRequest, Relatives };
+module.exports = { sequelize, Account, User, Doctor, Admin, Patient, UpdateRequest, WeeklyWork, Timeslot, Diagnosis, Appointment, Call, CallNoti, Conversation, Message, MessageNoti, DailyStep, BMI, HeartBeat, BreathBeat, RequestHandle, LoveList, Rating, Comment, DoctorSpecialization, ImageAppointment, ImageResult, Prescription, Medicine, PrescriptionContainsMedicine, MedicationSchedule, TimeslotAppointment, MedicineInSingleDose, Insurance, ImageRequest, Relatives };

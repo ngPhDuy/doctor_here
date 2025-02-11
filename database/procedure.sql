@@ -211,3 +211,53 @@ BEGIN
     RAISE NOTICE 'New Cuoc_hen created with ID: %', new_cuoc_hen_id;
 END;
 $$;
+
+CREATE OR REPLACE PROCEDURE create_update_request(
+    in_trinh_do_hoc_van_cu VARCHAR(255),
+    in_trinh_do_hoc_van_moi VARCHAR(255),
+    in_dia_chi_pk_cu VARCHAR(255),
+    in_dia_chi_pk_moi VARCHAR(255),
+    in_chuyen_khoa_cu VARCHAR(50),
+    in_chuyen_khoa_moi VARCHAR(50),
+    in_ma_bac_si VARCHAR(9)
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    new_id INTEGER;
+    generated_code VARCHAR(9);
+BEGIN
+    INSERT INTO "Yeu_cau_cap_nhat_thong_tin" (
+        "trang_thai",
+        "thoi_diem_yeu_cau",
+        "ma_yeu_cau",
+        "trinh_do_hoc_van_cu",
+        "trinh_do_hoc_van_moi",
+        "dia_chi_pk_cu",
+        "dia_chi_pk_moi",
+        "chuyen_khoa_cu",
+        "chuyen_khoa_moi",
+        "ma_bac_si"
+    )
+    VALUES (
+        'Chờ duyệt',
+        CURRENT_TIMESTAMP,
+        'N/A',
+        in_trinh_do_hoc_van_cu,
+        in_trinh_do_hoc_van_moi,
+        in_dia_chi_pk_cu,
+        in_dia_chi_pk_moi,
+        in_chuyen_khoa_cu,
+        in_chuyen_khoa_moi,
+        in_ma_bac_si
+    )
+    RETURNING "id" INTO new_id;
+
+    generated_code := CONCAT('YCCN', LPAD(new_id::TEXT, 5, '0'));
+    UPDATE "Yeu_cau_cap_nhat_thong_tin"
+    SET "ma_yeu_cau" = generated_code
+    WHERE "id" = new_id;
+END;
+$$;
+
+

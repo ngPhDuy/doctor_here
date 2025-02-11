@@ -254,6 +254,5 @@ router.post('/change_info', doctorController.changeInfo);
  *                   type: string
  *                   example: "Lỗi xảy ra khi thêm bác sĩ"
  */
-
 router.post('/', doctorController.insertDoctor);
 module.exports = router;

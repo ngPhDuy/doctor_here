@@ -121,3 +121,7 @@ CALL auto_generate_appointments('2025-01-01', '2025-01-07', '15 minutes', 'BS000
 
 call create_appointment('Bệnh nhân bị đau đầu và chóng mặt', 'Phòng khám B, Quận 2', 'Đang chờ', '2025-01-01 10:00:00', 'BS0000001', 'BN0000006', 50);
 call create_appointment('Bệnh nhân bị đau đầu và chóng mặt', '', 'Đang chờ', '2025-01-02 07:00:00', 'BS0000001', 'BN0000006', 162);
+
+--Thêm yêu cầu cập nhật thông tin
+call create_update_request('Tiến sĩ', 'Tiến sĩ chuyên khoa', 'Số 40, Đường D, Quận 4, TP HCM', 'Số 50, Đường E, Quận 5, TP HCM', 'Nội tiết', 'Nội tiết', 'BS0000001');
+call create_update_request('Bác sĩ', 'Bác sĩ chuyên khoa', 'Số 30, Đường C, Quận 3, TP HCM', 'Số 60, Đường F, Quận 6, TP HCM', 'Tai mũi họng', 'Tai mũi họng', 'BS0000002');
