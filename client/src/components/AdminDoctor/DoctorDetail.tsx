@@ -1,36 +1,47 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ChangeDoctorInforModal from "./ChangeDoctorInfor";
+import ChangePasswordModal from "./ChangePassword";
+import { TextInput, TextAreaInput } from "../Input/InputComponents";
 
-interface DoctorInfoState {
-  beginworkday: string;
-  degree: string;
-  address: string;
-  specialty: string;
-  description: string;
-}
+const Doctor = {
+  username: "",
+  email: "",
+  password: "",
+  fullName: "",
+  birthday: "",
+  beginWorkDay: "",
+  gender: "",
+  phoneNumber: "",
+  address: "",
+  degree: "",
+  specialty: "",
+  description: "",
+};
 
 const DoctorInfor: React.FC = () => {
   const navigate = useNavigate();
-  const [doctorInfo, setDoctorInfo] = useState<DoctorInfoState>({
-    beginworkday: "",
-    degree: "",
-    address: "",
-    specialty: "",
-    description: "",
-  });
+  const [doctorData, setDoctorData] = useState(Doctor);
+
+  const handleChange =
+    (field: string) =>
+    (
+      e: React.ChangeEvent<
+        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+      >
+    ) => {
+      setDoctorData((prevData) => ({ ...prevData, [field]: e.target.value }));
+    };
 
   const [isChangeDoctorInfor, setIsChangeDoctorInfor] = useState(false);
+  const [isChangePassword, setIsChangePassword] = useState(false);
 
   const toggleChangeDoctorInfor = () => {
     setIsChangeDoctorInfor(!isChangeDoctorInfor);
   };
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { id, value } = e.target;
-    setDoctorInfo((prev) => ({ ...prev, [id]: value }));
+  const toggleChangePassword = () => {
+    setIsChangePassword(!isChangePassword);
   };
 
   return (
@@ -131,37 +142,24 @@ const DoctorInfor: React.FC = () => {
               { id: "specialty", label: "Chuyên khoa", type: "text" },
             ].map((input) => (
               <div key={input.id}>
-                <label
-                  htmlFor={input.id}
-                  className="block mb-2 text-sm font-medium text-blueText"
-                >
-                  {input.label}
-                </label>
-                <input
+                <TextInput
+                  label={input.label}
                   id={input.id}
                   type={input.type}
-                  value={doctorInfo[input.id as keyof DoctorInfoState]}
-                  className="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg"
-                  onChange={handleInputChange}
+                  value={doctorData[input.id as keyof typeof doctorData] || ""}
+                  onChange={(e) => handleChange(input.id)(e)}
                 />
               </div>
             ))}
           </div>
 
           <div className="grid gap-4 mb-4 sm:grid-cols-1">
-            <label
-              htmlFor="description"
-              className="block mb-2 text-sm font-medium text-blueText"
-            >
-              Mô tả
-            </label>
-            <textarea
+            <TextAreaInput
+              label="Mô tả"
               id="description"
-              value={doctorInfo.description}
-              rows={5}
-              className="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg"
-              onChange={handleInputChange}
-            ></textarea>
+              value={doctorData.description}
+              onChange={handleChange("description")}
+            />
           </div>
 
           <div className="flex justify-end mt-10 mb-20">
@@ -171,7 +169,10 @@ const DoctorInfor: React.FC = () => {
             >
               Chỉnh sửa
             </button>
-            <button className="px-4 py-2 mr-3 bg-yellowButton hover:bg-yellowButtonHover text-white rounded-lg">
+            <button
+              className="px-4 py-2 mr-3 bg-yellowButton hover:bg-yellowButtonHover text-white rounded-lg"
+              onClick={toggleChangePassword}
+            >
               Đặt lại mật khẩu
             </button>
             <button className="px-4 py-2 bg-redButton hover:bg-redButtonHover text-white rounded-lg">
@@ -213,6 +214,11 @@ const DoctorInfor: React.FC = () => {
       <ChangeDoctorInforModal
         isOpen={isChangeDoctorInfor}
         setIsOpen={toggleChangeDoctorInfor}
+        id={5}
+      />
+      <ChangePasswordModal
+        isOpen={isChangePassword}
+        setIsOpen={toggleChangePassword}
         id={5}
       />
     </div>

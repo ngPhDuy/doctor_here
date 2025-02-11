@@ -1,4 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
+import {
+  TextInput,
+  SelectInput,
+  TextAreaInput,
+} from "../Input/InputComponents";
 
 type ChangeDoctorInforModalProps = {
   isOpen: boolean;
@@ -6,39 +11,42 @@ type ChangeDoctorInforModalProps = {
   id: number;
 };
 
-type User = {
-  username: string;
-  email: string;
-  role: string;
-  first_name: string;
-  last_name: string;
-  birthday: string;
-  avatar: string;
-  gender: string;
-  phone_number: string;
-  address: string;
-  is_banned: boolean;
+const Doctor = {
+  username: "",
+  email: "",
+  password: "",
+  fullName: "",
+  birthday: "",
+  beginWorkDay: "",
+  gender: "",
+  phoneNumber: "",
+  address: "",
+  degree: "",
+  specialty: "",
+  description: "",
+
+  joinDate: "",
+  status: "",
 };
 
 const ChangeDoctorInforModal: React.FC<ChangeDoctorInforModalProps> = ({
   isOpen,
   setIsOpen,
 }) => {
-  const [username, setUserName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [full_name, setFullName] = useState("");
-  const [birthday, setBirthday] = useState("");
-  const [beginworkday, setBeginworkday] = useState("");
-  const [gender, setGender] = useState("");
-  const [phone_number, setPhoneNumber] = useState("");
-  const [address, setAddress] = useState("");
-  const [degree, setDegree] = useState("");
-  const [description, setDescription] = useState("");
+  const [doctorData, setDoctorData] = useState(Doctor);
+
+  const handleChange =
+    (field: string) =>
+    (
+      e: React.ChangeEvent<
+        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+      >
+    ) => {
+      setDoctorData((prevData) => ({ ...prevData, [field]: e.target.value }));
+    };
+
   const [participateTime, setParticipateTime] = useState("");
   const [role, setRole] = useState("");
-
-  const handleUpdate = () => {};
 
   if (!isOpen) return null;
 
@@ -70,206 +78,104 @@ const ChangeDoctorInforModal: React.FC<ChangeDoctorInforModalProps> = ({
             <span className="sr-only">Close modal</span>
           </button>
         </div>
-
         <div className="grid gap-4 mb-4 sm:grid-cols-2">
-          <div>
-            <label
-              htmlFor="email"
-              className="block mb-2 text-sm font-medium text-gray-900"
-            >
-              Email
-            </label>
-            <input
-              type="text"
-              name="email"
-              id="email"
-              value={email}
-              className="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg"
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="name"
-              className="block mb-2 text-sm font-medium text-gray-900"
-            >
-              Tên đăng nhập
-            </label>
-            <input
-              type="text"
-              name="name"
-              id="name"
-              disabled
-              value={username}
-              className="block w-full p-2.5 text-sm text-gray-900 bg-gray-200 border border-gray-300 rounded-lg"
-              onChange={(e) => setUserName(e.target.value)}
-            />
-          </div>
+          <TextInput
+            label="Email"
+            id="email"
+            value={doctorData.email}
+            onChange={handleChange("email")}
+          />
+          <TextInput
+            label="Tên đăng nhập"
+            id="username"
+            value={doctorData.username}
+            disabled={true}
+            onChange={handleChange("username")}
+          />
 
-          <div>
-            <label
-              htmlFor="fullname"
-              className="block mb-2 text-sm font-medium text-gray-900"
-            >
-              Họ và tên
-            </label>
-            <input
-              type="text"
-              name="fullname"
-              id="fullname"
-              disabled
-              value={full_name}
-              className="block w-full p-2.5 text-sm text-gray-900 bg-gray-200 border border-gray-300 rounded-lg"
-              onChange={(e) => setFullName(e.target.value)}
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="phone_number"
-              className="block mb-2 text-sm font-medium text-gray-900"
-            >
-              SĐT
-            </label>
-            <input
-              type="text"
-              name="phone_number"
-              id="phone_number"
-              value={phone_number}
-              className="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg"
-              onChange={(e) => setPhoneNumber(e.target.value)}
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="birthday"
-              className="block mb-2 text-sm font-medium text-gray-900"
-            >
-              Ngày sinh
-            </label>
-            <input
-              type="date"
-              name="birthday"
-              id="birthday"
-              value={birthday}
-              className="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg"
-              onChange={(e) => setBirthday(e.target.value)}
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="gender"
-              className="block mb-2 text-sm font-medium text-gray-900"
-            >
-              Giới tính
-            </label>
-            <select
-              id="gender"
-              className="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg"
-              value={gender}
-              onChange={(e) => setGender(e.target.value)}
-            >
-              <option value="Male">Nam</option>
-              <option value="Female">Nữ</option>
-              <option value="None">Khác</option>
-            </select>
-          </div>
-
-          <div>
-            <label
-              htmlFor="beginworkday"
-              className="block mb-2 text-sm font-medium text-gray-900"
-            >
-              Thời điểm vào nghề
-            </label>
-            <input
-              type="date"
-              name="beginworkday"
-              id="beginworkday"
-              value={beginworkday}
-              className="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg"
-              onChange={(e) => setBeginworkday(e.target.value)}
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="address"
-              className="block mb-2 text-sm font-medium text-gray-900"
-            >
-              Địa chỉ phòng khám
-            </label>
-            <input
-              id="address"
-              value={address}
-              className="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg"
-              onChange={(e) => setAddress(e.target.value)}
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="degree"
-              className="block mb-2 text-sm font-medium text-gray-900"
-            >
-              Học vấn
-            </label>
-            <input
-              type="text"
-              name="degree"
-              id="degree"
-              value={degree}
-              className="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg"
-              onChange={(e) => setDegree(e.target.value)}
-            />
-          </div>
+          <TextInput
+            label="SĐT"
+            id="phoneNumber"
+            value={doctorData.phoneNumber}
+            onChange={handleChange("phoneNumber")}
+          />
+          <TextInput
+            label="Họ và tên"
+            id="fullName"
+            value={doctorData.fullName}
+            disabled={true}
+            onChange={handleChange("fullName")}
+          />
+          <TextInput
+            label="Ngày sinh"
+            id="birthday"
+            type="date"
+            value={doctorData.birthday}
+            onChange={handleChange("birthday")}
+          />
+          <SelectInput
+            label="Giới tính"
+            id="gender"
+            value={doctorData.gender}
+            onChange={handleChange("gender")}
+            options={[
+              { value: "Male", label: "Nam" },
+              { value: "Female", label: "Nữ" },
+              { value: "None", label: "Khác" },
+            ]}
+          />
+          <TextInput
+            label="Thời điểm vào nghề"
+            id="beginWorkDay"
+            type="date"
+            value={doctorData.beginWorkDay}
+            onChange={handleChange("beginWorkDay")}
+          />
+          <TextInput
+            label="Chuyên khoa"
+            id="specialty"
+            value={doctorData.specialty}
+            onChange={handleChange("specialty")}
+          />
+          <TextInput
+            label="Học vấn"
+            id="degree"
+            value={doctorData.degree}
+            onChange={handleChange("degree")}
+          />
         </div>
-        <div className="grid gap-4 mb-4 sm:grid-cols-1">
-          <label
-            htmlFor="description"
-            className="block mb-2 text-sm font-medium text-gray-900"
-          >
-            Mô tả
-          </label>
-          <textarea
+        <div className="grid gap-4 mb-4">
+          <TextInput
+            label="Địa chỉ phòng khám"
+            id="address"
+            value={doctorData.address}
+            onChange={handleChange("address")}
+          />
+          <TextAreaInput
+            label="Mô tả"
             id="description"
-            value={description}
-            className="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg"
-            onChange={(e) => setDescription(e.target.value)}
-          ></textarea>
+            value={doctorData.description}
+            onChange={handleChange("description")}
+          />
         </div>
         <div className="grid gap-4 mb-4 sm:grid-cols-4">
-          <div>
-            <label
-              htmlFor="participateTime"
-              className="block mb-2 text-sm font-medium text-gray-900"
-            >
-              Ngày gia nhập
-            </label>
-            <input
-              type="date"
-              name="participateTime"
-              id="participateTime"
-              disabled
-              value={participateTime}
-              className="block w-full p-2.5 text-sm text-gray-900 bg-gray-200 border border-gray-300 rounded-lg"
-              onChange={(e) => setParticipateTime(e.target.value)}
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="role"
-              className="block mb-2 text-sm font-medium text-gray-900"
-            >
-              Trạng thái
-            </label>
-            <select
-              id="role"
-              className="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-            >
-              <option value="Male">Admin</option>
-              <option value="Female">Doctor</option>
-            </select>
-          </div>
+          <TextInput
+            label="Ngày gia nhập"
+            id="joinDate"
+            value={"27 / 01 / 2025"}
+            disabled={true}
+            onChange={handleChange("joinDate")}
+          />
+          <SelectInput
+            label="Trạng thái"
+            id="status"
+            value={doctorData.status}
+            onChange={handleChange("status")}
+            options={[
+              { value: "Active", label: "Active" },
+              { value: "Inactive", label: "Inactive" },
+            ]}
+          />
           <div>
             <label
               htmlFor="addBy"
@@ -309,7 +215,7 @@ const ChangeDoctorInforModal: React.FC<ChangeDoctorInforModalProps> = ({
             onClick={() => {
               setIsOpen();
             }}
-            className="inline-flex items-center px-5 py-2.5 ml-4 text-sm font-medium text-center border rounded-lg text-white bg-blue-600 hover:bg-blue-800"
+            className="inline-flex items-center px-5 py-2.5 ml-4 text-sm font-medium text-center border rounded-lg text-white bg-blueButton hover:bg-blueButtonHover"
           >
             Chỉnh sửa
           </button>

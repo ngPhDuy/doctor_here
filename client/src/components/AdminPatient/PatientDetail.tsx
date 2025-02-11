@@ -1,42 +1,44 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ChangePatientPasswordModal from "./ChangePatientPassword";
+import { TextInput, TextAreaInput } from "../Input/InputComponents";
 
-interface PatientInfoState {
-  beginworkday: string;
-  degree: string;
-  address: string;
-  specialty: string;
-  description: string;
-}
+const Patient = {
+  fullName: "",
+  birthday: "",
+  gender: "",
+  phoneNumber: "",
+  address: "",
+  patientCode: "",
+  nation: "",
+  nationality: "",
+  job: "",
+};
 
-const PatientInfor: React.FC = () => {
+const DoctorInfor: React.FC = () => {
   const navigate = useNavigate();
-  const [PatientInfo, setPatientInfo] = useState<PatientInfoState>({
-    beginworkday: "",
-    degree: "",
-    address: "",
-    specialty: "",
-    description: "",
-  });
+  const [patientData, setPatientData] = useState(Patient);
 
-  const [isChangePatientInfor, setIsChangePatientInfor] = useState(false);
+  const handleChange =
+    (field: string) =>
+    (
+      e: React.ChangeEvent<
+        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+      >
+    ) => {
+      setPatientData((prevData) => ({ ...prevData, [field]: e.target.value }));
+    };
 
-  const toggleChangePatientInfor = () => {
-    setIsChangePatientInfor(!isChangePatientInfor);
-  };
-
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { id, value } = e.target;
-    setPatientInfo((prev) => ({ ...prev, [id]: value }));
+  const [isChangePassword, setIsChangePassword] = useState(false);
+  const toggleChangePassword = () => {
+    setIsChangePassword(!isChangePassword);
   };
 
   return (
     <div className="h-full bg-gray-50 p-6">
       {/* Header */}
       <div className="flex items-center mb-4 bg-white p-4 rounded-lg shadow-md">
-        <div className="p-3 cursor-pointer" onClick={() => navigate("/auth")}>
+        <div className="p-3 cursor-pointer" onClick={() => navigate("/")}>
           <svg
             width="24"
             height="24"
@@ -60,12 +62,9 @@ const PatientInfor: React.FC = () => {
             />
           </svg>
         </div>
-        <div className="p-3 mr-5 text-blue-500 cursor-pointer">
-          <p className="font-semibold text-xl mb-2">Thông tin chi tiết</p>
-          <hr className="border-t-2 border-blue-500" />
-        </div>
-        <div className="p-3 cursor-pointer">
-          <p className="font-semibold text-xl mb-2">Yêu cầu cập nhật</p>
+        <div className="p-3 mr-5 text-blueTitle cursor-pointer">
+          <p className="font-semibold text-xl mb-2">Thông tin bệnh nhân</p>
+          <hr className="border-t-2 border-blueTitle" />
         </div>
       </div>
 
@@ -118,62 +117,50 @@ const PatientInfor: React.FC = () => {
                 stroke-linejoin="round"
               />
             </svg>
-            <h2 className="text-xl font-semibold ml-4">Chi tiết bác sĩ</h2>
+            <h2 className="text-xl font-semibold ml-4">Chi tiết bệnh nhân</h2>
           </div>
 
-          <h3 className="text-xl font-semibold">Thông tin chuyên ngành</h3>
+          <h3 className="text-xl font-semibold">Thông tin cá nhân</h3>
           <div className="grid gap-4 mb-4 sm:grid-cols-2 my-4">
             {[
-              { id: "beginworkday", label: "Thời điểm vào nghề", type: "date" },
-              { id: "address", label: "Địa chỉ phòng khám", type: "text" },
-              { id: "degree", label: "Học vấn", type: "text" },
-              { id: "specialty", label: "Chuyên khoa", type: "text" },
+              { id: "fullName", label: "Họ và tên", type: "text" },
+              { id: "patientCode", label: "Mã bệnh nhân", type: "text" },
+              { id: "birthday", label: "Ngày sinh", type: "date" },
+              { id: "gender", label: "Giới tính", type: "text" },
+              { id: "phoneNumber", label: "Số điện thoại", type: "text" },
+              { id: "job", label: "Nghề nghiệp", type: "text" },
+              { id: "nation", label: "Quốc gia", type: "text" },
+              { id: "nationality", label: "Quốc tịch", type: "text" },
             ].map((input) => (
               <div key={input.id}>
-                <label
-                  htmlFor={input.id}
-                  className="block mb-2 text-sm font-medium text-gray-900"
-                >
-                  {input.label}
-                </label>
-                <input
+                <TextInput
+                  label={input.label}
                   id={input.id}
                   type={input.type}
-                  value={PatientInfo[input.id as keyof PatientInfoState]}
-                  className="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg"
-                  onChange={handleInputChange}
+                  value={
+                    patientData[input.id as keyof typeof patientData] || ""
+                  }
+                  onChange={(e) => handleChange(input.id)(e)}
                 />
               </div>
             ))}
           </div>
-
-          <div className="grid gap-4 mb-4 sm:grid-cols-1">
-            <label
-              htmlFor="description"
-              className="block mb-2 text-sm font-medium text-gray-900"
-            >
-              Mô tả
-            </label>
-            <textarea
-              id="description"
-              value={PatientInfo.description}
-              rows={5}
-              className="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg"
-              onChange={handleInputChange}
-            ></textarea>
+          <div className="grid gap-4 mb-4 sm:grid-cols-1 my-4">
+            <TextAreaInput
+              label="Địa chỉ"
+              id="address"
+              value={patientData.address}
+              onChange={handleChange("address")}
+            />
           </div>
-
           <div className="flex justify-end mt-10 mb-20">
             <button
-              className="px-4 py-2 mr-3 bg-yellow-400 text-white rounded-lg"
-              onClick={toggleChangePatientInfor}
+              className="px-4 py-2 mr-3 bg-yellowButton hover:bg-yellowButtonHover text-white rounded-lg"
+              onClick={toggleChangePassword}
             >
-              Chỉnh sửa
-            </button>
-            <button className="px-4 py-2 mr-3 bg-blue-600 hover:bg-blue-800 text-white rounded-lg">
               Đặt lại mật khẩu
             </button>
-            <button className="px-4 py-2 bg-red-500 text-white rounded-lg">
+            <button className="px-4 py-2 bg-redButton hover:bg-redButtonHover text-white rounded-lg">
               Khóa tài khoản
             </button>
           </div>
@@ -184,10 +171,10 @@ const PatientInfor: React.FC = () => {
           <div className="flex flex-col items-center">
             <img
               src="/images/avt.png"
-              alt="Patient Avatar"
+              alt="Doctor Avatar"
               className="w-30 h-30 rounded-full mb-4"
             />
-            <p className="text-xl font-semibold">Bác sĩ Nguyễn Văn A (5151)</p>
+            <p className="text-xl font-semibold">Nguyễn Văn A (5151)</p>
             <p className="text-gray-600">21 tuổi, Nam</p>
           </div>
 
@@ -208,8 +195,14 @@ const PatientInfor: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <ChangePatientPasswordModal
+        isOpen={isChangePassword}
+        setIsOpen={toggleChangePassword}
+        id={5}
+      />
     </div>
   );
 };
 
-export default PatientInfor;
+export default DoctorInfor;

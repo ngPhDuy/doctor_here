@@ -5,7 +5,8 @@ import Sidebar from "./components/Sidebar";
 import DoctorListComponent from "./components/AdminDoctor/DoctorList";
 import DoctorInfor from "./components/AdminDoctor/DoctorDetail";
 import PatientListComponent from "./components/AdminPatient/PatientList";
-import PatientInfor from "./components/AdminPatient/PatientInfor";
+import PatientInfor from "./components/AdminPatient/PatientDetail";
+import RequestComponent from "./components/AdminRequest/AdminRequest";
 const App: React.FC = () => {
   return (
     <Router>
@@ -19,6 +20,7 @@ const App: React.FC = () => {
               <Route path="/doctorDetail" element={<DoctorInfor />} />
               <Route path="/patientList" element={<PatientListComponent />} />
               <Route path="/patientInfor" element={<PatientInfor />} />
+              <Route path="/requests" element={<RequestComponent />} />
             </Routes>
           </div>
         </div>

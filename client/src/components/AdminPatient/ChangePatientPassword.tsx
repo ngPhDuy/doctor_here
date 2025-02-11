@@ -12,7 +12,7 @@ type UpdateUserModalProps = {
   id: number;
 };
 
-const ChangePasswordModal: React.FC<UpdateUserModalProps> = ({
+const ChangePatientPasswordModal: React.FC<UpdateUserModalProps> = ({
   isOpen,
   setIsOpen,
   id,
@@ -97,4 +97,4 @@ const ChangePasswordModal: React.FC<UpdateUserModalProps> = ({
   );
 };
 
-export default ChangePasswordModal;
+export default ChangePatientPasswordModal;

@@ -19,7 +19,7 @@ const SelectInput: React.FC<SelectInputProps> = ({
   <div>
     <label
       htmlFor={id}
-      className="block mb-2 text-sm font-medium text-gray-900"
+      className="block mb-2 text-sm font-medium text-blueText"
     >
       {label}
     </label>
@@ -27,7 +27,7 @@ const SelectInput: React.FC<SelectInputProps> = ({
       id={id}
       value={value}
       onChange={onChange}
-      className="block w-full p-2.5 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg"
+      className="block w-full p-2.5 text-sm text-blueText bg-gray-50 border border-gray-300 rounded-lg"
     >
       {options.map((opt) => (
         <option key={opt.value} value={opt.value}>
