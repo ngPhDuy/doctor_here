@@ -120,7 +120,7 @@ export const TextAreaInput: React.FC<TextAreaInputProps> = ({
         `block w-full p-2.5 text-sm text-blueText border border-gray-300 rounded-lg ` +
         (disabled ? "bg-gray-300 cursor-not-allowed" : "bg-gray-50")
       }
-      rows={4}
+      rows={2}
     />
   </div>
 );
