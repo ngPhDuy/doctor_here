@@ -23,7 +23,7 @@ const initialRequests: Request[] = [
     doctorCode: "DOC124",
     doctorName: "Dr. Trần Thị B",
     requestTime: "2024-02-12T09:00:00Z",
-    result: "Đã hoàn thành",
+    result: "Chấp thuận",
   },
   {
     requestCode: "REQ003",
@@ -44,7 +44,7 @@ const initialRequests: Request[] = [
     doctorCode: "DOC127",
     doctorName: "Dr. Hồ Minh E",
     requestTime: "2024-02-12T13:20:00Z",
-    result: "Đã hoàn thành",
+    result: "Chấp thuận",
   },
   {
     requestCode: "REQ006",
@@ -65,7 +65,7 @@ const initialRequests: Request[] = [
     doctorCode: "DOC130",
     doctorName: "Dr. Bùi Thị H",
     requestTime: "2024-02-12T16:05:00Z",
-    result: "Đã hoàn thành",
+    result: "Chấp thuận",
   },
   {
     requestCode: "REQ009",
@@ -83,13 +83,27 @@ const initialRequests: Request[] = [
   },
 ];
 
-const RequestComponent: React.FC = () => {
+const NewRequestComponent: React.FC = () => {
   const navigate = useNavigate();
   const [requests] = useState<Request[]>(initialRequests);
 
   return (
     <div className="p-5 h-full bg-gray-50">
-      <p className="font-bold text-xl mb-4">Danh sách bác sĩ</p>
+      <div className="flex items-center mb-4 bg-white p-4 rounded-lg shadow-md">
+        <div
+          className="p-3 cursor-pointer"
+          onClick={() => navigate(`/oldRequests`)}
+        >
+          <p className="font-semibold text-xl mb-2">Yêu cầu cũ</p>
+        </div>
+        <div
+          className="p-3 mr-5 text-blueTitle cursor-pointer"
+          onClick={() => navigate(`/newRequests`)}
+        >
+          <p className="font-semibold text-xl mb-2">Yêu cầu mới</p>
+          <hr className="border-t-2 border-blueTitle" />
+        </div>
+      </div>
       <div className="flex items-center w-full pb-4 p-3 mb-4  justify-between bg-white">
         <div className="font-semibold text-lg mr-50">
           <p>Số yêu cầu (430)</p>
@@ -116,7 +130,6 @@ const RequestComponent: React.FC = () => {
             <th className="px-4 py-2">Mã số BS</th>
             <th className="px-4 py-2">Tên BS</th>
             <th className="px-4 py-2">Thời gian yêu cầu</th>
-            <th className="px-4 py-2">Kết quả</th>
           </tr>
         </thead>
         <tbody>
@@ -124,7 +137,7 @@ const RequestComponent: React.FC = () => {
             <tr
               key={request.requestCode}
               className="bg-white hover:bg-gray-100 cursor-pointer"
-              onClick={() => navigate(`/requestDetail/${request.requestCode}`)}
+              onClick={() => navigate(`/newRequestDetail`)}
             >
               <td className="px-4 py-4">{index + 1}</td>
               <td className="px-4 py-4">{request.requestCode}</td>
@@ -135,17 +148,6 @@ const RequestComponent: React.FC = () => {
               <td className="px-4 py-4">
                 {new Date(request.requestTime).toLocaleString()}
               </td>
-              <td
-                className={`px-4 py-4 ${
-                  request.result === "Đã hoàn thành"
-                    ? "text-green-500"
-                    : request.result === "Bị từ chối"
-                    ? "text-red-500"
-                    : "text-yellow-500"
-                }`}
-              >
-                {request.result}
-              </td>
             </tr>
           ))}
         </tbody>
@@ -154,4 +156,4 @@ const RequestComponent: React.FC = () => {
   );
 };
 
-export default RequestComponent;
+export default NewRequestComponent;

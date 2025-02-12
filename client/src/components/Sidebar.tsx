@@ -12,8 +12,14 @@ const Sidebar = () => {
   // Danh sách các đường dẫn tương ứng với từng mục
   const doctorPages = ["/doctorDetail", "/doctorSchedule"];
   const transactionPages = ["/transactions", "/paymentHistory"];
-  const patientPages = ["/patientList", "/patientDetails"];
-  const requestPages = ["/requests", "/pendingRequests"];
+  const patientPages = ["/patientList", "/patientInfor"];
+  const requestPages = [
+    "/oldRequests",
+    "/oldRequestDetail",
+    "/newRequests",
+    "/newRequestDetail",
+    "/pendingRequests",
+  ];
 
   // Hàm kiểm tra đường dẫn có nằm trong danh sách không
   const isActive = (paths: string[]) => {
@@ -74,7 +80,7 @@ const Sidebar = () => {
             className={`px-6 py-3 text-lg flex hover:bg-gray-200 cursor-pointer rounded-lg ${
               isActive(requestPages) ? activeColor : defaultColor
             }`}
-            onClick={() => navigate(`/requests`)}
+            onClick={() => navigate(`/oldRequests`)}
           >
             <EmailIcon
               width={30}

@@ -128,7 +128,7 @@ const PatientListComponent: React.FC = () => {
             <tr
               key={Patient.id}
               className="bg-white hover:bg-gray-100 cursor-pointer"
-              onClick={() => navigate(`/PatientInfor/`)}
+              onClick={() => navigate(`/patientInfor/`)}
             >
               <td className="px-4 py-4">{index + 1}</td>
               <td className="px-4 py-4">{Patient.code}</td>

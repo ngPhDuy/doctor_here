@@ -15,7 +15,7 @@ const Patient = {
   job: "",
 };
 
-const DoctorInfor: React.FC = () => {
+const PatientInfor: React.FC = () => {
   const navigate = useNavigate();
   const [patientData, setPatientData] = useState(Patient);
 
@@ -205,4 +205,4 @@ const DoctorInfor: React.FC = () => {
   );
 };
 
-export default DoctorInfor;
+export default PatientInfor;
