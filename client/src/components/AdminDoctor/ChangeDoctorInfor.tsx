@@ -51,7 +51,7 @@ const ChangeDoctorInforModal: React.FC<ChangeDoctorInforModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center w-full min-h-screen overflow-y-auto bg-gray-800 bg-opacity-75">
+    <div className="fixed inset-0 z-50 pt-14 flex items-center justify-center w-full overflow-y-auto bg-gray-800 bg-opacity-75">
       <div className="w-full mt-auto mb-10 max-w-4xl p-4 bg-white rounded-lg shadow">
         <div className="flex items-center justify-between pb-4 mb-4 border-b rounded-t sm:mb-5">
           <h3 className="text-lg font-semibold text-gray-900">

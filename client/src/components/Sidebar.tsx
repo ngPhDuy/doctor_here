@@ -31,7 +31,7 @@ const Sidebar = () => {
   const activeColor = "text-blueTitle";
 
   return (
-    <div className="w-64 h-screen border-r border-gray-300 shadow-md">
+    <div className="w-60 h-screen border-r border-gray-300 shadow-md">
       <nav className="m-3">
         <ul className="pt-10">
           <li

@@ -211,7 +211,6 @@ const DoctorInfor: React.FC = () => {
         </div>
       </div>
       <div>
-        {" "}
         <ChangeDoctorInforModal
           isOpen={isChangeDoctorInfor}
           setIsOpen={toggleChangeDoctorInfor}
