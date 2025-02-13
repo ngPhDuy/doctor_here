@@ -210,12 +210,15 @@ const DoctorInfor: React.FC = () => {
           </div>
         </div>
       </div>
+      <div>
+        {" "}
+        <ChangeDoctorInforModal
+          isOpen={isChangeDoctorInfor}
+          setIsOpen={toggleChangeDoctorInfor}
+          id={5}
+        />
+      </div>
 
-      <ChangeDoctorInforModal
-        isOpen={isChangeDoctorInfor}
-        setIsOpen={toggleChangeDoctorInfor}
-        id={5}
-      />
       <ChangePasswordModal
         isOpen={isChangePassword}
         setIsOpen={toggleChangePassword}
