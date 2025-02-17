@@ -53,13 +53,13 @@ const appointmentController = require('../controllers/appointment.controller');
 router.get('/', appointmentController.getAllAppointments);	
 /**
  * @swagger
- * /api/appointment/{appointmentID}:
+ * /api/appointment/detail:
  *   get:
  *     summary: Lấy thông tin chi tiết về cuộc hẹn
  *     tags: [Appointment]
  *     parameters:
  *       - name: appointmentID
- *         in: path
+ *         in: query
  *         required: true
  *         description: ID của cuộc hẹn
  *         schema:
@@ -151,6 +151,137 @@ router.get('/', appointmentController.getAllAppointments);
  *                   type: string
  *                   example: "Internal server error"
  */
-router.get('/:appointmentID', appointmentController.getAllAppointmentByID);
+router.get('/detail', appointmentController.getAllAppointmentByID);
+/**
+ * @swagger
+ * /api/appointment/countAppointmentByMethod:
+ *   get:
+ *     summary: Lấy số lượng cuộc hẹn theo trạng thái
+ *     tags: [Appointment]
+ *     parameters:
+ *       - name: onlMethod
+ *         in: query
+ *         required: true
+ *         description: Phương thức hẹn trực tuyến hay không
+ *         schema:
+ *           type: boolean
+ *       - name: doctorID
+ *         in: query
+ *         required: true
+ *         description: Mã bác sĩ
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Số lượng cuộc hẹn theo trạng thái
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                  count:
+ *                      type: integer
+ *                      example: 10
+ *       500:
+ *        description: Lỗi máy chủ
+ *        content:
+ *          application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  message:
+ *                      type: string
+ *                      example: "Internal server error"
+ */
+router.get('/countAppointmentByMethod', appointmentController.countAppointmentByMethod);
+/**
+ * @swagger
+ * /api/appointment/getAppointmentSchedule:
+ *   get:
+ *     summary: Lấy thông tin các lịch hẹn sắp diễn ra trong tuần
+ *     tags: [Appointment]
+ *     parameters:
+ *       - name: startDate
+ *         in: query
+ *         required: true
+ *         description: Ngày bắt đầu trong tuần
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: endDate
+ *         in: query
+ *         required: true
+ *         description: Ngày kết thúc trong tuần
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: doctorID
+ *         in: query
+ *         required: true
+ *         description: Mã bác sĩ
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Danh sách các lịch hẹn sắp diễn ra trong tuần
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     example: 1
+ *                   dia_chi_phong_kham:
+ *                     type: string
+ *                     example: "Phòng khám B, Quận 2"
+ *                   thoi_diem_tao:
+ *                     type: string
+ *                     format: date-time
+ *                     example: "2025-01-01T03:00:00.000Z"
+ *                   Gio_hen:
+ *                     type: object
+ *                     properties:
+ *                       thoi_diem_bat_dau:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2025-01-02T02:15:00.000Z"
+ *                       thoi_diem_ket_thuc:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2025-01-02T02:30:00.000Z"
+ *                       ngay_lam_viec:
+ *                         type: string
+ *                         format: date
+ *                         example: "2025-01-02"
+ *                   Benh_nhan:
+ *                     type: object
+ *                     properties:
+ *                       ma_benh_nhan:
+ *                         type: string
+ *                         example: "BN0000006"
+ *                       Nguoi_dung:
+ *                         type: object
+ *                         properties:
+ *                           gioi_tinh:
+ *                             type: string
+ *                             example: "Nữ"
+ *                           ho_va_ten:
+ *                             type: string
+ *                             example: "Nguyễn Thị Hiền"
+ *       500:
+ *         description: Lỗi máy chủ
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Internal server error"
+ */
+router.get('/getAppointmentSchedule', appointmentController.getAppointmentSchedule);
 
 module.exports = router;

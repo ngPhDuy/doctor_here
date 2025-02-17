@@ -50,3 +50,33 @@ exports.handleRequest = async (req, res) => {
         res.status(500).send(error.message);
     }
 }
+
+exports.createUpdateRequest = async (req, res) => {
+    try {
+        const newRequest = await updateRequestService.createUpdateRequest(req.body);
+
+        if (newRequest) {
+            res.status(200).json("Yêu cầu đã được gửi");
+        } else {
+            res.status(500).json("Có lỗi xảy ra");
+        }
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+}
+
+exports.cancelRequest = async (req, res) => {
+    try {
+        const requestID = req.body.requestID;
+        const doctorID = req.body.doctorID;
+        const canceledRequest = await updateRequestService.cancelRequest(requestID, doctorID);
+
+        if (canceledRequest.success) {
+            res.status(200).json("Yêu cầu đã bị thu hồi");
+        } else {
+            res.status(500).json(canceledRequest.message);
+        }
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+}

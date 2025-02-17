@@ -85,7 +85,7 @@ const patientController = require('../controllers/patient.controller');
 router.get('/', patientController.getAllPatient);
 /**
  * @swagger
- * /api/patient/{patientID}:
+ * /api/patient/detail/{patientID}:
  *   get:
  *     summary: Lấy thông tin chi tiết của một bệnh nhân
  *     tags: [Patient]
@@ -106,6 +106,6 @@ router.get('/', patientController.getAllPatient);
  *       500:
  *         description: Lỗi từ server khi xử lý yêu cầu.
  */
-router.get('/:patientID', patientController.getPatientInfo);
+router.get('/detail/:patientID', patientController.getPatientInfo);
 
 module.exports = router;

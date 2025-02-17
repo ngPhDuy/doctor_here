@@ -46,6 +46,10 @@ module.exports = (sequelize) => {
             onDelete: 'NO ACTION',
             onUpdate: 'NO ACTION',
         },
+        thoi_diem_thu_hoi: {
+            type: DataTypes.DATE,
+            allowNull: true,
+        }
     }, {
         tableName: 'Yeu_cau_cap_nhat_thong_tin',
         timestamps: false, 

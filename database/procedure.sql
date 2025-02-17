@@ -9,7 +9,8 @@ CREATE OR REPLACE PROCEDURE insert_doctor(
     IN in_ngay_vao_nghe DATE,
     IN in_trinh_do_hoc_van VARCHAR(255),
     IN in_mo_ta VARCHAR(255),
-    IN in_dia_chi_pk VARCHAR(255)
+    IN in_dia_chi_pk VARCHAR(255),
+    In in_chuyen_khoa VARCHAR(50)
 )
 LANGUAGE plpgsql
 AS $$
@@ -30,8 +31,8 @@ BEGIN
 
     -- Generate doctor code and insert into Bac_si table
     generated_code := CONCAT('BS', LPAD(new_id::TEXT, 7, '0'));
-    INSERT INTO "Bac_si" ("id", "ma_bac_si", "ngay_vao_nghe", "trinh_do_hoc_van", "mo_ta", "dia_chi_pk")
-    VALUES (new_id, generated_code, in_ngay_vao_nghe, in_trinh_do_hoc_van, in_mo_ta, in_dia_chi_pk);
+    INSERT INTO "Bac_si" ("id", "ma_bac_si", "ngay_vao_nghe", "trinh_do_hoc_van", "mo_ta", "dia_chi_pk", "chuyen_khoa")
+    VALUES (new_id, generated_code, in_ngay_vao_nghe, in_trinh_do_hoc_van, in_mo_ta, in_dia_chi_pk, in_chuyen_khoa);
 END;
 $$;
 
@@ -213,11 +214,8 @@ END;
 $$;
 
 CREATE OR REPLACE PROCEDURE create_update_request(
-    in_trinh_do_hoc_van_cu VARCHAR(255),
     in_trinh_do_hoc_van_moi VARCHAR(255),
-    in_dia_chi_pk_cu VARCHAR(255),
     in_dia_chi_pk_moi VARCHAR(255),
-    in_chuyen_khoa_cu VARCHAR(50),
     in_chuyen_khoa_moi VARCHAR(50),
     in_ma_bac_si VARCHAR(9)
 )
@@ -226,7 +224,22 @@ AS $$
 DECLARE
     new_id INTEGER;
     generated_code VARCHAR(9);
+    current_trinh_do_hoc_van VARCHAR(255);
+    current_dia_chi_pk VARCHAR(255);
+    current_chuyen_khoa VARCHAR(50);
 BEGIN
+    -- Lấy thông tin hiện tại của bác sĩ từ bảng Bac_si
+    SELECT "trinh_do_hoc_van", "dia_chi_pk", "chuyen_khoa"
+    INTO current_trinh_do_hoc_van, current_dia_chi_pk, current_chuyen_khoa
+    FROM "Bac_si"
+    WHERE "ma_bac_si" = in_ma_bac_si;
+
+    -- Kiểm tra nếu không tìm thấy bác sĩ với mã số đã cho
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Bác sĩ với mã số % không tồn tại!', in_ma_bac_si;
+    END IF;
+
+    -- Thực hiện chèn yêu cầu cập nhật thông tin mới vào bảng Yeu_cau_cap_nhat_thong_tin
     INSERT INTO "Yeu_cau_cap_nhat_thong_tin" (
         "trang_thai",
         "thoi_diem_yeu_cau",
@@ -243,21 +256,67 @@ BEGIN
         'Chờ duyệt',
         CURRENT_TIMESTAMP,
         'N/A',
-        in_trinh_do_hoc_van_cu,
+        current_trinh_do_hoc_van,
         in_trinh_do_hoc_van_moi,
-        in_dia_chi_pk_cu,
+        current_dia_chi_pk,
         in_dia_chi_pk_moi,
-        in_chuyen_khoa_cu,
+        current_chuyen_khoa,
         in_chuyen_khoa_moi,
         in_ma_bac_si
     )
     RETURNING "id" INTO new_id;
 
+    -- Tạo mã yêu cầu và cập nhật lại vào bảng Yeu_cau_cap_nhat_thong_tin
     generated_code := CONCAT('YCCN', LPAD(new_id::TEXT, 5, '0'));
     UPDATE "Yeu_cau_cap_nhat_thong_tin"
     SET "ma_yeu_cau" = generated_code
     WHERE "id" = new_id;
 END;
 $$;
+
+CREATE OR REPLACE PROCEDURE insert_weekly_work(
+    in_ma_bac_si VARCHAR(9),
+    in_thu VARCHAR(2),
+    in_buoi_lam_viec VARCHAR[],
+    in_lam_viec_onl BOOLEAN,
+    in_cap_nhat_luc TIMESTAMP,
+    in_gia_tien INTEGER
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    current_buoi_lam_viec VARCHAR(255);
+BEGIN
+    -- Cập nhật hieu_luc của các buổi làm việc cũ của bác sĩ theo thứ làm việc thành False
+    UPDATE "Ca_lam_viec_trong_tuan"
+    SET "hieu_luc" = FALSE
+    WHERE "ma_bac_si" = in_ma_bac_si
+      AND "thu" = in_thu;
+
+    -- Chèn các buổi làm việc mới
+    FOREACH current_buoi_lam_viec IN ARRAY in_buoi_lam_viec
+    LOOP
+        INSERT INTO "Ca_lam_viec_trong_tuan" (
+            "ma_bac_si", 
+            "thu", 
+            "buoi_lam_viec", 
+            "lam_viec_onl", 
+            "cap_nhat_luc", 
+            "hieu_luc", 
+            "gia_tien"
+        )
+        VALUES (
+            in_ma_bac_si, 
+            in_thu, 
+            current_buoi_lam_viec, 
+            in_lam_viec_onl, 
+            in_cap_nhat_luc, 
+            TRUE, 
+            in_gia_tien
+        );
+    END LOOP;
+END;
+$$;
+
 
 

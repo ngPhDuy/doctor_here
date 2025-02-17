@@ -100,7 +100,7 @@ router.get('/', doctorController.getAllDoctor);
 router.get('/:doctorID', doctorController.getDoctorInfo);
 /**
  * @swagger
- * /api/doctor/change_info:
+ * /api/doctor/changeInfo:
  *   post:
  *     summary: Cập nhật thông tin cá nhân cho bác sĩ
  *     tags: [Doctor]
@@ -172,10 +172,10 @@ router.get('/:doctorID', doctorController.getDoctorInfo);
  *                   type: string
  *                   example: "Internal server error"
  */
-router.post('/change_info', doctorController.changeInfo);
+router.post('/changeInfo', doctorController.changeInfo);
 /**
  * @swagger
- * /api/doctor:
+ * /api/doctor/addDoctor:
  *   post:
  *     summary: Thêm một bác sĩ mới
  *     tags: [Doctor]
@@ -232,6 +232,10 @@ router.post('/change_info', doctorController.changeInfo);
  *                 type: string
  *                 description: Địa chỉ phòng khám của bác sĩ.
  *                 example: "123 Đường Lý Thường Kiệt, Quận 10, TP.HCM"
+ *               chuyenKhoa:
+ *                 type: string
+ *                 description: Chuyên khoa của bác sĩ.
+ *                 example: "Nội khoa"
  *     responses:
  *       200:
  *         description: Thêm bác sĩ thành công.
@@ -254,5 +258,65 @@ router.post('/change_info', doctorController.changeInfo);
  *                   type: string
  *                   example: "Lỗi xảy ra khi thêm bác sĩ"
  */
-router.post('/', doctorController.insertDoctor);
+router.post('/addDoctor', doctorController.insertDoctor);
+/**
+ * @swagger
+ * /api/doctor/addWeeklyWork:
+ *   post:
+ *     summary: Thêm lịch làm việc hàng tuần cho bác sĩ, thêm các giờ CHO MỘT THỨ CỤ THỂ
+ *     description: API này cho phép thêm lịch làm việc cho bác sĩ, bao gồm các thông tin như bác sĩ, thứ làm việc, các giờ làm việc, phương thức làm việc online, và giá thành.
+ *     tags:
+ *       - Doctor
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               doctorID:
+ *                 type: string
+ *                 description: Mã bác sĩ
+ *                 example: 'BS0000001'
+ *               date:
+ *                 type: string
+ *                 description: Thứ làm việc (ví dụ 'T2', 'T3', ..., 'T7', 'CN')
+ *                 example: 'T3'
+ *               workTime:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Mảng các giờ làm việc của bác sĩ
+ *                 example: ['Sáng: 7-11h', 'Trưa: 11-13h', 'Chiều: 13-17h']
+ *               onlMethod:
+ *                 type: boolean
+ *                 description: Phương thức làm việc online (true hoặc false)
+ *                 example: true
+ *               price:
+ *                 type: integer
+ *                 description: Giá thành của mỗi buổi làm việc
+ *                 example: 500000
+ *     responses:
+ *       200:
+ *         description: Lịch làm việc được thêm thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Thêm lịch làm việc thành công"
+ *       500:
+ *         description: Lỗi khi thêm lịch làm việc
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Có lỗi xảy ra: <lỗi cụ thể>"
+ */
+router.post('/addWeeklyWork', doctorController.insertWeeklyWork);
 module.exports = router;

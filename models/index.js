@@ -31,7 +31,7 @@ const definePrescription = require('./prescription.model');
 const defineMedicine = require('./medicine.model');
 const definePrescriptionContainsMedicine = require('./prescriptionContainsMedicine.model');
 const defineMedicationSchedule = require('./medicationSchedule.model');
-const defineTimeslotAppointment = require('./timeslotAppointment.model');
+// const defineTimeslotAppointment = require('./timeslotAppointment.model');
 const defineMedicineInSingleDose = require('./medicineInSingleDose.model');
 const defineInsurance = require('./insurance.model');
 const defineImageRequest = require('./imageRequest.model');
@@ -76,7 +76,7 @@ const Prescription = definePrescription(sequelize);
 const Medicine = defineMedicine(sequelize);
 const PrescriptionContainsMedicine = definePrescriptionContainsMedicine(sequelize);
 const MedicationSchedule = defineMedicationSchedule(sequelize);
-const TimeslotAppointment = defineTimeslotAppointment(sequelize);
+// const TimeslotAppointment = defineTimeslotAppointment(sequelize);
 const MedicineInSingleDose = defineMedicineInSingleDose(sequelize);
 const Insurance = defineInsurance(sequelize);
 const ImageRequest = defineImageRequest(sequelize);
@@ -139,6 +139,11 @@ Appointment.belongsTo(Doctor, {
   foreignKey: 'ma_bac_si',
   targetKey: 'ma_bac_si',
   as: 'Bac_si',
+});
+
+Appointment.belongsTo(Timeslot, {
+  foreignKey: 'id_gio_hen',
+  as: 'Gio_hen',
 });
 
 Call.belongsTo(Appointment, {
@@ -215,6 +220,7 @@ LoveList.belongsTo(Doctor, {
 
 Rating.belongsTo(Patient, {
   foreignKey: 'ma_benh_nhan_danh_gia',
+  targetKey: 'ma_benh_nhan',
   as: 'Benh_nhan',
 });
 
@@ -288,15 +294,15 @@ MedicineInSingleDose.belongsTo(Medicine, {
   as: 'Thuoc',
 });
 
-TimeslotAppointment.belongsTo(Timeslot, {
-  foreignKey: 'id_gio_hen',
-  as: 'Gio_hen',
-});
+// TimeslotAppointment.belongsTo(Timeslot, {
+//   foreignKey: 'id_gio_hen',
+//   as: 'Gio_hen',
+// });
 
-TimeslotAppointment.belongsTo(Appointment, {
-  foreignKey: 'id_cuoc_hen',
-  as: 'Cuoc_hen',
-});
+// TimeslotAppointment.belongsTo(Appointment, {
+//   foreignKey: 'id_cuoc_hen',
+//   as: 'Cuoc_hen',
+// });
 
 Insurance.belongsTo(Patient, {
   foreignKey: 'ma_benh_nhan',
@@ -343,4 +349,4 @@ Relatives.belongsTo(Patient, {
   as: 'Benh_nhan_2',
 });
 
-module.exports = { sequelize, Account, User, Doctor, Admin, Patient, UpdateRequest, WeeklyWork, Timeslot, Diagnosis, Appointment, Call, CallNoti, Conversation, Message, MessageNoti, DailyStep, BMI, HeartBeat, BreathBeat, RequestHandle, LoveList, Rating, Comment, DoctorSpecialization, ImageAppointment, ImageResult, Prescription, Medicine, PrescriptionContainsMedicine, MedicationSchedule, TimeslotAppointment, MedicineInSingleDose, Insurance, ImageRequest, Relatives };
+module.exports = { sequelize, Account, User, Doctor, Admin, Patient, UpdateRequest, WeeklyWork, Timeslot, Diagnosis, Appointment, Call, CallNoti, Conversation, Message, MessageNoti, DailyStep, BMI, HeartBeat, BreathBeat, RequestHandle, LoveList, Rating, Comment, DoctorSpecialization, ImageAppointment, ImageResult, Prescription, Medicine, PrescriptionContainsMedicine, MedicationSchedule, MedicineInSingleDose, Insurance, ImageRequest, Relatives };

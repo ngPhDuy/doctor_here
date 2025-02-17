@@ -21,9 +21,6 @@ module.exports = (sequelize) => {
         dan_toc: {
             type: DataTypes.STRING,
         },
-        diem_he_thong: {
-            type: DataTypes.INTEGER,
-        },
         nhom_mau: {
             type: DataTypes.STRING,
         },

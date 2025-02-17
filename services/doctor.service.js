@@ -89,6 +89,7 @@ moTa
 diaChiPhongKham
 ngaySinh: dd/mm/yyyy
 trinhDoHocVan
+chuyenKhoa
 */
 exports.insertDoctor = async (props) => {
     try {
@@ -104,7 +105,8 @@ exports.insertDoctor = async (props) => {
                 :in_ngay_vao_nghe,
                 :in_trinh_do_hoc_van,
                 :in_mo_ta,
-                :in_dia_chi_pk
+                :in_dia_chi_pk,
+                :in_chuyen_khoa
             )`, {
                 replacements: {
                     in_ten_dang_nhap: props.tenDangNhap,
@@ -117,11 +119,51 @@ exports.insertDoctor = async (props) => {
                     in_ngay_vao_nghe: new Date(props.thoiDiemVaoNghe),
                     in_trinh_do_hoc_van: props.trinhDoHocVan,
                     in_mo_ta: props.moTa,
-                    in_dia_chi_pk: props.diaChiPhongKham
+                    in_dia_chi_pk: props.diaChiPhongKham,
+                    in_chuyen_khoa: props.chuyenKhoa
                 }, 
                 type: sequelize.QueryTypes.RAW
             }
         )
+    } catch (error) {
+        throw new Error(error);
+    }
+}
+
+/* Input pros:
+- doctorID
+- date
+- workTime
+- onlMethod
+- price
+*/
+exports.insertWeeklyWork = async (props) => {
+    try {
+        //chuyển workTime thành mảng Varchar trong postgre
+        const workTimeArray = `{${props.workTime.join(',')}}`;
+        
+        const result = await sequelize.query(
+            `CALL insert_weekly_work(
+                :doctorID,
+                :date,
+                :workTime,
+                :onlMethod,
+                :createdTime,
+                :price
+            )`, {
+                replacements: {
+                    doctorID: props.doctorID,
+                    date: props.date,
+                    workTime: workTimeArray,
+                    onlMethod: props.onlMethod,
+                    createdTime: new Date(),
+                    price: props.price
+                },
+                type: sequelize.QueryTypes.RAW
+            }
+        );
+
+        return true;
     } catch (error) {
         throw new Error(error);
     }

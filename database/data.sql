@@ -2,35 +2,35 @@ CALL insert_doctor(
     'bacsi1', 'bacsi1', 'bacsi1@example.com', '0123456789', 
     '1985-01-15', 'Nam', 'Nguyễn Trung Hiếu', 
     '2010-09-22', 'Thạc sĩ Y học', 'Được bệnh nhân đánh giá cao', 
-    'Phòng khám B, Quận 2'
+    'Phòng khám B, Quận 2', 'Nhi khoa'
 );
 
 CALL insert_doctor(
     'bacsi2', 'bacsi2', 'bacsi2@example.com', '0123456790', 
     '1990-02-20', 'Nam', 'Nguyễn Trung Nghĩa', 
     '2009-05-11', 'Thạc sĩ Y học', 'Chuyên gia hàng đầu', 
-    'Phòng khám B, Quận 2'
+    'Phòng khám B, Quận 2', 'Nội khoa'
 );
 
 CALL insert_doctor(
     'bacsi3', 'bacsi3', 'bacsi3@example.com', '0123456791', 
     '1987-03-25', 'Nam', 'Nguyễn Trung Thành', 
     '2010-04-13', 'Tiến sĩ Y học', 'Thành viên hội đồng y khoa', 
-    'Phòng khám C, Quận 3'
+    'Phòng khám C, Quận 3', 'Dịch kính võng mạc'
 );
 
 CALL insert_doctor(
     'bacsi4', 'bacsi4', 'bacsi4@example.com', '0123456792', 
     '1995-04-10', 'Nam', 'Nguyễn Trung Dũng', 
     '2003-11-09', 'Bác sĩ Chuyên khoa II', 'Tận tâm với nghề', 
-    'Phòng khám B, Quận 2'
+    'Phòng khám B, Quận 2', 'Khoa tiết niệu'
 );
 
 CALL insert_doctor(
     'bacsi5', 'bacsi5', 'bacsi5@example.com', '0123456793', 
     '1992-05-30', 'Nam', 'Nguyễn Trung Can', 
     '2006-10-27', 'Tiến sĩ Y học', 'Thành viên hội đồng y khoa', 
-    'Phòng khám C, Quận 3'
+    'Phòng khám C, Quận 3', 'Khoa tim mạch'
 );
 
 CALL insert_patient(
@@ -123,5 +123,14 @@ call create_appointment('Bệnh nhân bị đau đầu và chóng mặt', 'Phòn
 call create_appointment('Bệnh nhân bị đau đầu và chóng mặt', '', 'Đang chờ', '2025-01-02 07:00:00', 'BS0000001', 'BN0000006', 162);
 
 --Thêm yêu cầu cập nhật thông tin
-call create_update_request('Tiến sĩ', 'Tiến sĩ chuyên khoa', 'Số 40, Đường D, Quận 4, TP HCM', 'Số 50, Đường E, Quận 5, TP HCM', 'Nội tiết', 'Nội tiết', 'BS0000001');
-call create_update_request('Bác sĩ', 'Bác sĩ chuyên khoa', 'Số 30, Đường C, Quận 3, TP HCM', 'Số 60, Đường F, Quận 6, TP HCM', 'Tai mũi họng', 'Tai mũi họng', 'BS0000002');
+call create_update_request('trình độ mới', 'địa chỉ mới', 'chuyên khoa mới', 'BS0000001')
+
+CALL insert_weekly_work(
+    'BS0000002'::VARCHAR,  -- Mã bác sĩ
+    'T2'::VARCHAR,         -- Thứ làm việc
+    ARRAY['Sáng: 7-11h', 'Trưa: 11-13h']::VARCHAR[],  -- Mảng giờ làm việc
+    TRUE,                   -- Làm việc online (boolean)
+    CURRENT_TIMESTAMP::TIMESTAMP,      -- Thời điểm cập nhật
+    500000                  -- Giá thành
+);
+

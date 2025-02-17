@@ -33,6 +33,10 @@ module.exports = (sequelize) => {
           type: DataTypes.STRING(9),
           allowNull: false,
           unique: true,
+        },
+        chuyen_khoa: {
+          type: DataTypes.STRING(50),
+          allowNull: true
         }
     }, 
     {

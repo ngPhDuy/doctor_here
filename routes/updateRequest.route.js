@@ -44,7 +44,6 @@ const updateRequestController = require('../controllers/updateRequest.controller
  *         description: Lỗi máy chủ nội bộ
  */
 router.get('/newRequest', updateRequestController.getAllNewRequest);
-
 /**
  * @swagger
  * /api/updateRequest/oldRequest:
@@ -88,7 +87,6 @@ router.get('/newRequest', updateRequestController.getAllNewRequest);
  *         description: Lỗi máy chủ nội bộ
  */
 router.get('/oldRequest', updateRequestController.getOldRequest);
-
 /**
  * @swagger
  * /api/updateRequest/requestDetail/{requestID}:
@@ -232,7 +230,6 @@ router.get('/oldRequest', updateRequestController.getOldRequest);
  *         description: Lỗi máy chủ nội bộ
  */
 router.get('/requestDetail/:requestID', updateRequestController.getRequestDetail);
-
 /**
  * @swagger
  * /api/updateRequest/requestByDoctorID/{doctorID}:
@@ -357,7 +354,6 @@ router.get('/requestDetail/:requestID', updateRequestController.getRequestDetail
  *         description: Lỗi máy chủ nội bộ
  */
 router.get('/requestByDoctorID/:doctorID', updateRequestController.getRequestByDoctorID);
-
 /**
  * @swagger
  * /api/updateRequest/handleRequest:
@@ -400,5 +396,82 @@ router.get('/requestByDoctorID/:doctorID', updateRequestController.getRequestByD
  *         description: Lỗi máy chủ nội bộ.
  */
 router.post('/handleRequest', updateRequestController.handleRequest);
-
+/**
+ * @swagger
+ * /api/updateRequest/createUpdateRequest:
+ *   post:
+ *     summary: Tạo yêu cầu cập nhật thông tin bác sĩ
+ *     description: Gửi yêu cầu cập nhật thông tin của bác sĩ, bao gồm thông tin trình độ học vấn, địa chỉ phòng khám và chuyên khoa.
+ *     tags:
+ *       - Update Requests
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               education:
+ *                 type: string
+ *                 description: Trình độ học vấn mới của bác sĩ
+ *                 example: "Tiến sĩ chuyên khoa"
+ *               address:
+ *                 type: string
+ *                 description: Địa chỉ phòng khám mới của bác sĩ
+ *                 example: "Số 50, Đường E, Quận 5, TP HCM"
+ *               speciality:
+ *                 type: string
+ *                 description: Chuyên khoa mới của bác sĩ
+ *                 example: "Nhi khoa"
+ *               doctorID:
+ *                 type: string
+ *                 description: Mã bác sĩ cần cập nhật
+ *                 example: "BS0000001"
+ *             required:
+ *               - education
+ *               - address
+ *               - speciality
+ *               - doctorID
+ *     responses:
+ *       200:
+ *         description: Yêu cầu đã được gửi thành công
+ *       500:
+ *         description: Có lỗi xảy ra khi gửi yêu cầu
+ *       400:
+ *         description: Tham số đầu vào không hợp lệ
+ */
+router.post('/createUpdateRequest', updateRequestController.createUpdateRequest);
+/**
+ * @swagger
+ * /api/updateRequest/cancelRequest:
+ *   post:
+ *     summary: Thu hồi yêu cầu cập nhật thông tin bác sĩ
+ *     description: Bác sĩ có thể thu hồi yêu cầu cập nhật thông tin của mình.
+ *     tags:
+ *       - Update Requests
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               requestID:
+ *                 type: string
+ *                 description: Mã yêu cầu cần thu hồi
+ *               doctorID:
+ *                 type: string
+ *                 description: Mã bác sĩ thu hồi yêu cầu
+ *             required:
+ *               - requestID
+ *               - doctorID
+ *     responses:
+ *       200:
+ *         description: Yêu cầu đã bị thu hồi thành công
+ *       500:
+ *         description: Có lỗi xảy ra khi thu hồi yêu cầu
+ *       400:
+ *         description: Tham số đầu vào không hợp lệ hoặc yêu cầu không tồn tại
+ */
+router.post('/cancelRequest', updateRequestController.cancelRequest);
 module.exports = router;

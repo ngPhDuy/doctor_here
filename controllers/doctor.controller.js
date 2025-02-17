@@ -49,3 +49,12 @@ exports.insertDoctor = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
+
+exports.insertWeeklyWork = async (req, res) => {
+    try {
+        const result = await doctorService.insertWeeklyWork(req.body);
+        res.status(200).json({message: 'Thêm lịch làm việc thành công'});
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}

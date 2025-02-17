@@ -121,3 +121,63 @@ exports.handleRequest = async (requestID, approved, adminID) => {
     }
 }
 
+/*
+Input Pros: mã bác sĩ, chuyên khoa, địa chỉ, trình độ học vấn
+- doctorID
+- speciality
+- address
+- education
+*/
+exports.createUpdateRequest = async (pros) => {
+    try {
+        //call procedure create_update_request
+        const result = await sequelize.query(
+            `CALL create_update_request(:education, :address, :speciality, :doctorID);`,
+            {
+                replacements: {
+                    education: pros.education,
+                    address: pros.address,
+                    speciality: pros.speciality,
+                    doctorID: pros.doctorID
+                },
+                type: sequelize.QueryTypes.SELECT
+            }
+        );
+
+        return true;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+//Bác sĩ thu hồi yêu cầu của mình
+exports.cancelRequest = async (requestID, doctorID) => {
+    try {
+        const request = await UpdateRequest.findOne({
+            where: {
+                ma_yeu_cau: requestID.toString(),
+                ma_bac_si: doctorID.toString()
+            }
+        });
+
+        if (request) {
+            //chỉnh trang_thai thành 'Thu hồi'
+            await request.update({ 
+                trang_thai: 'Thu hồi',
+                thoi_diem_thu_hoi: new Date()
+            });
+
+            return {
+                message: 'Yêu cầu đã được thu hồi',
+                success: true
+            };
+        } else {
+            return {
+                message: 'Yêu cầu không tồn tại',
+                success: false
+            };
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}

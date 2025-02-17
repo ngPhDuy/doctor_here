@@ -1,4 +1,5 @@
 // Import Express
+const cors = require('cors');
 const express = require('express');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./swaggerOptions');
@@ -11,17 +12,26 @@ const accountRoute = require('./routes/account.route');
 const appointmentRoute = require('./routes/appointment.route');
 const patientRoute = require('./routes/patient.route');
 const updateRequestRoute = require('./routes/updateRequest.route');
+const ratingRoute = require('./routes/rating.route');
 
 // Khởi tạo ứng dụng Express
 const app = express();
-
+// Sử dụng middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));  // Hỗ trợ đọc query params
 app.use(session({
     secret: 'e6f14f1cc5a763a6d7d88e8e7fcb6b50a7eecb997a37f15a67f05f78e54b5b4bfa5c8b59a883abc87d17d69fb7ff1c9c',
     resave: false,                  
     saveUninitialized: false,       
     cookie: { maxAge: 3600000 }   
 }));
+// app.use((req, res, next) => {
+//     console.log(`🌍 Received request: ${req.method} ${req.originalUrl}`);
+//     console.log("🟢 Query parameters:", req.query);
+//     next();
+// });
+app.use(cors());
+
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/doctor', doctorRoute);
 app.use('/api/auth', authRoute);
@@ -29,6 +39,7 @@ app.use('/api/account', accountRoute);
 app.use('/api/appointment', appointmentRoute);
 app.use('/api/patient', patientRoute);
 app.use('/api/updateRequest', updateRequestRoute);
+app.use('/api/rating', ratingRoute);
 
 // Test kết nối CSDL
 (async () => {
