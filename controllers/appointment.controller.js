@@ -72,3 +72,35 @@ exports.getAppointmentSchedule = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
+
+exports.getAllByDoctorID = async (req, res) => {
+    try {
+        const doctorID = req.query.doctorID;
+        const appointments = await appointmentService.getAllByDoctorID(doctorID);
+        res.status(200).json(appointments);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+exports.updateAppointmentStatus = async (req, res) => {
+    try {
+        const appointmentID = req.body.appointmentID;
+        const status = req.body.status;
+        const appointment = await appointmentService.updateAppointmentStatus(appointmentID, status);
+        res.status(200).json("Cập nhật thành công " + appointment + " với " + status);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+exports.getAllByPatientAndDoctor = async (req, res) => {
+    try {
+        const patientID = req.query.patientID;
+        const doctorID = req.query.doctorID;
+        const appointments = await appointmentService.getAllByPatientAndDoctor(patientID, doctorID);
+        res.status(200).json(appointments);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}

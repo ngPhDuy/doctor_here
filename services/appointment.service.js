@@ -1,4 +1,4 @@
-const {Appointment, Patient, Doctor, Timeslot, User, sequelize} = require('../models');
+const {Appointment, Patient, Doctor, Timeslot, User, sequelize, WeeklyWork} = require('../models');
 const { Op, or } = require('sequelize');
 
 exports.getAllAppointments = async () => {
@@ -17,7 +17,16 @@ exports.getAppointmentByID = async (appointmentID) => {
                 as: 'Benh_nhan',
                 attributes: {
                     exclude: ['id']
-                }
+                },
+                include: [
+                    {
+                        model: User,
+                        as: 'Nguoi_dung',
+                        attributes: {
+                            exclude: ['id']
+                        }
+                    }
+                ]
             },
             {
                 model: Doctor,
@@ -86,6 +95,75 @@ exports.getAppointmentSchedule = async (startDate, endDate, doctorID) => {
         order: [
             [{ model: Timeslot, as: 'Gio_hen' }, 'ngay_lam_viec', 'ASC'],
             [{ model: Timeslot, as: 'Gio_hen' }, 'thoi_diem_bat_dau', 'ASC']
+        ]
+    });
+    return appointments;
+}
+
+exports.getAllByDoctorID = async (doctorID) => {
+    const appointments = await Appointment.findAll({
+        where: {
+            ma_bac_si: doctorID
+        },
+        include: [
+            {
+                model: Timeslot,
+                as: 'Gio_hen',
+                attributes: ['id'],
+                include: [
+                    {
+                        model: WeeklyWork,
+                        as: 'Ca_lam_viec_trong_tuan',
+                        attributes: ['lam_viec_onl'],
+                    }
+                ]
+            }, {
+                model: Patient,
+                as: 'Benh_nhan',
+                attributes: ['ma_benh_nhan'],
+                include: [
+                    {
+                        model: User,
+                        as: 'Nguoi_dung',
+                        attributes: ['ho_va_ten', 'gioi_tinh']
+                    }
+                ]
+            }
+        ]
+    });
+    return appointments;
+}
+
+exports.updateAppointmentStatus = async (appointmentID, newStatus) => {
+    const appointment = await Appointment.update({
+        trang_thai: newStatus
+    }, {
+        where: {
+            id: appointmentID
+        }
+    });
+    return appointment;
+}
+
+exports.getAllByPatientAndDoctor = async (patientID, doctorID) => {
+    const appointments = await Appointment.findAll({
+        where: {
+            ma_bac_si: doctorID,
+            ma_benh_nhan_dat_hen: patientID
+        },
+        include: [
+            {
+                model: Timeslot,
+                as: 'Gio_hen',
+                attributes: ['id'],
+                include: [
+                    {
+                        model: WeeklyWork,
+                        as: 'Ca_lam_viec_trong_tuan',
+                        attributes: ['lam_viec_onl'],
+                    }
+                ]
+            }
         ]
     });
     return appointments;

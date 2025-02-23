@@ -115,7 +115,7 @@ WeeklyWork.belongsTo(Doctor, {
 });
 
 Timeslot.belongsTo(WeeklyWork, {
-  foreignKey: 'id',
+  foreignKey: 'id_ca_lam_viec',
   as: 'Ca_lam_viec_trong_tuan',
 });
 

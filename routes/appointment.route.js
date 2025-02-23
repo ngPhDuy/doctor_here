@@ -94,6 +94,9 @@ router.get('/', appointmentController.getAllAppointments);
  *                 ma_benh_nhan_dat_hen:
  *                   type: string
  *                   example: "BN0000006"
+ *                 id_gio_hen:
+ *                   type: integer
+ *                   example: 50
  *                 Benh_nhan:
  *                   type: object
  *                   properties:
@@ -103,9 +106,6 @@ router.get('/', appointmentController.getAllAppointments);
  *                     dan_toc:
  *                       type: string
  *                       example: "Tày"
- *                     diem_he_thong:
- *                       type: integer
- *                       example: 39
  *                     nhom_mau:
  *                       type: string
  *                       example: "AB"
@@ -121,6 +121,31 @@ router.get('/', appointmentController.getAllAppointments);
  *                     ma_benh_nhan:
  *                       type: string
  *                       example: "BN0000006"
+ *                     Nguoi_dung:
+ *                       type: object
+ *                       properties:
+ *                         ten_dang_nhap:
+ *                           type: string
+ *                           example: "nguoidung1"
+ *                         email:
+ *                           type: string
+ *                           example: "nguoidung1@example.com"
+ *                         sdt:
+ *                           type: string
+ *                           example: "0123456888"
+ *                         ngay_sinh:
+ *                           type: string
+ *                           format: date
+ *                           example: "1995-01-15"
+ *                         gioi_tinh:
+ *                           type: string
+ *                           example: "Nữ"
+ *                         phan_loai:
+ *                           type: string
+ *                           example: "bn"
+ *                         ho_va_ten:
+ *                           type: string
+ *                           example: "Nguyễn Thị Hiền"
  *                 Bac_si:
  *                   type: object
  *                   properties:
@@ -140,6 +165,9 @@ router.get('/', appointmentController.getAllAppointments);
  *                     ma_bac_si:
  *                       type: string
  *                       example: "BS0000001"
+ *                     chuyen_khoa:
+ *                       type: string
+ *                       example: "Nhi khoa"
  *       500:
  *         description: Lỗi máy chủ
  *         content:
@@ -283,5 +311,223 @@ router.get('/countAppointmentByMethod', appointmentController.countAppointmentBy
  *                   example: "Internal server error"
  */
 router.get('/getAppointmentSchedule', appointmentController.getAppointmentSchedule);
-
+/**
+ * @swagger
+ * /api/appointment/getAllByDoctorID:
+ *   get:
+ *     summary: Lấy tất cả các cuộc hẹn của bác sĩ theo mã bác sĩ
+ *     description: API này trả về tất cả các cuộc hẹn của bác sĩ, bao gồm thông tin bệnh nhân, giờ hẹn, và tình trạng làm việc online của bác sĩ.
+ *     tags:
+ *       - Appointment
+ *     parameters:
+ *       - in: query
+ *         name: doctorID
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Mã bác sĩ cần lấy cuộc hẹn
+ *         example: 'BS0000001'
+ *     responses:
+ *       200:
+ *         description: Danh sách các cuộc hẹn của bác sĩ
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     description: Mã cuộc hẹn
+ *                   van_ban_bo_sung:
+ *                     type: string
+ *                     description: Thông tin bổ sung của bệnh nhân
+ *                   dia_chi_phong_kham:
+ *                     type: string
+ *                     description: Địa chỉ phòng khám
+ *                   trang_thai:
+ *                     type: string
+ *                     description: Tình trạng cuộc hẹn (Đang chờ, Đã xác nhận, v.v.)
+ *                   thoi_diem_tao:
+ *                     type: string
+ *                     format: date-time
+ *                     description: Thời gian tạo cuộc hẹn
+ *                   ma_bac_si:
+ *                     type: string
+ *                     description: Mã bác sĩ
+ *                   ma_benh_nhan_dat_hen:
+ *                     type: string
+ *                     description: Mã bệnh nhân đã đặt hẹn
+ *                   Gio_hen:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         description: Mã giờ hẹn
+ *                       Ca_lam_viec_trong_tuan:
+ *                         type: object
+ *                         properties:
+ *                           lam_viec_onl:
+ *                             type: boolean
+ *                             description: Thông tin bác sĩ làm việc online hay không
+ *                             example: true
+ *                   Benh_nhan:
+ *                     type: object
+ *                     properties:
+ *                       ma_benh_nhan:
+ *                         type: string
+ *                         description: Mã bệnh nhân
+ *                       Nguoi_dung:
+ *                         type: object
+ *                         properties:
+ *                           ho_va_ten:
+ *                             type: string
+ *                             description: Họ và tên bệnh nhân
+ *                             example: 'Nguyễn Thị Hiền'
+ *                           gioi_tinh:
+ *                             type: string
+ *                             description: Giới tính của bệnh nhân
+ *                             example: 'Nữ'
+ *       500:
+ *         description: Lỗi khi lấy danh sách cuộc hẹn
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Có lỗi xảy ra: <lỗi cụ thể>"
+ */
+router.get('/getAllByDoctorID', appointmentController.getAllByDoctorID);
+/**
+ * @swagger
+ * /api/appointment/getAllByPatientAndDoctor:
+ *   get:
+ *     summary: Lấy tất cả các cuộc hẹn của bệnh nhân với bác sĩ
+ *     description: API này trả về danh sách tất cả các cuộc hẹn giữa bệnh nhân và bác sĩ, bao gồm thông tin chi tiết cuộc hẹn và giờ hẹn làm việc online.
+ *     tags:
+ *       - Appointment
+ *     parameters:
+ *       - name: patientID
+ *         in: query
+ *         required: true
+ *         description: Mã bệnh nhân
+ *         schema:
+ *           type: string
+ *         example: 'BN0000006'
+ *       - name: doctorID
+ *         in: query
+ *         required: true
+ *         description: Mã bác sĩ
+ *         schema:
+ *           type: string
+ *         example: 'BS0000001'
+ *     responses:
+ *       200:
+ *         description: Danh sách các cuộc hẹn của bệnh nhân với bác sĩ
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     description: Mã cuộc hẹn
+ *                   van_ban_bo_sung:
+ *                     type: string
+ *                     description: Thông tin bổ sung về bệnh nhân
+ *                   dia_chi_phong_kham:
+ *                     type: string
+ *                     description: Địa chỉ phòng khám
+ *                   trang_thai:
+ *                     type: string
+ *                     description: Tình trạng cuộc hẹn
+ *                   thoi_diem_tao:
+ *                     type: string
+ *                     format: date-time
+ *                     description: Thời gian tạo cuộc hẹn
+ *                   ma_bac_si:
+ *                     type: string
+ *                     description: Mã bác sĩ
+ *                   ma_benh_nhan_dat_hen:
+ *                     type: string
+ *                     description: Mã bệnh nhân đã đặt hẹn
+ *                   Gio_hen:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         description: Mã giờ hẹn
+ *                       Ca_lam_viec_trong_tuan:
+ *                         type: object
+ *                         properties:
+ *                           lam_viec_onl:
+ *                             type: boolean
+ *                             description: Thông tin bác sĩ làm việc online hay không
+ *                             example: true
+ *       500:
+ *         description: Lỗi khi lấy danh sách cuộc hẹn
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Có lỗi xảy ra: <lỗi cụ thể>"
+ */
+router.get('/getAllByPatientAndDoctor', appointmentController.getAllByPatientAndDoctor);
+/**
+ * @swagger
+ * /updateStatus:
+ *   post:
+ *     summary: Cập nhật trạng thái cuộc hẹn
+ *     description: API này cho phép cập nhật trạng thái của cuộc hẹn. Trạng thái bao gồm Đang chờ, Hoàn thành, Đã hủy.
+ *     tags:
+ *       - Appointment
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               appointmentID:
+ *                 type: integer
+ *                 description: ID của cuộc hẹn cần cập nhật
+ *                 example: 1
+ *               status:
+ *                 type: string
+ *                 description: Trạng thái mới của cuộc hẹn.
+ *                 example: "Đang chờ"
+ *             required:
+ *              - appointmentID
+ *              - status
+ *     responses:
+ *       200:
+ *         description: Trạng thái cuộc hẹn đã được cập nhật thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Cập nhật thành công 1 với Đang chờ"
+ *       500:
+ *         description: Lỗi khi cập nhật trạng thái cuộc hẹn
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Có lỗi xảy ra: <lỗi cụ thể>"
+ */
+router.post('/updateStatus', appointmentController.updateAppointmentStatus);
 module.exports = router;

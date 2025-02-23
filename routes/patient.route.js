@@ -96,6 +96,7 @@ router.get('/', patientController.getAllPatient);
  *         schema:
  *           type: string
  *         description: Mã định danh của bệnh nhân cần lấy thông tin.
+ *         example: BN0000006
  *     responses:
  *       200:
  *         description: Thông tin chi tiết của bệnh nhân được trả về thành công.
@@ -107,5 +108,89 @@ router.get('/', patientController.getAllPatient);
  *         description: Lỗi từ server khi xử lý yêu cầu.
  */
 router.get('/detail/:patientID', patientController.getPatientInfo);
+/**
+ * @swagger
+ * /api/patient/getAllByDoctorID:
+ *   get:
+ *     summary: Lấy tất cả bệnh nhân theo mã bác sĩ
+ *     description: API này trả về danh sách tất cả bệnh nhân mà đã từng đặt hẹn với bác sĩ có mã bác sĩ truyền vào
+ *     tags:
+ *       - Patient
+ *     parameters:
+ *       - name: doctorID
+ *         in: query
+ *         required: true
+ *         description: Mã bác sĩ cần lấy danh sách bệnh nhân
+ *         schema:
+ *           type: string
+ *         example: 'BS0000001'
+ *     responses:
+ *       200:
+ *         description: Danh sách bệnh nhân của bác sĩ
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     description: ID người dùng
+ *                   ten_dang_nhap:
+ *                     type: string
+ *                     description: Tên đăng nhập người dùng
+ *                   email:
+ *                     type: string
+ *                     description: Địa chỉ email người dùng
+ *                   sdt:
+ *                     type: string
+ *                     description: Số điện thoại người dùng
+ *                   ngay_sinh:
+ *                     type: string
+ *                     format: date
+ *                     description: Ngày sinh của bệnh nhân
+ *                   gioi_tinh:
+ *                     type: string
+ *                     description: Giới tính của bệnh nhân
+ *                   phan_loai:
+ *                     type: string
+ *                     description: Phân loại bệnh nhân
+ *                   ho_va_ten:
+ *                     type: string
+ *                     description: Họ và tên của bệnh nhân
+ *                   cccd:
+ *                     type: string
+ *                     description: CCCD của bệnh nhân
+ *                   dan_toc:
+ *                     type: string
+ *                     description: Dân tộc của bệnh nhân
+ *                   nhom_mau:
+ *                     type: string
+ *                     description: Nhóm máu của bệnh nhân
+ *                   tien_su_benh:
+ *                     type: string
+ *                     description: Tiền sử bệnh của bệnh nhân
+ *                   quoc_tich:
+ *                     type: string
+ *                     description: Quốc tịch của bệnh nhân
+ *                   dia_chi:
+ *                     type: string
+ *                     description: Địa chỉ của bệnh nhân
+ *                   ma_benh_nhan:
+ *                     type: string
+ *                     description: Mã bệnh nhân
+ *       500:
+ *         description: Lỗi máy chủ khi lấy danh sách bệnh nhân
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Có lỗi xảy ra: <lỗi cụ thể>"
+ */
+router.get('/getAllByDoctorID', patientController.getAllByDoctorID);
 
 module.exports = router;
