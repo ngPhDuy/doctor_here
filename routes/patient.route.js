@@ -96,17 +96,85 @@ router.get('/', patientController.getAllPatient);
  *         schema:
  *           type: string
  *         description: Mã định danh của bệnh nhân cần lấy thông tin.
- *         example: BN0000006
+ *         example: "BN0000006"
  *     responses:
  *       200:
  *         description: Thông tin chi tiết của bệnh nhân được trả về thành công.
  *         content:
  *           application/json:
  *             schema:
- *              $ref: '#/components/schemas/Patient'
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                   example: 6
+ *                 cccd:
+ *                   type: string
+ *                   example: "0123456706"
+ *                 dan_toc:
+ *                   type: string
+ *                   example: "Tày"
+ *                 nhom_mau:
+ *                   type: string
+ *                   example: "AB"
+ *                 tien_su_benh:
+ *                   type: string
+ *                   example: "Tiền sử tiểu đường tuýp 2"
+ *                 quoc_tich:
+ *                   type: string
+ *                   example: "Việt Nam"
+ *                 dia_chi:
+ *                   type: string
+ *                   example: "Số 20, Đường B, Quận 2, TP HCM"
+ *                 ma_benh_nhan:
+ *                   type: string
+ *                   example: "BN0000006"
+ *                 Nguoi_dung:
+ *                   type: object
+ *                   properties:
+ *                     ten_dang_nhap:
+ *                       type: string
+ *                       example: "nguoidung1"
+ *                     email:
+ *                       type: string
+ *                       format: email
+ *                       example: "nguoidung1@example.com"
+ *                     sdt:
+ *                       type: string
+ *                       example: "0123456888"
+ *                     ngay_sinh:
+ *                       type: string
+ *                       format: date
+ *                       example: "1995-01-15"
+ *                     gioi_tinh:
+ *                       type: string
+ *                       example: "Nữ"
+ *                     phan_loai:
+ *                       type: string
+ *                       example: "bn"
+ *                     ho_va_ten:
+ *                       type: string
+ *                       example: "Nguyễn Thị Hiền"
+ *                     Tai_khoan:
+ *                       type: object
+ *                       properties:
+ *                         ten_dang_nhap:
+ *                           type: string
+ *                           example: "nguoidung1"
+ *                         mat_khau:
+ *                           type: string
+ *                           example: "nguoidung1"
+ *                         active:
+ *                           type: boolean
+ *                           example: true
+ *                         thoi_diem_mo_tk:
+ *                           type: string
+ *                           format: date-time
+ *                           example: "2025-02-17T08:10:02.410Z"
  *       500:
  *         description: Lỗi từ server khi xử lý yêu cầu.
  */
+
 router.get('/detail/:patientID', patientController.getPatientInfo);
 /**
  * @swagger

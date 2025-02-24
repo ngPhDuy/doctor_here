@@ -1,4 +1,4 @@
-const {Patient, User, Doctor, Appointment, sequelize} = require('../models');
+const {Patient, User, Doctor, Appointment, sequelize, Account} = require('../models');
 
 exports.getAllPatient = async () => {
     const patient = await Patient.findAll({
@@ -23,6 +23,13 @@ exports.getPatientInfo = async (patientID) => {
             as: 'Nguoi_dung',
             attributes: {
                 exclude: ['id']
+            },
+            include: {
+                model: Account,
+                as: 'Tai_khoan',
+                attributes: {
+                    exclude: []
+                }
             }
         }
     });
