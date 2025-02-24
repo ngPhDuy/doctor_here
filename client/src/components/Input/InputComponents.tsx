@@ -33,7 +33,7 @@ export const TextInput: React.FC<TextInputProps> = ({
       onChange={onChange}
       className={
         `block w-full p-2.5 text-sm text-blueText border border-gray-300 rounded-lg ` +
-        (disabled ? "bg-gray-300 cursor-not-allowed" : "bg-gray-50")
+        (disabled ? "bg-gray-200 cursor-not-allowed" : "bg-gray-50")
       }
     />
   </div>
@@ -73,7 +73,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
         onChange={onChange}
         className={
           `block w-full p-2.5 text-sm text-blueText border border-gray-300 rounded-lg ` +
-          (disabled ? "bg-gray-300 cursor-not-allowed" : "bg-gray-50")
+          (disabled ? "bg-gray-200 cursor-not-allowed" : "bg-gray-50")
         }
       />
       <button
@@ -118,7 +118,7 @@ export const TextAreaInput: React.FC<TextAreaInputProps> = ({
       onChange={onChange}
       className={
         `block w-full p-2.5 text-sm text-blueText border border-gray-300 rounded-lg ` +
-        (disabled ? "bg-gray-300 cursor-not-allowed" : "bg-gray-50")
+        (disabled ? "bg-gray-200 cursor-not-allowed" : "bg-gray-50")
       }
       rows={2}
     />
@@ -230,7 +230,7 @@ export const SelectInput: React.FC<SelectInputProps> = ({
       onChange={onChange}
       className={
         `block w-full p-2.5 text-sm text-blueText border border-gray-300 rounded-lg ` +
-        (disabled ? "bg-gray-300 cursor-not-allowed" : "bg-gray-50")
+        (disabled ? "bg-gray-200 cursor-not-allowed" : "bg-gray-50")
       }
     >
       {options.map((opt) => (

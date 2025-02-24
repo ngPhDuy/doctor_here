@@ -20,7 +20,7 @@ const App: React.FC = () => {
           <div className="w-full p-4">
             <Routes>
               <Route path="/" element={<DoctorListComponent />} />
-              <Route path="/doctorDetail" element={<DoctorInfor />} />
+              <Route path="/doctorDetail/:id" element={<DoctorInfor />} />
               <Route path="/patientList" element={<PatientListComponent />} />
               <Route path="/patientInfor" element={<PatientInfor />} />
               <Route path="/oldRequests" element={<OldRequestComponent />} />

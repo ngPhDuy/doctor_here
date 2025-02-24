@@ -1,27 +1,74 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import ChangeDoctorInforModal from "./ChangeDoctorInfor";
 import ChangePasswordModal from "./ChangePassword";
 import { TextInput, TextAreaInput } from "../Input/InputComponents";
 
-const Doctor = {
-  username: "",
-  email: "",
-  password: "",
-  fullName: "",
-  birthday: "",
-  beginWorkDay: "",
-  gender: "",
-  phoneNumber: "",
-  address: "",
-  degree: "",
-  specialty: "",
-  description: "",
+interface Doctor {
+  id: number;
+  ma_bac_si: string;
+  ngay_vao_nghe: string;
+  chuyen_khoa: string;
+  dia_chi_pk: string;
+  mo_ta: string;
+  trinh_do_hoc_van: string;
+  Nguoi_dung: {
+    ho_va_ten: string;
+    ten_dang_nhap: string;
+    email: string;
+    sdt: string;
+    ngay_sinh: string;
+    gioi_tinh: string;
+    phan_loai: string;
+  };
+}
+
+const defaultDoctor: Doctor = {
+  id: 0,
+  ma_bac_si: "",
+  ngay_vao_nghe: "",
+  chuyen_khoa: "",
+  dia_chi_pk: "",
+  mo_ta: "",
+  trinh_do_hoc_van: "",
+  Nguoi_dung: {
+    ho_va_ten: "",
+    ten_dang_nhap: "",
+    email: "",
+    sdt: "",
+    ngay_sinh: "",
+    gioi_tinh: "",
+    phan_loai: "",
+  },
 };
 
 const DoctorInfor: React.FC = () => {
   const navigate = useNavigate();
-  const [doctorData, setDoctorData] = useState(Doctor);
+  const { id } = useParams<{ id: string }>();
+  const [doctor, setDoctor] = useState<Doctor>(defaultDoctor);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchDoctor = async () => {
+      try {
+        const response = await fetch(`http://localhost:3001/api/doctor/${id}`);
+        if (!response.ok) {
+          throw new Error("Không thể tải dữ liệu bác sĩ.");
+        }
+        const data = await response.json();
+        setDoctor(data);
+      } catch (err) {
+        setError("Lỗi khi tải dữ liệu bác sĩ.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchDoctor();
+    }
+  }, [id]);
 
   const handleChange =
     (field: string) =>
@@ -30,8 +77,25 @@ const DoctorInfor: React.FC = () => {
         HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
       >
     ) => {
-      setDoctorData((prevData) => ({ ...prevData, [field]: e.target.value }));
+      setDoctor((prevData) => ({ ...prevData, [field]: e.target.value }));
     };
+  const calculateAge = (dob: string): number => {
+    const birthDate = new Date(dob);
+    const today = new Date();
+
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    // Nếu chưa đến tháng sinh hoặc ngày sinh trong năm nay thì trừ đi 1
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+
+    return age;
+  };
 
   const [isChangeDoctorInfor, setIsChangeDoctorInfor] = useState(false);
   const [isChangePassword, setIsChangePassword] = useState(false);
@@ -136,18 +200,23 @@ const DoctorInfor: React.FC = () => {
           <h3 className="text-xl font-semibold">Thông tin chuyên ngành</h3>
           <div className="grid gap-4 mb-4 sm:grid-cols-2 my-4">
             {[
-              { id: "beginworkday", label: "Thời điểm vào nghề", type: "date" },
-              { id: "address", label: "Địa chỉ phòng khám", type: "text" },
-              { id: "degree", label: "Học vấn", type: "text" },
-              { id: "specialty", label: "Chuyên khoa", type: "text" },
+              {
+                id: "ngay_vao_nghe",
+                label: "Thời điểm vào nghề",
+                type: "date",
+              },
+              { id: "dia_chi_pk", label: "Địa chỉ phòng khám", type: "text" },
+              { id: "trinh_do_hoc_van", label: "Học vấn", type: "text" },
+              { id: "chuyen_khoa", label: "Chuyên khoa", type: "text" },
             ].map((input) => (
               <div key={input.id}>
                 <TextInput
                   label={input.label}
                   id={input.id}
                   type={input.type}
-                  value={doctorData[input.id as keyof typeof doctorData] || ""}
+                  value={String(doctor[input.id as keyof typeof doctor] ?? "")}
                   onChange={(e) => handleChange(input.id)(e)}
+                  disabled={true}
                 />
               </div>
             ))}
@@ -157,8 +226,9 @@ const DoctorInfor: React.FC = () => {
             <TextAreaInput
               label="Mô tả"
               id="description"
-              value={doctorData.description}
+              value={doctor.mo_ta}
               onChange={handleChange("description")}
+              disabled={true}
             />
           </div>
 
@@ -189,14 +259,20 @@ const DoctorInfor: React.FC = () => {
               alt="Doctor Avatar"
               className="w-30 h-30 rounded-full mb-4"
             />
-            <p className="text-xl font-semibold">Bác sĩ Nguyễn Văn A (5151)</p>
-            <p className="text-gray-600">21 tuổi, Nam</p>
+            <p className="text-xl font-semibold">
+              Bác sĩ {doctor.Nguoi_dung.ho_va_ten}
+            </p>
+            <p className="text-xl font-semibold">({doctor.ma_bac_si})</p>
+            <p className="text-gray-600">
+              {calculateAge(doctor.Nguoi_dung.ngay_sinh)} tuổi,{" "}
+              {doctor.Nguoi_dung.gioi_tinh}
+            </p>
           </div>
 
           <hr className="mt-10 mb-3" />
           <div className="ml-5">
             {[
-              { label: "Email", value: "tantaivo2003@gmail.com" },
+              { label: "Email", value: doctor.Nguoi_dung.email },
               { label: "SĐT", value: "0364823693" },
               { label: "Ngày sinh", value: "27-01-2003" },
               { label: "Địa chỉ", value: "271/1 P1 Mỹ Tho, Tiền Giang" },
@@ -210,13 +286,11 @@ const DoctorInfor: React.FC = () => {
           </div>
         </div>
       </div>
-      <div>
-        <ChangeDoctorInforModal
-          isOpen={isChangeDoctorInfor}
-          setIsOpen={toggleChangeDoctorInfor}
-          id={5}
-        />
-      </div>
+      <ChangeDoctorInforModal
+        isOpen={isChangeDoctorInfor}
+        setIsOpen={toggleChangeDoctorInfor}
+        id={5}
+      />
 
       <ChangePasswordModal
         isOpen={isChangePassword}
