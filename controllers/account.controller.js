@@ -22,3 +22,13 @@ exports.toggleActive = async (req, res) => {
         res.status(400).json({ message: 'Thay đổi trạng thái thất bại!' });
     }
 }
+
+exports.changePasswordFromAdmin = async (req, res) => {
+    const { username, newPassword } = req.body;
+    let result = await accountService.changePasswordFromAdmin(username, newPassword);
+    if (result) {
+        res.status(200).json({ message: 'Đổi mật khẩu thành công!' });
+    } else {
+        res.status(400).json({ message: 'Đổi mật khẩu thất bại!' });
+    }
+}

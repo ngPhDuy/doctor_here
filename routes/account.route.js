@@ -75,6 +75,31 @@ router.post('/change_password', accountController.changePassword);
  *                   type: string
  *                   example: "Thay đổi trạng thái thất bại!"
  */
-
 router.post('/toggle_active', accountController.toggleActive);
+/**
+ * @swagger
+ * /api/account/change_password_from_admin:
+ *   post:
+ *     summary: Đổi mật khẩu tài khoản từ admin
+ *     tags: [Account]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 example: "user123"
+ *               newPassword:
+ *                 type: string
+ *                 example: "newPassword123"
+ *     responses:
+ *       200:
+ *         description: Đổi mật khẩu thành công
+ *       400:
+ *         description: Đổi mật khẩu thất bại
+ */
+router.post('/change_password_from_admin', accountController.changePasswordFromAdmin);
 module.exports = router;

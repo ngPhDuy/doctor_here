@@ -78,10 +78,103 @@ const patientController = require('../controllers/patient.controller');
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Patient'
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     description: ID của bệnh nhân
+ *                   cccd:
+ *                     type: string
+ *                     description: Số căn cước công dân của bệnh nhân
+ *                   dan_toc:
+ *                     type: string
+ *                     description: Dân tộc của bệnh nhân
+ *                   nhom_mau:
+ *                     type: string
+ *                     description: Nhóm máu của bệnh nhân
+ *                   tien_su_benh:
+ *                     type: string
+ *                     description: Tiền sử bệnh của bệnh nhân
+ *                   quoc_tich:
+ *                     type: string
+ *                     description: Quốc tịch của bệnh nhân
+ *                   dia_chi:
+ *                     type: string
+ *                     description: Địa chỉ của bệnh nhân
+ *                   ma_benh_nhan:
+ *                     type: string
+ *                     description: Mã bệnh nhân
+ *                   Nguoi_dung:
+ *                     type: object
+ *                     properties:
+ *                       ten_dang_nhap:
+ *                         type: string
+ *                         description: Tên đăng nhập của bệnh nhân
+ *                       email:
+ *                         type: string
+ *                         format: email
+ *                         description: Email của bệnh nhân
+ *                       sdt:
+ *                         type: string
+ *                         description: Số điện thoại của bệnh nhân
+ *                       ngay_sinh:
+ *                         type: string
+ *                         format: date
+ *                         description: Ngày sinh của bệnh nhân
+ *                       gioi_tinh:
+ *                         type: string
+ *                         description: Giới tính của bệnh nhân
+ *                       phan_loai:
+ *                         type: string
+ *                         description: Phân loại người dùng (bn - bệnh nhân)
+ *                       ho_va_ten:
+ *                         type: string
+ *                         description: Họ và tên bệnh nhân
+ *                       Tai_khoan:
+ *                         type: object
+ *                         properties:
+ *                           ten_dang_nhap:
+ *                             type: string
+ *                             description: Tên đăng nhập của tài khoản
+ *                           active:
+ *                             type: boolean
+ *                             description: Trạng thái hoạt động của tài khoản
+ *                           thoi_diem_mo_tk:
+ *                             type: string
+ *                             format: date-time
+ *                             description: Thời điểm mở tài khoản
+ *         examples:
+ *           application/json:
+ *             [
+ *               {
+ *                 "id": 6,
+ *                 "cccd": "0123456706",
+ *                 "dan_toc": "Tày",
+ *                 "nhom_mau": "AB",
+ *                 "tien_su_benh": "Tiền sử tiểu đường tuýp 2",
+ *                 "quoc_tich": "Việt Nam",
+ *                 "dia_chi": "Số 20, Đường B, Quận 2, TP HCM",
+ *                 "ma_benh_nhan": "BN0000006",
+ *                 "Nguoi_dung": {
+ *                   "ten_dang_nhap": "nguoidung1",
+ *                   "email": "nguoidung1@example.com",
+ *                   "sdt": "0123456888",
+ *                   "ngay_sinh": "1995-01-15",
+ *                   "gioi_tinh": "Nữ",
+ *                   "phan_loai": "bn",
+ *                   "ho_va_ten": "Nguyễn Thị Hiền",
+ *                   "Tai_khoan": {
+ *                     "ten_dang_nhap": "nguoidung1",
+ *                     "active": true,
+ *                     "thoi_diem_mo_tk": "2025-02-17T08:10:02.410Z"
+ *                   }
+ *                 }
+ *               }
+ *             ]
  *       500:
  *         description: Lỗi từ server khi xử lý yêu cầu.
  */
+
 router.get('/', patientController.getAllPatient);
 /**
  * @swagger
@@ -159,9 +252,6 @@ router.get('/', patientController.getAllPatient);
  *                       type: object
  *                       properties:
  *                         ten_dang_nhap:
- *                           type: string
- *                           example: "nguoidung1"
- *                         mat_khau:
  *                           type: string
  *                           example: "nguoidung1"
  *                         active:

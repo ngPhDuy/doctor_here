@@ -106,6 +106,17 @@ exports.handleRequest = async (requestID, approved, adminID) => {
 
         if (approved) {
             await request.update({ trang_thai: 'Đã duyệt' });
+
+            //Cập nhật các thông tin mới vào bảng Doctor
+            const doctor = await Doctor.findOne({
+                where: { ma_bac_si: request.ma_bac_si }
+            });
+
+            await doctor.update({
+                dia_chi_pk: request.dia_chi_pk_moi,
+                trinh_do_hoc_van: request.trinh_do_hoc_van_moi,
+                chuyen_khoa: request.chuyen_khoa_moi
+            });
         } else {
             await request.update({ trang_thai: 'Từ chối' });
         }

@@ -69,7 +69,69 @@ const doctorController = require('../controllers/doctor.controller');
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Doctor'
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     description: ID của bác sĩ
+ *                   ngay_vao_nghe:
+ *                     type: string
+ *                     format: date
+ *                     description: Ngày bác sĩ bắt đầu hành nghề
+ *                   trinh_do_hoc_van:
+ *                     type: string
+ *                     description: Trình độ học vấn của bác sĩ
+ *                   mo_ta:
+ *                     type: string
+ *                     description: Mô tả ngắn gọn về bác sĩ
+ *                   dia_chi_pk:
+ *                     type: string
+ *                     description: Địa chỉ phòng khám
+ *                   ma_bac_si:
+ *                     type: string
+ *                     description: Mã bác sĩ
+ *                   chuyen_khoa:
+ *                     type: string
+ *                     description: Chuyên khoa của bác sĩ
+ *                   Nguoi_dung:
+ *                     type: object
+ *                     properties:
+ *                       ten_dang_nhap:
+ *                         type: string
+ *                         description: Tên đăng nhập của bác sĩ
+ *                       email:
+ *                         type: string
+ *                         format: email
+ *                         description: Email của bác sĩ
+ *                       sdt:
+ *                         type: string
+ *                         description: Số điện thoại của bác sĩ
+ *                       ngay_sinh:
+ *                         type: string
+ *                         format: date
+ *                         description: Ngày sinh của bác sĩ
+ *                       gioi_tinh:
+ *                         type: string
+ *                         description: Giới tính của bác sĩ
+ *                       phan_loai:
+ *                         type: string
+ *                         description: Phân loại người dùng (bs - bác sĩ)
+ *                       ho_va_ten:
+ *                         type: string
+ *                         description: Họ và tên bác sĩ
+ *                       Tai_khoan:
+ *                         type: object
+ *                         properties:
+ *                           ten_dang_nhap:
+ *                             type: string
+ *                             description: Tên đăng nhập của tài khoản
+ *                           active:
+ *                             type: boolean
+ *                             description: Trạng thái hoạt động của tài khoản
+ *                           thoi_diem_mo_tk:
+ *                             type: string
+ *                             format: date-time
+ *                             description: Thời điểm mở tài khoản
  *       500:
  *         description: Lỗi từ server khi xử lý yêu cầu.
  */
@@ -148,9 +210,6 @@ router.get('/', doctorController.getAllDoctor);
  *                       type: object
  *                       properties:
  *                         ten_dang_nhap:
- *                           type: string
- *                           example: "bacsi1"
- *                         mat_khau:
  *                           type: string
  *                           example: "bacsi1"
  *                         active:

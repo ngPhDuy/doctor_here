@@ -7,6 +7,13 @@ exports.getAllPatient = async () => {
             as: 'Nguoi_dung',
             attributes: {
                 exclude: ['id']
+            },
+            include: {
+                model: Account,
+                as: 'Tai_khoan',
+                attributes: {
+                    exclude: ['mat_khau']
+                }
             }
         }
     });
@@ -28,7 +35,7 @@ exports.getPatientInfo = async (patientID) => {
                 model: Account,
                 as: 'Tai_khoan',
                 attributes: {
-                    exclude: []
+                    exclude: ['mat_khau']
                 }
             }
         }

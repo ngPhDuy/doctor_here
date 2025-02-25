@@ -1,4 +1,5 @@
 const {Account} = require('../models');
+const bcrypt = require('bcrypt');
 
 exports.login = async (username, password) => {
     const account = await Account.findOne({
@@ -9,8 +10,9 @@ exports.login = async (username, password) => {
         throw new Error('Tài khoản không tồn tại');
     }
 
-    if (account.mat_khau !== password) {
-        throw new Error('Mật khẩu không đúng');
+    const match = await bcrypt.compare(password, account.mat_khau);
+    if (!match) {
+        throw new Error('Sai mật khẩu');
     }
 
     if (account.active === false) {

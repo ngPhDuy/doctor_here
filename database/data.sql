@@ -134,3 +134,21 @@ CALL insert_weekly_work(
     500000                  -- Giá thành
 );
 
+call create_update_request('trình độ mới 1', 'địa chỉ mới 1', 'chuyên khoa mới 1', 'BS0000001')
+call create_update_request('trình độ mới 2', 'địa chỉ mới 2', 'chuyên khoa mới 2', 'BS0000001')
+call create_update_request('trình độ mới 3', 'địa chỉ mới 3', 'chuyên khoa mới 3', 'BS0000001')
+call create_update_request('trình độ mới 4', 'địa chỉ mới 4', 'chuyên khoa mới 4', 'BS0000001')
+call create_update_request('trình độ mới 5', 'địa chỉ mới 5', 'chuyên khoa mới 5', 'BS0000001')
+call create_update_request('trình độ mới 6', 'địa chỉ mới 6', 'chuyên khoa mới 6', 'BS0000001')
+call create_update_request('trình độ mới 7', 'địa chỉ mới 7', 'chuyên khoa mới 7', 'BS0000001')
+call create_update_request('trình độ mới 8', 'địa chỉ mới 8', 'chuyên khoa mới 8', 'BS0000001')
+call create_update_request('trình độ mới 9', 'địa chỉ mới 9', 'chuyên khoa mới 9', 'BS0000001')
+call create_update_request('trình độ mới 10', 'địa chỉ mới 10', 'chuyên khoa mới 10', 'BS0000001')
+
+call create_update_request('trình độ mới 1', 'địa chỉ mới 1', 'chuyên khoa mới 1', 'BS0000002')
+call create_update_request('trình độ mới 2', 'địa chỉ mới 2', 'chuyên khoa mới 2', 'BS0000002')
+call create_update_request('trình độ mới 3', 'địa chỉ mới 3', 'chuyên khoa mới 3', 'BS0000002')
+
+call create_update_request('trình độ mới 1', 'địa chỉ mới 1', 'chuyên khoa mới 1', 'BS0000003')
+call create_update_request('trình độ mới 2', 'địa chỉ mới 2', 'chuyên khoa mới 2', 'BS0000003')
+call create_update_request('trình độ mới 3', 'địa chỉ mới 3', 'chuyên khoa mới 3', 'BS0000003')
