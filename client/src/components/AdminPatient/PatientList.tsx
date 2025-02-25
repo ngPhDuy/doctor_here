@@ -19,6 +19,11 @@ interface Patient {
     ngay_sinh: string;
     gioi_tinh: string;
     phan_loai: string;
+    Tai_khoan: {
+      ten_dang_nhap: string;
+      active: boolean;
+      thoi_diem_mo_tk: string;
+    };
   };
 }
 
@@ -79,7 +84,7 @@ const PatientListComponent: React.FC = () => {
             <th className="px-4 py-2">Tên BN</th>
             <th className="px-4 py-2">Ngày tham gia</th>
             <th className="px-4 py-2">SĐT</th>
-            {/* <th className="px-4 py-2">Trạng thái</th> */}
+            <th className="px-4 py-2">Trạng thái</th>
           </tr>
         </thead>
         <tbody>
@@ -96,15 +101,15 @@ const PatientListComponent: React.FC = () => {
               </td>
               <td className="px-4 py-4">{Patient.Nguoi_dung.ngay_sinh}</td>
               <td className="px-4 py-4">{Patient.Nguoi_dung.sdt}</td>
-              {/* <td
-                className={`px-4 py-4 ${
-                  Patient.status === "Active"
-                    ? "text-green-500"
-                    : "text-red-500"
+              <td
+                className={`px-4 py-2 rounded-lg ${
+                  Patient.Nguoi_dung.Tai_khoan.active
+                    ? "text-green-600"
+                    : "text-red-600"
                 }`}
               >
-                {Patient.status}
-              </td> */}
+                {Patient.Nguoi_dung.Tai_khoan.active ? "Kích hoạt" : "Bị khóa"}
+              </td>
             </tr>
           ))}
         </tbody>
