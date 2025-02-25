@@ -7,6 +7,7 @@ type TextInputProps = {
   type?: string;
   value: string;
   disabled?: boolean;
+  required?: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
@@ -16,6 +17,7 @@ export const TextInput: React.FC<TextInputProps> = ({
   type = "text",
   value,
   disabled = false,
+  required = false,
   onChange,
 }) => (
   <div>
@@ -30,6 +32,7 @@ export const TextInput: React.FC<TextInputProps> = ({
       id={id}
       value={value}
       disabled={disabled}
+      required={required}
       onChange={onChange}
       className={
         `block w-full p-2.5 text-sm text-blueText border border-gray-300 rounded-lg ` +
@@ -45,6 +48,7 @@ type PasswordInputProps = {
   id: string;
   value: string;
   disabled?: boolean;
+  required?: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
@@ -53,6 +57,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
   id,
   value,
   disabled = false,
+  required = false,
   onChange,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -70,6 +75,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
         id={id}
         value={value}
         disabled={disabled}
+        required={required}
         onChange={onChange}
         className={
           `block w-full p-2.5 text-sm text-blueText border border-gray-300 rounded-lg ` +
@@ -94,6 +100,7 @@ type TextAreaInputProps = {
   id: string;
   value: string;
   disabled?: boolean;
+  required?: boolean;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
 };
 
@@ -102,6 +109,7 @@ export const TextAreaInput: React.FC<TextAreaInputProps> = ({
   id,
   value,
   disabled = false,
+  required = false,
   onChange,
 }) => (
   <div>
@@ -115,6 +123,7 @@ export const TextAreaInput: React.FC<TextAreaInputProps> = ({
       id={id}
       value={value}
       disabled={disabled}
+      required={required}
       onChange={onChange}
       className={
         `block w-full p-2.5 text-sm text-blueText border border-gray-300 rounded-lg ` +
@@ -131,6 +140,7 @@ type CheckboxInputProps = {
   id: string;
   checked: boolean;
   disabled?: boolean;
+  required?: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
@@ -139,6 +149,7 @@ export const CheckboxInput: React.FC<CheckboxInputProps> = ({
   id,
   checked,
   disabled = false,
+  required = false,
   onChange,
 }) => (
   <div className="flex items-center">
@@ -147,6 +158,7 @@ export const CheckboxInput: React.FC<CheckboxInputProps> = ({
       id={id}
       checked={checked}
       disabled={disabled}
+      required={required}
       onChange={onChange}
       className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
     />
@@ -167,6 +179,7 @@ type RadioGroupInputProps = {
   name: string;
   selectedValue: string;
   disabled?: boolean;
+  required?: boolean;
   onChange: (value: string) => void;
   options: RadioOption[];
 };
@@ -176,6 +189,7 @@ export const RadioGroupInput: React.FC<RadioGroupInputProps> = ({
   name,
   selectedValue,
   disabled = false,
+  required = false,
   onChange,
   options,
 }) => (
@@ -189,6 +203,7 @@ export const RadioGroupInput: React.FC<RadioGroupInputProps> = ({
           value={option.value}
           checked={selectedValue === option.value}
           disabled={disabled}
+          required={required}
           onChange={() => onChange(option.value)}
           className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500"
         />
@@ -204,6 +219,7 @@ type SelectInputProps = {
   id: string;
   value: string;
   disabled?: boolean;
+  required?: boolean;
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   options: { value: string; label: string }[];
 };
@@ -214,6 +230,7 @@ export const SelectInput: React.FC<SelectInputProps> = ({
   value,
   disabled = false,
   onChange,
+  required = false,
   options,
 }) => (
   <div>
@@ -227,6 +244,7 @@ export const SelectInput: React.FC<SelectInputProps> = ({
       id={id}
       value={value}
       disabled={disabled}
+      required={required}
       onChange={onChange}
       className={
         `block w-full p-2.5 text-sm text-blueText border border-gray-300 rounded-lg ` +
@@ -247,6 +265,7 @@ type FileInputProps = {
   label: string;
   id: string;
   disabled?: boolean;
+  required?: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
@@ -254,6 +273,7 @@ export const FileInput: React.FC<FileInputProps> = ({
   label,
   id,
   disabled = false,
+  required = false,
   onChange,
 }) => (
   <div>
@@ -267,6 +287,7 @@ export const FileInput: React.FC<FileInputProps> = ({
       type="file"
       id={id}
       disabled={disabled}
+      required={required}
       onChange={onChange}
       className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50"
     />

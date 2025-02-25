@@ -5,48 +5,104 @@ import {
   TextAreaInput,
 } from "../Input/InputComponents";
 
-type ChangeDoctorInforModalProps = {
-  isOpen: boolean;
-  setIsOpen: () => void;
+interface Doctor {
   id: number;
-};
+  ngay_vao_nghe: string;
+  trinh_do_hoc_van: string;
+  mo_ta: string;
+  dia_chi_pk: string;
+  ma_bac_si: string;
+  chuyen_khoa: string;
 
-const Doctor = {
-  username: "",
-  email: "",
-  password: "",
-  fullName: "",
-  birthday: "",
-  beginWorkDay: "",
-  gender: "",
-  phoneNumber: "",
-  address: "",
-  degree: "",
-  specialty: "",
-  description: "",
+  // Thông tin từ Nguoi_dung
+  nguoi_dung_ten_dang_nhap: string;
+  nguoi_dung_email: string;
+  nguoi_dung_sdt: string;
+  nguoi_dung_ngay_sinh: string;
+  nguoi_dung_gioi_tinh: string;
+  nguoi_dung_phan_loai: string;
+  nguoi_dung_ho_va_ten: string;
 
-  joinDate: "",
-  status: "",
+  // Thông tin từ Tai_khoan
+  tai_khoan_ten_dang_nhap: string;
+  tai_khoan_active: boolean;
+  tai_khoan_thoi_diem_mo_tk: string;
+}
+
+type ChangeDoctorInforModalProps = {
+  isOpen: boolean; // Trạng thái mở/đóng của modal
+  setIsOpen: () => void; // Hàm để thay đổi trạng thái modal
+  doctor: Doctor; // Dữ liệu bác sĩ, có thể undefined nếu chưa fetch xong
+  handleChange: (
+    field: string
+  ) => (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => void; // Hàm cập nhật dữ liệu bác sĩ
 };
 
 const ChangeDoctorInforModal: React.FC<ChangeDoctorInforModalProps> = ({
   isOpen,
   setIsOpen,
+  doctor,
+  handleChange,
 }) => {
-  const [doctorData, setDoctorData] = useState(Doctor);
-
-  const handleChange =
-    (field: string) =>
-    (
-      e: React.ChangeEvent<
-        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-      >
-    ) => {
-      setDoctorData((prevData) => ({ ...prevData, [field]: e.target.value }));
-    };
-
   const [participateTime, setParticipateTime] = useState("");
-  const [role, setRole] = useState("");
+
+  const updateDoctorInfo = async (doctorData: {
+    doctorID: string;
+    email: string;
+    fullName: string;
+    phoneNumber: string;
+    birthDay: string;
+    gender: string;
+    description: string;
+  }) => {
+    try {
+      const response = await fetch(
+        "http://localhost:3001/api/doctor/changeInfo",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(doctorData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Cập nhật thất bại");
+      }
+
+      const data = await response.json();
+      console.log("Thông tin cập nhật thành công:", data);
+      return data;
+    } catch (error) {
+      console.error("Lỗi khi cập nhật bác sĩ:", error);
+      throw error;
+    }
+  };
+  const handleUpdateDoctor = async () => {
+    try {
+      const updatedData = {
+        doctorID: doctor?.ma_bac_si,
+        email: doctor.nguoi_dung_email,
+        fullName: doctor.nguoi_dung_ho_va_ten,
+        phoneNumber: doctor.nguoi_dung_sdt,
+        birthDay: doctor.nguoi_dung_ngay_sinh,
+        gender: doctor.nguoi_dung_gioi_tinh,
+        description: doctor.mo_ta,
+      };
+
+      const result = await updateDoctorInfo(updatedData);
+      console.log("Kết quả cập nhật:", result);
+      alert("Cập nhật thành công!");
+    } catch (error) {
+      alert("Cập nhật thất bại, vui lòng thử lại!");
+    }
+    window.location.reload();
+  };
 
   if (!isOpen) return null;
 
@@ -81,43 +137,43 @@ const ChangeDoctorInforModal: React.FC<ChangeDoctorInforModalProps> = ({
         <div className="grid gap-4 mb-4 sm:grid-cols-2">
           <TextInput
             label="Email"
-            id="email"
-            value={doctorData.email}
-            onChange={handleChange("email")}
+            id="nguoi_dung_email"
+            value={doctor.nguoi_dung_email}
+            onChange={handleChange("nguoi_dung_email")}
           />
           <TextInput
             label="Tên đăng nhập"
-            id="username"
-            value={doctorData.username}
+            id="nguoi_dung_ten_dang_nhap"
+            value={doctor.nguoi_dung_ten_dang_nhap}
             disabled={true}
-            onChange={handleChange("username")}
+            onChange={handleChange("nguoi_dung_ten_dang_nhap")}
           />
 
           <TextInput
             label="SĐT"
-            id="phoneNumber"
-            value={doctorData.phoneNumber}
-            onChange={handleChange("phoneNumber")}
+            id="nguoi_dung_sdt"
+            value={doctor.nguoi_dung_sdt}
+            onChange={handleChange("nguoi_dung_sdt")}
           />
           <TextInput
             label="Họ và tên"
-            id="fullName"
-            value={doctorData.fullName}
+            id="nguoi_dung_ho_va_ten"
+            value={doctor.nguoi_dung_ho_va_ten}
             disabled={true}
-            onChange={handleChange("fullName")}
+            onChange={handleChange("nguoi_dung_ho_va_ten")}
           />
           <TextInput
             label="Ngày sinh"
-            id="birthday"
+            id="nguoi_dung_ngay_sinh"
             type="date"
-            value={doctorData.birthday}
-            onChange={handleChange("birthday")}
+            value={doctor.nguoi_dung_ngay_sinh}
+            onChange={handleChange("nguoi_dung_ngay_sinh")}
           />
           <SelectInput
             label="Giới tính"
-            id="gender"
-            value={doctorData.gender}
-            onChange={handleChange("gender")}
+            id="nguoi_dung_gioi_tinh"
+            value={doctor.nguoi_dung_gioi_tinh}
+            onChange={handleChange("nguoi_dung_gioi_tinh")}
             options={[
               { value: "Male", label: "Nam" },
               { value: "Female", label: "Nữ" },
@@ -126,54 +182,54 @@ const ChangeDoctorInforModal: React.FC<ChangeDoctorInforModalProps> = ({
           />
           <TextInput
             label="Thời điểm vào nghề"
-            id="beginWorkDay"
+            id="ngay_vao_nghe"
             type="date"
-            value={doctorData.beginWorkDay}
-            onChange={handleChange("beginWorkDay")}
+            value={doctor.ngay_vao_nghe}
+            onChange={handleChange("ngay_vao_nghe")}
           />
           <TextInput
             label="Chuyên khoa"
-            id="specialty"
-            value={doctorData.specialty}
-            onChange={handleChange("specialty")}
+            id="chuyen_khoa"
+            value={doctor.chuyen_khoa}
+            onChange={handleChange("chuyen_khoa")}
           />
           <TextInput
             label="Học vấn"
-            id="degree"
-            value={doctorData.degree}
-            onChange={handleChange("degree")}
+            id="trinh_do_hoc_van"
+            value={doctor.trinh_do_hoc_van}
+            onChange={handleChange("trinh_do_hoc_van")}
           />
         </div>
         <div className="grid gap-4 mb-4">
           <TextInput
             label="Địa chỉ phòng khám"
-            id="address"
-            value={doctorData.address}
-            onChange={handleChange("address")}
+            id="dia_chi_pk"
+            value={doctor.dia_chi_pk}
+            onChange={handleChange("dia_chi_pk")}
           />
           <TextAreaInput
             label="Mô tả"
-            id="description"
-            value={doctorData.description}
-            onChange={handleChange("description")}
+            id="mo_ta"
+            value={doctor.mo_ta}
+            onChange={handleChange("mo_ta")}
           />
         </div>
         <div className="grid gap-4 mb-4 sm:grid-cols-4">
           <TextInput
             label="Ngày gia nhập"
-            id="joinDate"
-            value={"27 / 01 / 2025"}
+            id="tai_khoan_thoi_diem_mo_tk"
+            value={doctor.tai_khoan_thoi_diem_mo_tk}
             disabled={true}
-            onChange={handleChange("joinDate")}
+            onChange={handleChange("tai_khoan_thoi_diem_mo_tk")}
           />
           <SelectInput
             label="Trạng thái"
-            id="status"
-            value={doctorData.status}
-            onChange={handleChange("status")}
+            id="tai_khoan_active"
+            value={String(doctor.tai_khoan_active)}
+            onChange={handleChange("tai_khoan_active")}
             options={[
-              { value: "Active", label: "Active" },
-              { value: "Inactive", label: "Inactive" },
+              { value: "True", label: "Active" },
+              { value: "False", label: "Inactive" },
             ]}
           />
           <div>
@@ -213,6 +269,7 @@ const ChangeDoctorInforModal: React.FC<ChangeDoctorInforModalProps> = ({
           <button
             type="button"
             onClick={() => {
+              handleUpdateDoctor();
               setIsOpen();
             }}
             className="inline-flex items-center px-5 py-2.5 ml-4 text-sm font-medium text-center border rounded-lg text-white bg-blueButton hover:bg-blueButtonHover"

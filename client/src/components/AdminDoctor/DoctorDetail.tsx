@@ -6,69 +6,98 @@ import { TextInput, TextAreaInput } from "../Input/InputComponents";
 
 interface Doctor {
   id: number;
-  ma_bac_si: string;
   ngay_vao_nghe: string;
-  chuyen_khoa: string;
-  dia_chi_pk: string;
-  mo_ta: string;
   trinh_do_hoc_van: string;
-  Nguoi_dung: {
-    ho_va_ten: string;
-    ten_dang_nhap: string;
-    email: string;
-    sdt: string;
-    ngay_sinh: string;
-    gioi_tinh: string;
-    phan_loai: string;
-  };
+  mo_ta: string;
+  dia_chi_pk: string;
+  ma_bac_si: string;
+  chuyen_khoa: string;
+
+  // Thông tin từ Nguoi_dung
+  nguoi_dung_ten_dang_nhap: string;
+  nguoi_dung_email: string;
+  nguoi_dung_sdt: string;
+  nguoi_dung_ngay_sinh: string;
+  nguoi_dung_gioi_tinh: string;
+  nguoi_dung_phan_loai: string;
+  nguoi_dung_ho_va_ten: string;
+
+  // Thông tin từ Tai_khoan
+  tai_khoan_ten_dang_nhap: string;
+  tai_khoan_active: boolean;
+  tai_khoan_thoi_diem_mo_tk: string;
 }
 
 const defaultDoctor: Doctor = {
   id: 0,
-  ma_bac_si: "",
   ngay_vao_nghe: "",
-  chuyen_khoa: "",
-  dia_chi_pk: "",
-  mo_ta: "",
   trinh_do_hoc_van: "",
-  Nguoi_dung: {
-    ho_va_ten: "",
-    ten_dang_nhap: "",
-    email: "",
-    sdt: "",
-    ngay_sinh: "",
-    gioi_tinh: "",
-    phan_loai: "",
-  },
+  mo_ta: "",
+  dia_chi_pk: "",
+  ma_bac_si: "",
+  chuyen_khoa: "",
+
+  nguoi_dung_ten_dang_nhap: "",
+  nguoi_dung_email: "",
+  nguoi_dung_sdt: "",
+  nguoi_dung_ngay_sinh: "",
+  nguoi_dung_gioi_tinh: "",
+  nguoi_dung_phan_loai: "",
+  nguoi_dung_ho_va_ten: "",
+
+  tai_khoan_ten_dang_nhap: "",
+  tai_khoan_active: false,
+  tai_khoan_thoi_diem_mo_tk: "",
 };
 
 const DoctorInfor: React.FC = () => {
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
   const [doctor, setDoctor] = useState<Doctor>(defaultDoctor);
+  const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const fetchDoctor = async () => {
-      try {
-        const response = await fetch(`http://localhost:3001/api/doctor/${id}`);
-        if (!response.ok) {
-          throw new Error("Không thể tải dữ liệu bác sĩ.");
-        }
-        const data = await response.json();
-        setDoctor(data);
-      } catch (err) {
-        setError("Lỗi khi tải dữ liệu bác sĩ.");
-      } finally {
-        setLoading(false);
+  const fetchDoctor = async () => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/doctor/${id}`);
+      if (!response.ok) {
+        throw new Error("Không thể tải danh sách bác sĩ.");
       }
-    };
+      const data = await response.json();
 
-    if (id) {
-      fetchDoctor();
+      // Chuyển đổi dữ liệu từ nested object sang flat object
+      const flatDoctor: Doctor = {
+        id: data.id,
+        ngay_vao_nghe: data.ngay_vao_nghe,
+        trinh_do_hoc_van: data.trinh_do_hoc_van,
+        mo_ta: data.mo_ta,
+        dia_chi_pk: data.dia_chi_pk,
+        ma_bac_si: data.ma_bac_si,
+        chuyen_khoa: data.chuyen_khoa,
+
+        nguoi_dung_ten_dang_nhap: data.Nguoi_dung.ten_dang_nhap,
+        nguoi_dung_email: data.Nguoi_dung.email,
+        nguoi_dung_sdt: data.Nguoi_dung.sdt,
+        nguoi_dung_ngay_sinh: data.Nguoi_dung.ngay_sinh,
+        nguoi_dung_gioi_tinh: data.Nguoi_dung.gioi_tinh,
+        nguoi_dung_phan_loai: data.Nguoi_dung.phan_loai,
+        nguoi_dung_ho_va_ten: data.Nguoi_dung.ho_va_ten,
+
+        tai_khoan_ten_dang_nhap: data.Nguoi_dung.Tai_khoan.ten_dang_nhap,
+        tai_khoan_active: data.Nguoi_dung.Tai_khoan.active,
+        tai_khoan_thoi_diem_mo_tk: data.Nguoi_dung.Tai_khoan.thoi_diem_mo_tk,
+      };
+
+      setDoctor(flatDoctor);
+    } catch (err) {
+      setError("Lỗi khi tải danh sách bác sĩ.");
+    } finally {
+      setLoading(false);
     }
-  }, [id]);
+  };
+  useEffect(() => {
+    fetchDoctor();
+  }, []);
 
   const handleChange =
     (field: string) =>
@@ -77,8 +106,12 @@ const DoctorInfor: React.FC = () => {
         HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
       >
     ) => {
-      setDoctor((prevData) => ({ ...prevData, [field]: e.target.value }));
+      setDoctor((prevData) => ({
+        ...prevData,
+        [field]: e.target.value,
+      }));
     };
+
   const calculateAge = (dob: string): number => {
     const birthDate = new Date(dob);
     const today = new Date();
@@ -102,10 +135,33 @@ const DoctorInfor: React.FC = () => {
 
   const toggleChangeDoctorInfor = () => {
     setIsChangeDoctorInfor(!isChangeDoctorInfor);
+    fetchDoctor();
   };
 
   const toggleChangePassword = () => {
     setIsChangePassword(!isChangePassword);
+  };
+  const toggleAccountStatus = async (username: string) => {
+    try {
+      const response = await fetch(
+        "http://localhost:3001/api/account/toggle_active",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username }),
+        }
+      );
+
+      if (!response.ok)
+        throw new Error("Không thể thay đổi trạng thái tài khoản.");
+      alert("Thay đổi trạng thái tài khoản thành công");
+    } catch (error) {
+      console.error(error);
+      alert("Thay đổi trạng thái tài khoản thất bại!");
+    }
+    window.location.reload();
   };
 
   return (
@@ -139,9 +195,6 @@ const DoctorInfor: React.FC = () => {
         <div className="p-3 mr-5 text-blueTitle cursor-pointer">
           <p className="font-semibold text-xl mb-2">Thông tin chi tiết</p>
           <hr className="border-t-2 border-blueTitle" />
-        </div>
-        <div className="p-3 cursor-pointer">
-          <p className="font-semibold text-xl mb-2">Yêu cầu cập nhật</p>
         </div>
       </div>
 
@@ -245,8 +298,17 @@ const DoctorInfor: React.FC = () => {
             >
               Đặt lại mật khẩu
             </button>
-            <button className="px-4 py-2 bg-redButton hover:bg-redButtonHover text-white rounded-lg">
-              Khóa tài khoản
+            <button
+              onClick={() =>
+                toggleAccountStatus(doctor.nguoi_dung_ten_dang_nhap)
+              }
+              className={`px-4 py-2 text-white rounded-lg ${
+                doctor.tai_khoan_active
+                  ? "bg-red-500 hover:bg-red-600"
+                  : "bg-green-500 hover:bg-green-600"
+              }`}
+            >
+              {doctor.tai_khoan_active ? "Khóa tài khoản" : "Mở khóa tài khoản"}
             </button>
           </div>
         </div>
@@ -260,23 +322,28 @@ const DoctorInfor: React.FC = () => {
               className="w-30 h-30 rounded-full mb-4"
             />
             <p className="text-xl font-semibold">
-              Bác sĩ {doctor.Nguoi_dung.ho_va_ten}
+              Bác sĩ {doctor.nguoi_dung_ho_va_ten}
             </p>
             <p className="text-xl font-semibold">({doctor.ma_bac_si})</p>
             <p className="text-gray-600">
-              {calculateAge(doctor.Nguoi_dung.ngay_sinh)} tuổi,{" "}
-              {doctor.Nguoi_dung.gioi_tinh}
+              {calculateAge(doctor.nguoi_dung_ngay_sinh)} tuổi,{" "}
+              {doctor.nguoi_dung_gioi_tinh}
             </p>
           </div>
 
           <hr className="mt-10 mb-3" />
           <div className="ml-5">
             {[
-              { label: "Email", value: doctor.Nguoi_dung.email },
-              { label: "SĐT", value: "0364823693" },
-              { label: "Ngày sinh", value: "27-01-2003" },
-              { label: "Địa chỉ", value: "271/1 P1 Mỹ Tho, Tiền Giang" },
-              { label: "Mở tài khoản lúc", value: "07:59 07-01-2025" },
+              { label: "Email", value: doctor.nguoi_dung_email },
+              { label: "SĐT", value: doctor.nguoi_dung_sdt },
+              { label: "Ngày sinh", value: doctor.nguoi_dung_ngay_sinh },
+              { label: "Địa chỉ", value: doctor.dia_chi_pk },
+              {
+                label: "Mở tài khoản lúc",
+                value: new Date(
+                  doctor.tai_khoan_thoi_diem_mo_tk
+                ).toLocaleString(),
+              },
             ].map((info) => (
               <div className="mb-3" key={info.label}>
                 <p className="text-lg font-medium">{info.label}</p>
@@ -289,13 +356,14 @@ const DoctorInfor: React.FC = () => {
       <ChangeDoctorInforModal
         isOpen={isChangeDoctorInfor}
         setIsOpen={toggleChangeDoctorInfor}
-        id={5}
+        doctor={doctor}
+        handleChange={handleChange}
       />
 
       <ChangePasswordModal
         isOpen={isChangePassword}
         setIsOpen={toggleChangePassword}
-        id={5}
+        username={doctor.nguoi_dung_ten_dang_nhap}
       />
     </div>
   );

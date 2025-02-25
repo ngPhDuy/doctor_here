@@ -1,23 +1,52 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import ChangePatientPasswordModal from "./ChangePatientPassword";
 import { TextInput, TextAreaInput } from "../Input/InputComponents";
 
-const Patient = {
-  fullName: "",
-  birthday: "",
-  gender: "",
-  phoneNumber: "",
-  address: "",
-  patientCode: "",
-  nation: "",
-  nationality: "",
-  job: "",
+interface Patient {
+  id: number;
+  ma_benh_nhan: string;
+  cccd: string;
+  dan_toc: string;
+  nhom_mau: string;
+  tien_su_benh: string;
+  quoc_tich: string;
+  dia_chi: string;
+  ten_dang_nhap: string;
+  email: string;
+  sdt: string;
+  ngay_sinh: string;
+  gioi_tinh: string;
+  ho_va_ten: string;
+  active: boolean;
+  thoi_diem_mo_tk: string;
+}
+
+const defaultPatient: Patient = {
+  id: 0,
+  ma_benh_nhan: "",
+  cccd: "",
+  dan_toc: "",
+  nhom_mau: "",
+  tien_su_benh: "",
+  quoc_tich: "",
+  dia_chi: "",
+  ten_dang_nhap: "",
+  email: "",
+  sdt: "",
+  ngay_sinh: "",
+  gioi_tinh: "",
+  ho_va_ten: "",
+  active: false,
+  thoi_diem_mo_tk: "",
 };
 
-const PatientInfor: React.FC = () => {
+const PatientDetail: React.FC = () => {
   const navigate = useNavigate();
-  const [patientData, setPatientData] = useState(Patient);
+  const [patient, setPatient] = useState<Patient>(defaultPatient);
+  const { id } = useParams<{ id: string }>();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const handleChange =
     (field: string) =>
@@ -26,7 +55,7 @@ const PatientInfor: React.FC = () => {
         HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
       >
     ) => {
-      setPatientData((prevData) => ({ ...prevData, [field]: e.target.value }));
+      setPatient((prevData) => ({ ...prevData, [field]: e.target.value }));
     };
 
   const [isChangePassword, setIsChangePassword] = useState(false);
@@ -34,11 +63,96 @@ const PatientInfor: React.FC = () => {
     setIsChangePassword(!isChangePassword);
   };
 
+  const fetchPatientById = async (
+    patientID: string
+  ): Promise<Patient | null> => {
+    try {
+      const response = await fetch(
+        `http://localhost:3001/api/patient/detail/${patientID}`
+      );
+      if (!response.ok) throw new Error("Không thể tải thông tin bệnh nhân.");
+
+      const data = await response.json();
+
+      return {
+        id: data.id,
+        ma_benh_nhan: data.ma_benh_nhan,
+        cccd: data.cccd,
+        dan_toc: data.dan_toc,
+        nhom_mau: data.nhom_mau,
+        tien_su_benh: data.tien_su_benh,
+        quoc_tich: data.quoc_tich,
+        dia_chi: data.dia_chi,
+        ten_dang_nhap: data.Nguoi_dung.ten_dang_nhap,
+        email: data.Nguoi_dung.email,
+        sdt: data.Nguoi_dung.sdt,
+        ngay_sinh: data.Nguoi_dung.ngay_sinh,
+        gioi_tinh: data.Nguoi_dung.gioi_tinh,
+        ho_va_ten: data.Nguoi_dung.ho_va_ten,
+        active: data.Nguoi_dung.Tai_khoan.active,
+        thoi_diem_mo_tk: data.Nguoi_dung.Tai_khoan.thoi_diem_mo_tk,
+      };
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+  useEffect(() => {
+    if (id) {
+      fetchPatientById(id).then((data) => {
+        if (data) setPatient(data);
+      });
+    }
+  }, [id]);
+
+  const calculateAge = (dob: string): number => {
+    const birthDate = new Date(dob);
+    const today = new Date();
+
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    // Nếu chưa đến tháng sinh hoặc ngày sinh trong năm nay thì trừ đi 1
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+
+    return age;
+  };
+
+  const toggleAccountStatus = async (username: string) => {
+    try {
+      const response = await fetch(
+        "http://localhost:3001/api/account/toggle_active",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username }),
+        }
+      );
+
+      if (!response.ok)
+        throw new Error("Không thể thay đổi trạng thái tài khoản.");
+      alert("Thay đổi trạng thái tài khoản thành công");
+    } catch (error) {
+      console.error(error);
+      alert("Thay đổi trạng thái tài khoản thất bại!");
+    }
+  };
+
   return (
     <div className="h-full bg-gray-50 p-6">
       {/* Header */}
       <div className="flex items-center mb-4 bg-white p-4 rounded-lg shadow-md">
-        <div className="p-3 cursor-pointer" onClick={() => navigate("/")}>
+        <div
+          className="p-3 cursor-pointer"
+          onClick={() => navigate("/patientList")}
+        >
           <svg
             width="24"
             height="24"
@@ -123,14 +237,12 @@ const PatientInfor: React.FC = () => {
           <h3 className="text-xl font-semibold">Thông tin cá nhân</h3>
           <div className="grid gap-4 mb-4 sm:grid-cols-2 my-4">
             {[
-              { id: "fullName", label: "Họ và tên", type: "text" },
-              { id: "patientCode", label: "Mã bệnh nhân", type: "text" },
-              { id: "birthday", label: "Ngày sinh", type: "date" },
-              { id: "gender", label: "Giới tính", type: "text" },
-              { id: "phoneNumber", label: "Số điện thoại", type: "text" },
-              { id: "job", label: "Nghề nghiệp", type: "text" },
-              { id: "nation", label: "Quốc gia", type: "text" },
-              { id: "nationality", label: "Quốc tịch", type: "text" },
+              { id: "ho_va_ten", label: "Họ và tên", type: "text" },
+              { id: "ma_benh_nhan", label: "Mã bệnh nhân", type: "text" },
+              { id: "ngay_sinh", label: "Ngày sinh", type: "date" },
+              { id: "gioi_tinh", label: "Giới tính", type: "text" },
+              { id: "sdt", label: "Số điện thoại", type: "text" },
+              { id: "quoc_tich", label: "Quốc tịch", type: "text" },
             ].map((input) => (
               <div key={input.id}>
                 <TextInput
@@ -138,9 +250,10 @@ const PatientInfor: React.FC = () => {
                   id={input.id}
                   type={input.type}
                   value={
-                    patientData[input.id as keyof typeof patientData] || ""
+                    String(patient[input.id as keyof typeof patient]) || ""
                   }
                   onChange={(e) => handleChange(input.id)(e)}
+                  disabled={true}
                 />
               </div>
             ))}
@@ -148,9 +261,10 @@ const PatientInfor: React.FC = () => {
           <div className="grid gap-4 mb-4 sm:grid-cols-1 my-4">
             <TextAreaInput
               label="Địa chỉ"
-              id="address"
-              value={patientData.address}
-              onChange={handleChange("address")}
+              id="dia_chi"
+              value={patient.dia_chi}
+              onChange={handleChange("dia_chi")}
+              disabled={true}
             />
           </div>
           <div className="flex justify-end mt-10 mb-20">
@@ -160,8 +274,15 @@ const PatientInfor: React.FC = () => {
             >
               Đặt lại mật khẩu
             </button>
-            <button className="px-4 py-2 bg-redButton hover:bg-redButtonHover text-white rounded-lg">
-              Khóa tài khoản
+            <button
+              onClick={() => toggleAccountStatus(patient.ten_dang_nhap)}
+              className={`px-4 py-2 text-white rounded-lg ${
+                patient.active
+                  ? "bg-red-500 hover:bg-red-600"
+                  : "bg-green-500 hover:bg-green-600"
+              }`}
+            >
+              {patient.active ? "Khóa tài khoản" : "Mở khóa tài khoản"}
             </button>
           </div>
         </div>
@@ -174,8 +295,9 @@ const PatientInfor: React.FC = () => {
               alt="Doctor Avatar"
               className="w-30 h-30 rounded-full mb-4"
             />
-            <p className="text-xl font-semibold">Nguyễn Văn A (5151)</p>
-            <p className="text-gray-600">21 tuổi, Nam</p>
+            <p className="text-xl font-semibold">{patient.ho_va_ten}</p>
+            <p className="text-xl font-semibold">{patient.ma_benh_nhan}</p>
+            {calculateAge(patient.ngay_sinh)} tuổi, {patient.gioi_tinh}
           </div>
 
           <hr className="mt-10 mb-3" />
@@ -199,10 +321,10 @@ const PatientInfor: React.FC = () => {
       <ChangePatientPasswordModal
         isOpen={isChangePassword}
         setIsOpen={toggleChangePassword}
-        id={5}
+        username={patient.ten_dang_nhap}
       />
     </div>
   );
 };
 
-export default PatientInfor;
+export default PatientDetail;

@@ -18,6 +18,11 @@ interface Doctor {
     ngay_sinh: string;
     gioi_tinh: string;
     phan_loai: string;
+    Tai_khoan: {
+      ten_dang_nhap: string;
+      active: boolean;
+      thoi_diem_mo_tk: string;
+    };
   };
 }
 
@@ -107,7 +112,15 @@ const DoctorListComponent: React.FC = () => {
               </td>
               <td className="px-4 py-4">{doctor.ngay_vao_nghe}</td>
               <td className="px-4 py-4">{doctor.Nguoi_dung.sdt}</td>
-              <td className="px-4 py-4">{doctor.Nguoi_dung.phan_loai}</td>
+              <td
+                className={`px-4 py-2 text-white rounded-lg ${
+                  doctor.Nguoi_dung.Tai_khoan.active
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
+                {doctor.Nguoi_dung.Tai_khoan.active ? "Kích hoạt" : "Bị khóa"}
+              </td>
             </tr>
           ))}
         </tbody>
