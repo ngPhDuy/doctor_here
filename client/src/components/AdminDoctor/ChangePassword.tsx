@@ -9,13 +9,13 @@ const ChangePassword = {
 type UpdateUserModalProps = {
   isOpen: boolean;
   setIsOpen: () => void;
-  id: number;
+  username: string;
 };
 
 const ChangePasswordModal: React.FC<UpdateUserModalProps> = ({
   isOpen,
   setIsOpen,
-  id,
+  username,
 }) => {
   const [changePasswordData, setchangePasswordData] = useState(ChangePassword);
 
@@ -32,7 +32,29 @@ const ChangePasswordModal: React.FC<UpdateUserModalProps> = ({
       }));
     };
 
-  const handleChangePassword = () => {};
+  const changePassword = async (username: string, newPassword: string) => {
+    try {
+      const response = await fetch(
+        "http://localhost:3001/api/account/change_password_from_admin",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username, newPassword }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Không thể đổi mật khẩu.");
+
+      const data = await response.json();
+      alert(data.message); // Thông báo kết quả
+    } catch (error) {
+      console.error(error);
+      alert("Đổi mật khẩu thất bại!");
+    }
+    window.location.reload();
+  };
 
   if (!isOpen) return null;
 
@@ -86,6 +108,7 @@ const ChangePasswordModal: React.FC<UpdateUserModalProps> = ({
             type="button"
             onClick={() => {
               setIsOpen();
+              changePassword(username, changePasswordData.newPassword);
             }}
             className="inline-flex items-center px-5 py-2.5 ml-4 text-sm font-medium text-center border rounded-lg text-white bg-blueButton hover:bg-blueButtonHover"
           >

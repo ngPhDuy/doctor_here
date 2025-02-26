@@ -1,55 +1,124 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { TextInput, FileInput } from "../Input/InputComponents";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { TextInput } from "../Input/InputComponents";
 
-const Request = {
-  requestCode: "",
-  doctorCode: "",
-  doctorName: "",
-  oldSpecialty: "",
-  newSpecialty: "",
-  oldClinicAddress: "",
-  newClinicAddress: "",
-  oldDegree: "",
-  newDegree: "",
-  evidence: null as File | null, // Chấp nhận null hoặc File
+const adminID = "QT0000011"; // ID của quản trị viên xử lý yêu cầu
+
+const RequestDetail = {
+  id: 0,
+  trang_thai: "Chờ duyệt",
+  thoi_diem_yeu_cau: "",
+  ma_yeu_cau: "",
+  trinh_do_hoc_van_cu: "",
+  trinh_do_hoc_van_moi: "",
+  dia_chi_pk_cu: "",
+  dia_chi_pk_moi: "",
+  ma_bac_si: "",
+  thoi_diem_thu_hoi: null,
+  Bac_si: {
+    ngay_vao_nghe: "",
+    trinh_do_hoc_van: "",
+    mo_ta: "",
+    dia_chi_pk: "",
+    ma_bac_si: "",
+    chuyen_khoa: "",
+    Nguoi_dung: {
+      ten_dang_nhap: "",
+      email: "",
+      sdt: "",
+      ngay_sinh: "",
+      gioi_tinh: "",
+      phan_loai: "",
+      ho_va_ten: "",
+    },
+  },
+  Anh_minh_chung: [],
+  Duyet_yeu_cau_cap_nhat: {
+    yeu_cau_cap_nhat: "",
+    ma_qtv: "",
+    thoi_diem_duyet: "",
+  },
 };
 
-interface RequestHistory {
-  requestCode: string;
-  doctorCode: string;
-  doctorName: string;
-  requestTime: string;
-  result: string;
-}
-const initialRequests: RequestHistory[] = [
-  {
-    requestCode: "REQ001",
-    doctorCode: "DOC123",
-    doctorName: "Dr. Nguyễn Văn A",
-    requestTime: "2024-02-12T08:30:00Z",
-    result: "Chờ xử lý",
-  },
-  {
-    requestCode: "REQ002",
-    doctorCode: "DOC124",
-    doctorName: "Dr. Trần Thị B",
-    requestTime: "2024-02-12T09:00:00Z",
-    result: "Chấp thuận",
-  },
-  {
-    requestCode: "REQ003",
-    doctorCode: "DOC125",
-    doctorName: "Dr. Lê Văn C",
-    requestTime: "2024-02-12T10:15:00Z",
-    result: "Bị từ chối",
-  },
-];
+type RequestHistory = {
+  trang_thai: string;
+  thoi_diem_yeu_cau: string;
+  ma_yeu_cau: string;
+  ma_bac_si: string;
+  ho_va_ten: string;
+};
 
 const NewRequestDetail: React.FC = () => {
   const navigate = useNavigate();
-  const [requestData, setRequestData] = useState(Request);
-  const [requestsHistory] = useState<RequestHistory[]>(initialRequests);
+  const { requestId, doctorId } = useParams<{
+    requestId: string;
+    doctorId: string;
+  }>();
+  const [requestDetail, setRequestDetail] = useState(RequestDetail);
+  const [requestsHistory, setRequestsHistory] = useState<RequestHistory[]>([]);
+
+  useEffect(() => {
+    if (!requestId) return;
+    const fetchRequestDetail = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:3001/api/updateRequest/requestDetail/${requestId}`,
+          {
+            method: "GET",
+            headers: { Accept: "application/json" },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Không thể lấy dữ liệu yêu cầu cập nhật.");
+        }
+
+        const data = await response.json();
+        setRequestDetail(data);
+      } catch (error) {
+        console.error("Lỗi khi lấy chi tiết yêu cầu:", error);
+      }
+    };
+
+    fetchRequestDetail();
+  }, [requestId]);
+
+  useEffect(() => {
+    if (!doctorId) return;
+
+    const fetchRequestHistory = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:3001/api/updateRequest/requestByDoctorID/${doctorId}`,
+          {
+            method: "GET",
+            headers: { Accept: "application/json" },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Không thể lấy danh sách lịch sử yêu cầu.");
+        }
+
+        const data = await response.json();
+
+        // Chỉ lấy các thông tin cần thiết (bao gồm mã bác sĩ và họ tên)
+        const formattedData = data.map((item: any) => ({
+          trang_thai: item.trang_thai,
+          thoi_diem_yeu_cau: item.thoi_diem_yeu_cau,
+          ma_yeu_cau: item.ma_yeu_cau,
+          ma_bac_si: item.ma_bac_si,
+          ho_va_ten: item.Bac_si?.Nguoi_dung?.ho_va_ten || "Không rõ",
+        }));
+
+        setRequestsHistory(formattedData);
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách yêu cầu:", error);
+      }
+    };
+
+    fetchRequestHistory();
+  }, [doctorId]);
 
   const handleChange =
     (field: string) =>
@@ -58,25 +127,76 @@ const NewRequestDetail: React.FC = () => {
         HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
       >
     ) => {
-      setRequestData((prevData) => ({ ...prevData, [field]: e.target.value }));
-    };
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]; // Kiểm tra files có tồn tại không
-    if (file) {
-      setRequestData((prevData) => ({
+      setRequestDetail((prevData) => ({
         ...prevData,
-        evidence: file, // Không còn lỗi
+        [field]: e.target.value,
       }));
+    };
+
+  const calculateAge = (dob: string): number => {
+    const birthDate = new Date(dob);
+    const today = new Date();
+
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    // Nếu chưa đến tháng sinh hoặc ngày sinh trong năm nay thì trừ đi 1
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
     }
+
+    return age;
   };
 
+  const handleRequest = async (approved: boolean) => {
+    if (!requestDetail) return;
+
+    try {
+      const response = await fetch(
+        "http://localhost:3001/api/updateRequest/handleRequest",
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            requestID: requestDetail.ma_yeu_cau,
+            approved,
+            adminID,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Không thể xử lý yêu cầu.");
+      }
+
+      const data = await response.json();
+      alert(data.message); // Hiển thị thông báo từ server
+
+      // Cập nhật trạng thái sau khi xử lý
+      setRequestDetail((prev) =>
+        prev
+          ? { ...prev, trang_thai: approved ? "Chấp thuận" : "Bị từ chối" }
+          : prev
+      );
+    } catch (error) {
+      console.error("Lỗi khi xử lý yêu cầu:", error);
+      alert("Có lỗi xảy ra. Vui lòng thử lại.");
+    }
+    window.location.reload();
+  };
   return (
     <div className="h-full bg-gray-50 p-6">
       {/* Header */}
       <div className="flex items-center mb-4 bg-white p-4 rounded-lg shadow-md">
         <div
           className="p-3 cursor-pointer"
-          onClick={() => navigate("/oldRequests")}
+          onClick={() => navigate("/newRequests")}
         >
           <svg
             width="24"
@@ -162,55 +282,80 @@ const NewRequestDetail: React.FC = () => {
           <h3 className="text-xl font-semibold">Yêu cầu cập nhật thông tin</h3>
           <div className="grid gap-4 mb-4 sm:grid-cols-2 my-4">
             {[
-              { id: "oldSpecialty", label: "Chuyên khoa cũ", type: "text" },
-              { id: "newSpecialty", label: "Chuyên khoa mới", type: "text" },
+              { id: "chuyen_khoa_cu", label: "Chuyên khoa cũ", type: "text" },
+              { id: "chuyen_khoa_moi", label: "Chuyên khoa mới", type: "text" },
               {
-                id: "oldClinicAddress",
+                id: "dia_chi_pk_cu",
                 label: "Địa chỉ phòng khám cũ",
                 type: "text",
               },
               {
-                id: "newClinicAddress",
+                id: "dia_chi_pk_moi",
                 label: "Địa chỉ phòng khám mới",
                 type: "text",
               },
-              { id: "oldDegree", label: "Trình độ học vấn cũ", type: "text" },
-              { id: "newDegree", label: "Trình độ học vấn mới", type: "text" },
+              {
+                id: "trinh_do_hoc_van_cu",
+                label: "Trình độ học vấn cũ",
+                type: "text",
+              },
+              {
+                id: "trinh_do_hoc_van_moi",
+                label: "Trình độ học vấn mới",
+                type: "text",
+              },
             ].map((input) => (
               <div key={input.id}>
                 <TextInput
                   label={input.label}
                   id={input.id}
                   type={input.type}
-                  value={
-                    typeof requestData[input.id as keyof typeof requestData] ===
-                    "string"
-                      ? (requestData[
-                          input.id as keyof typeof requestData
-                        ] as string)
-                      : ""
-                  }
+                  value={String(
+                    requestDetail[input.id as keyof typeof requestDetail] ?? ""
+                  )}
                   onChange={(e) => handleChange(input.id)(e)}
+                  disabled={true}
                 />
               </div>
             ))}
           </div>
 
-          {/* Minh chứng */}
-          <div className="grid gap-4 mb-4 sm:grid-cols-1 my-4">
-            <FileInput
-              label="Minh chứng"
-              id="evidence"
-              onChange={handleFileChange}
-            />
-          </div>
           <div className="flex justify-end mt-10 mb-20">
-            <button className="px-4 py-2 mr-3 bg-greenButton hover:bg-greenButtonHover text-white rounded-lg">
-              Chấp thuận
-            </button>
-            <button className="px-4 py-2 bg-redButton hover:bg-redButtonHover text-white rounded-lg">
-              Từ chối
-            </button>
+            {requestDetail.trang_thai === "Chờ duyệt" ? (
+              <div className="flex justify-end mt-10 mb-20">
+                <button
+                  className="px-4 py-2 mr-3 bg-green-500 hover:bg-green-600 text-white rounded-lg"
+                  onClick={() => handleRequest(true)}
+                >
+                  Chấp thuận
+                </button>
+                <button
+                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg"
+                  onClick={() => handleRequest(false)}
+                >
+                  Từ chối
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center mt-10 mb-20">
+                <div
+                  className={`border rounded-lg px-5 py-3 ${
+                    requestDetail.trang_thai === "Đã duyệt"
+                      ? "text-green-700 bg-green-200"
+                      : "text-red-700 bg-red-200"
+                  }`}
+                >
+                  {requestDetail.trang_thai === "Đã duyệt"
+                    ? "Đã duyệt"
+                    : "Từ chối"}
+                </div>
+                {requestDetail.Duyet_yeu_cau_cap_nhat && (
+                  <div className="flex justify-center mt-3">
+                    Được duyệt bởi {requestDetail.Duyet_yeu_cau_cap_nhat.ma_qtv}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -222,8 +367,11 @@ const NewRequestDetail: React.FC = () => {
               alt="Doctor Avatar"
               className="w-30 h-30 rounded-full mb-4"
             />
-            <p className="text-xl font-semibold">Nguyễn Văn A (5151)</p>
-            <p className="text-gray-600">21 tuổi, Nam</p>
+            <p className="text-xl font-semibold">
+              {requestDetail.Bac_si.Nguoi_dung.ho_va_ten}
+            </p>
+            {calculateAge(requestDetail.Bac_si.Nguoi_dung.ngay_sinh)} tuổi,{" "}
+            {requestDetail.Bac_si.Nguoi_dung.gioi_tinh}
           </div>
 
           <hr className="mt-10 mb-3" />
@@ -239,24 +387,29 @@ const NewRequestDetail: React.FC = () => {
               <tbody>
                 {requestsHistory.map((request, index) => (
                   <tr
-                    key={request.requestCode}
-                    className="bg-white hover:bg-gray-100 cursor-pointer"
-                    onClick={() => navigate(`/oldRequestDetail`)}
+                    key={request.ma_yeu_cau}
+                    className="bg-whit
+                    e hover:bg-gray-100 cursor-pointer"
+                    onClick={() =>
+                      navigate(
+                        `/newRequestDetail/${request.ma_yeu_cau}/${doctorId}`
+                      )
+                    }
                   >
-                    <td className="px-4 py-4">{request.requestCode}</td>
+                    <td className="px-4 py-4">{request.ma_yeu_cau}</td>
                     <td className="px-4 py-4">
-                      {new Date(request.requestTime).toLocaleString()}
+                      {new Date(request.thoi_diem_yeu_cau).toLocaleString()}
                     </td>
                     <td
                       className={`px-4 py-4 ${
-                        request.result === "Chấp thuận"
+                        request.trang_thai === "Đã duyệt"
                           ? "text-green-500"
-                          : request.result === "Bị từ chối"
+                          : request.trang_thai === "Từ chối"
                           ? "text-red-500"
                           : "text-yellow-500"
                       }`}
                     >
-                      {request.result}
+                      {request.trang_thai}
                     </td>
                   </tr>
                 ))}

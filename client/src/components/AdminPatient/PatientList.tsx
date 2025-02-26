@@ -1,95 +1,59 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-// Định nghĩa kiểu dữ liệu của một bác sĩ
+// Định nghĩa kiểu dữ liệu của một bệnh nhân
 interface Patient {
   id: number;
-  code: string;
-  name: string;
-  joinDate: string;
-  phone: string;
-  status: string;
+  ma_benh_nhan: string;
+  cccd: string;
+  dan_toc: string;
+  nhom_mau: string;
+  tien_su_benh: string;
+  quoc_tich: string;
+  dia_chi: string;
+  Nguoi_dung: {
+    ho_va_ten: string;
+    ten_dang_nhap: string;
+    email: string;
+    sdt: string;
+    ngay_sinh: string;
+    gioi_tinh: string;
+    phan_loai: string;
+    Tai_khoan: {
+      ten_dang_nhap: string;
+      active: boolean;
+      thoi_diem_mo_tk: string;
+    };
+  };
 }
-
-// Dữ liệu mẫu
-const initialPatients: Patient[] = [
-  {
-    id: 1,
-    code: "BS001",
-    name: "Nguyen Van A",
-    joinDate: "2023-01-15",
-    phone: "0987654321",
-    status: "Active",
-  },
-  {
-    id: 2,
-    code: "BS002",
-    name: "Tran Thi B",
-    joinDate: "2022-05-20",
-    phone: "0912345678",
-    status: "Inactive",
-  },
-  {
-    id: 3,
-    code: "BS003",
-    name: "Le Van C",
-    joinDate: "2021-09-10",
-    phone: "0901122334",
-    status: "Active",
-  },
-  {
-    id: 4,
-    code: "BS004",
-    name: "Pham Thi D",
-    joinDate: "2020-12-25",
-    phone: "0977766554",
-    status: "Inactive",
-  },
-  {
-    id: 5,
-    code: "BS005",
-    name: "Hoang Van E",
-    joinDate: "2019-07-30",
-    phone: "0966677889",
-    status: "Active",
-  },
-  {
-    id: 6,
-    code: "BS006",
-    name: "Do Thi F",
-    joinDate: "2023-03-10",
-    phone: "0933344556",
-    status: "Active",
-  },
-  {
-    id: 7,
-    code: "BS004",
-    name: "Pham Thi D",
-    joinDate: "2020-12-25",
-    phone: "0977766554",
-    status: "Inactive",
-  },
-  {
-    id: 5,
-    code: "BS005",
-    name: "Hoang Van E",
-    joinDate: "2019-07-30",
-    phone: "0966677889",
-    status: "Active",
-  },
-  {
-    id: 6,
-    code: "BS006",
-    name: "Do Thi F",
-    joinDate: "2023-03-10",
-    phone: "0933344556",
-    status: "Active",
-  },
-];
 
 const PatientListComponent: React.FC = () => {
   const navigate = useNavigate();
-  const [Patients] = useState<Patient[]>(initialPatients);
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        const response = await fetch("http://localhost:3001/api/patient");
+        if (!response.ok) {
+          throw new Error("Không thể tải danh sách bệnh nhân.");
+        }
+        const data = await response.json();
+        setPatients(data);
+      } catch (err) {
+        setError("Lỗi khi tải danh sách bệnh nhân.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPatients();
+  }, []);
+
+  if (loading) return <p>Đang tải dữ liệu...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
 
   return (
     <div className="p-5 h-full bg-gray-50">
@@ -124,25 +88,27 @@ const PatientListComponent: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {Patients.map((Patient, index) => (
+          {patients.map((Patient, index) => (
             <tr
               key={Patient.id}
               className="bg-white hover:bg-gray-100 cursor-pointer"
-              onClick={() => navigate(`/patientInfor/`)}
+              onClick={() => navigate(`/patientDetail/${Patient.ma_benh_nhan}`)}
             >
               <td className="px-4 py-4">{index + 1}</td>
-              <td className="px-4 py-4">{Patient.code}</td>
-              <td className="px-4 py-4 truncate max-w-xs">{Patient.name}</td>
-              <td className="px-4 py-4">{Patient.joinDate}</td>
-              <td className="px-4 py-4">{Patient.phone}</td>
+              <td className="px-4 py-4">{Patient.ma_benh_nhan}</td>
+              <td className="px-4 py-4 truncate max-w-xs">
+                {Patient.Nguoi_dung.ho_va_ten}
+              </td>
+              <td className="px-4 py-4">{Patient.Nguoi_dung.ngay_sinh}</td>
+              <td className="px-4 py-4">{Patient.Nguoi_dung.sdt}</td>
               <td
-                className={`px-4 py-4 ${
-                  Patient.status === "Active"
-                    ? "text-green-500"
-                    : "text-red-500"
+                className={`px-4 py-2 rounded-lg ${
+                  Patient.Nguoi_dung.Tai_khoan.active
+                    ? "text-green-600"
+                    : "text-red-600"
                 }`}
               >
-                {Patient.status}
+                {Patient.Nguoi_dung.Tai_khoan.active ? "Kích hoạt" : "Bị khóa"}
               </td>
             </tr>
           ))}

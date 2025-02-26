@@ -12,7 +12,7 @@ const Sidebar = () => {
   // Danh sách các đường dẫn tương ứng với từng mục
   const doctorPages = ["/doctorDetail", "/doctorSchedule"];
   const transactionPages = ["/transactions", "/paymentHistory"];
-  const patientPages = ["/patientList", "/patientInfor"];
+  const patientPages = ["/patientList", "/patientDetail"];
   const requestPages = [
     "/oldRequests",
     "/oldRequestDetail",
@@ -31,7 +31,7 @@ const Sidebar = () => {
   const activeColor = "text-blueTitle";
 
   return (
-    <div className="w-64 h-screen border-r border-gray-300 shadow-md">
+    <div className="w-60 h-screen border-r border-gray-300 shadow-md">
       <nav className="m-3">
         <ul className="pt-10">
           <li
@@ -54,18 +54,6 @@ const Sidebar = () => {
           </li>
           <li
             className={`px-6 py-3 text-lg flex hover:bg-gray-200 cursor-pointer rounded-lg ${
-              isActive(transactionPages) ? activeColor : defaultColor
-            }`}
-            onClick={() => navigate(`/transactions`)}
-          >
-            <TransIcon
-              size={30}
-              color={isActive(transactionPages) ? "blue" : "gray"}
-            />
-            <span className="ml-2">Giao dịch</span>
-          </li>
-          <li
-            className={`px-6 py-3 text-lg flex hover:bg-gray-200 cursor-pointer rounded-lg ${
               isActive(patientPages) ? activeColor : defaultColor
             }`}
             onClick={() => navigate(`/patientList`)}
@@ -80,7 +68,7 @@ const Sidebar = () => {
             className={`px-6 py-3 text-lg flex hover:bg-gray-200 cursor-pointer rounded-lg ${
               isActive(requestPages) ? activeColor : defaultColor
             }`}
-            onClick={() => navigate(`/oldRequests`)}
+            onClick={() => navigate(`/newRequests`)}
           >
             <EmailIcon
               width={30}
