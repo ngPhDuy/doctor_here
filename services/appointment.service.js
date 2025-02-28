@@ -2,7 +2,10 @@ const {Appointment, Patient, Doctor, Timeslot, User, sequelize, WeeklyWork} = re
 const { Op, or } = require('sequelize');
 
 exports.getAllAppointments = async () => {
-    const appointments = await Appointment.findAll();
+    //lấy tất cả và sx giảm dần theo id
+    const appointments = await Appointment.findAll({
+        order: [['id', 'DESC']] // Sắp xếp theo id giảm dần
+    });
     return appointments;
 }
 
@@ -164,7 +167,8 @@ exports.getAllByPatientAndDoctor = async (patientID, doctorID) => {
                     }
                 ]
             }
-        ]
+        ],
+        order: [['ma_benh_nhan_dat_hen', 'ASC']]
     });
     return appointments;
 }

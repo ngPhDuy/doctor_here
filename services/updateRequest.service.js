@@ -7,7 +7,8 @@ exports.getAllNewRequest = async () => {
             FROM "Yeu_cau_cap_nhat_thong_tin" YC
             JOIN "Bac_si" BS ON YC.ma_bac_si = BS.ma_bac_si
             JOIN "Nguoi_dung" ND ON BS.id = ND.id
-            WHERE YC.trang_thai = 'Chờ duyệt';`,
+            WHERE YC.trang_thai = 'Chờ duyệt'
+            ORDER BY YC.thoi_diem_yeu_cau DESC;`,
             { type: sequelize.QueryTypes.SELECT }
         );
 
@@ -24,7 +25,8 @@ exports.getOldRequest = async () => {
             FROM "Yeu_cau_cap_nhat_thong_tin" YC
             JOIN "Bac_si" BS ON YC.ma_bac_si = BS.ma_bac_si
             JOIN "Nguoi_dung" ND ON BS.id = ND.id
-            WHERE YC.trang_thai != 'Chờ duyệt';`,
+            WHERE YC.trang_thai != 'Chờ duyệt'
+            ORDER BY YC.thoi_diem_yeu_cau DESC;`,
             { type: sequelize.QueryTypes.SELECT }
         );
 
@@ -76,19 +78,20 @@ exports.getRequestByDoctorID = async (doctorID) => {
         const requests = await UpdateRequest.findAll({
             where: { ma_bac_si: doctorID },
             include: {
-                    model: Doctor,
-                    as: 'Bac_si',
+                model: Doctor,
+                as: 'Bac_si',
+                attributes: {
+                    exclude: ['id']
+                },
+                include: [{
+                    model: User,
+                    as: 'Nguoi_dung',
                     attributes: {
                         exclude: ['id']
-                    },
-                    include: [{
-                        model: User,
-                        as: 'Nguoi_dung',
-                        attributes: {
-                            exclude: ['id']
-                        }
-                    }]
-                }
+                    }
+                }]
+            },
+            order: [['thoi_diem_yeu_cau', 'DESC']]
         });
 
         return requests;

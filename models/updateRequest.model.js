@@ -36,6 +36,14 @@ module.exports = (sequelize) => {
             type: DataTypes.STRING,
             allowNull: true,
         },
+        chuyen_khoa_cu: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        chuyen_khoa_moi: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
         ma_bac_si: {
             type: DataTypes.STRING(9),
             allowNull: true,

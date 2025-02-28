@@ -15,7 +15,8 @@ exports.getAllDoctor = async () => {
                     exclude: []
                 }
             }
-        }
+        },
+        order: [['ma_bac_si', 'ASC']]
     });
     return doctor;
 }

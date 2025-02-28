@@ -37,11 +37,34 @@ const defineInsurance = require('./insurance.model');
 const defineImageRequest = require('./imageRequest.model');
 const defineRelatives = require('./relatives.model');
 
-const sequelize = new Sequelize('doctor_here', 'postgres', 'doctor_here', {
-  host: 'localhost',
+//Kết nối đến neon.tech
+const sequelize = new Sequelize({
   dialect: 'postgres',
-  timezone: "+07:00" // Múi giờ Việt Nam (GMT+7)
+  timezone: "+07:00", // Múi giờ Việt Nam (GMT+7),
+  host: "ep-jolly-art-a1redfmo-pooler.ap-southeast-1.aws.neon.tech",
+  database: 'neondb', // Tên database bạn đã tạo trên Neon
+  username: 'neondb_owner', // Thường là 'postgres'
+  password: 'npg_j6MbW5nxetcZ', // Mật khẩu của bạn
+  port: 5432, // Port mặc định của PostgreSQL
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false
+    }
+  }
 });
+
+//Kết nối
+async function testConnection() {
+  try {
+    await sequelize.authenticate();
+    console.log('Connection to the Neon database has been established successfully.');
+  } catch (error) {
+    console.error('Unable to connect to the database:', error);
+  }
+}
+
+testConnection();
 
 // Định nghĩa model Account
 const Account = defineAccount(sequelize);

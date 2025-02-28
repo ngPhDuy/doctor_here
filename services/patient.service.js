@@ -15,7 +15,8 @@ exports.getAllPatient = async () => {
                     exclude: ['mat_khau']
                 }
             }
-        }
+        },
+        order: [['ma_benh_nhan', 'ASC']]
     });
     return patient;
 }
@@ -48,7 +49,8 @@ exports.getAllByDoctorID = async (doctorID) => {
         `select distinct nd.*, bn.*
         from "Benh_nhan" bn join "Nguoi_dung" nd on bn."id" = nd.id 
         join "Cuoc_hen" ch on bn."ma_benh_nhan" = ch."ma_benh_nhan_dat_hen"
-        where ch."ma_bac_si" = :doctorID`,
+        where ch."ma_bac_si" = :doctorID
+        order by bn."ma_benh_nhan" asc;`,
         {
             replacements: { doctorID },
             type: sequelize.QueryTypes.SELECT

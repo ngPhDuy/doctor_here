@@ -143,6 +143,14 @@ router.get('/oldRequest', updateRequestController.getOldRequest);
  *                   type: string
  *                   example: "Số 50, Đường E, Quận 5, TP HCM"
  *                   description: Địa chỉ phòng khám mới
+ *                 chuyen_khoa_cu:
+ *                   type: string
+ *                   example: "Nhi khoa"
+ *                   description: Chuyên khoa cũ
+ *                 chuyen_khoa_moi:
+ *                   type: string
+ *                   example: "Nhi khoa cấp cứu"
+ *                   description: Chuyên khoa mới
  *                 ma_bac_si:
  *                   type: string
  *                   example: "BS0000001"
@@ -288,6 +296,14 @@ router.get('/requestDetail/:requestID', updateRequestController.getRequestDetail
  *                     type: string
  *                     example: "Số 50, Đường E, Quận 5, TP HCM"
  *                     description: Địa chỉ phòng khám mới
+ *                   chuyen_khoa_cu:
+ *                     type: string
+ *                     example: "Nhi khoa"
+ *                     description: Chuyên khoa cũ
+ *                   chuyen_khoa_moi:
+ *                     type: string
+ *                     example: "Nhi khoa cấp cứu"
+ *                     description: Chuyên khoa mới
  *                   ma_bac_si:
  *                     type: string
  *                     example: "BS0000001"
