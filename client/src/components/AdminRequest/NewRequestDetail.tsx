@@ -159,7 +159,7 @@ const NewRequestDetail: React.FC = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:3001/api/updateRequest/handleRequest",
+        `${apiURL}/api/updateRequest/handleRequest`,
         {
           method: "POST",
           headers: {
@@ -322,9 +322,9 @@ const NewRequestDetail: React.FC = () => {
             ))}
           </div>
 
-          <div className="flex justify-end mt-10 mb-20">
+          <div className="flex justify-end my-3">
             {requestDetail.trang_thai === "Chờ duyệt" ? (
-              <div className="flex justify-end mt-10 mb-20">
+              <div className="flex justify-end">
                 <button
                   className="px-4 py-2 mr-3 bg-green-500 hover:bg-green-600 text-white rounded-lg"
                   onClick={() => handleRequest(true)}
@@ -339,7 +339,7 @@ const NewRequestDetail: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <div className="flex flex-col items-center mt-10 mb-20">
+              <div className="flex flex-col items-center my-3">
                 <div
                   className={`border rounded-lg px-5 py-3 ${
                     requestDetail.trang_thai === "Đã duyệt"
@@ -367,9 +367,9 @@ const NewRequestDetail: React.FC = () => {
             <img
               src="/images/avt.png"
               alt="Doctor Avatar"
-              className="w-30 h-30 rounded-full mb-4"
+              className="w-20 h-20 rounded-full mb-4"
             />
-            <p className="text-lg font-semibold">
+            <p className="text-base font-semibold">
               {requestDetail.Bac_si.Nguoi_dung.ho_va_ten}
             </p>
             {calculateAge(requestDetail.Bac_si.Nguoi_dung.ngay_sinh)} tuổi,{" "}

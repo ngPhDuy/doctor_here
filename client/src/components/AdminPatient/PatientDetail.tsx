@@ -293,10 +293,10 @@ const PatientDetail: React.FC = () => {
             <img
               src="/images/avt.png"
               alt="Doctor Avatar"
-              className="w-30 h-30 rounded-full mb-4"
+              className="w-20 h-20 rounded-full mb-4"
             />
-            <p className="text-lg font-semibold">{patient.ho_va_ten}</p>
-            <p className="text-lg font-semibold">({patient.ma_benh_nhan})</p>
+            <p className="text-base font-semibold">{patient.ho_va_ten}</p>
+            <p className="text-base font-semibold">({patient.ma_benh_nhan})</p>
             {calculateAge(patient.ngay_sinh)} tuổi, {patient.gioi_tinh}
           </div>
 

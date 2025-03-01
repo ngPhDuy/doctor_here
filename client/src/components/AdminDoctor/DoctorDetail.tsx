@@ -319,12 +319,12 @@ const DoctorInfor: React.FC = () => {
             <img
               src="/images/avt.png"
               alt="Doctor Avatar"
-              className="w-30 h-30 rounded-full mb-4"
+              className="w-20 h-20 rounded-full mb-4"
             />
-            <p className="text-lg font-semibold">
-              Bác sĩ {doctor.nguoi_dung_ho_va_ten}
+            <p className="text-base font-semibold">
+              {doctor.nguoi_dung_ho_va_ten}
             </p>
-            <p className="text-lg font-semibold">({doctor.ma_bac_si})</p>
+            <p className="text-base font-semibold">({doctor.ma_bac_si})</p>
             <p className="text-gray-600">
               {calculateAge(doctor.nguoi_dung_ngay_sinh)} tuổi,{" "}
               {doctor.nguoi_dung_gioi_tinh}
