@@ -1,3 +1,4 @@
+import apiURL from "../../../svConfig";
 import React, { useState } from "react";
 import { PasswordInput } from "../Input/InputComponents";
 
@@ -35,7 +36,7 @@ const ChangePatientPasswordModal: React.FC<UpdateUserModalProps> = ({
   const changePassword = async (username: string, newPassword: string) => {
     try {
       const response = await fetch(
-        "http://localhost:3001/api/account/change_password_from_admin",
+        `${apiURL}/api/account/change_password_from_admin`,
         {
           method: "POST",
           headers: {

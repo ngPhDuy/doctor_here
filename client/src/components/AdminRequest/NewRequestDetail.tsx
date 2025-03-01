@@ -1,3 +1,4 @@
+import apiURL from "../../../svConfig";
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { TextInput } from "../Input/InputComponents";
@@ -15,6 +16,8 @@ const RequestDetail = {
   dia_chi_pk_moi: "",
   ma_bac_si: "",
   thoi_diem_thu_hoi: null,
+  chuyen_khoa_cu: "",
+  chuyen_khoa_moi: "",
   Bac_si: {
     ngay_vao_nghe: "",
     trinh_do_hoc_van: "",
@@ -62,7 +65,7 @@ const NewRequestDetail: React.FC = () => {
     const fetchRequestDetail = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3001/api/updateRequest/requestDetail/${requestId}`,
+          `${apiURL}/api/updateRequest/requestDetail/${requestId}`,
           {
             method: "GET",
             headers: { Accept: "application/json" },
@@ -89,7 +92,7 @@ const NewRequestDetail: React.FC = () => {
     const fetchRequestHistory = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3001/api/updateRequest/requestByDoctorID/${doctorId}`,
+          `${apiURL}/api/updateRequest/requestByDoctorID/${doctorId}`,
           {
             method: "GET",
             headers: { Accept: "application/json" },
@@ -191,9 +194,9 @@ const NewRequestDetail: React.FC = () => {
     window.location.reload();
   };
   return (
-    <div className="h-full bg-gray-50 p-6">
+    <div className="h-full bg-gray-50">
       {/* Header */}
-      <div className="flex items-center mb-4 bg-white p-4 rounded-lg shadow-md">
+      <div className="flex items-center mb-4 bg-white rounded-lg shadow-md">
         <div
           className="p-3 cursor-pointer"
           onClick={() => navigate("/newRequests")}
@@ -232,8 +235,8 @@ const NewRequestDetail: React.FC = () => {
         <div className="w-2/3 bg-white p-6 rounded-lg shadow-md">
           <div className="flex items-center mb-8">
             <svg
-              width="45"
-              height="45"
+              width="35"
+              height="35"
               viewBox="0 0 45 45"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -276,10 +279,9 @@ const NewRequestDetail: React.FC = () => {
                 stroke-linejoin="round"
               />
             </svg>
-            <h2 className="text-xl font-semibold ml-4">Chi tiết yêu cầu</h2>
+            <h2 className="text-lg font-semibold ml-4">Yêu cầu cập nhật thông tin</h2>
           </div>
 
-          <h3 className="text-xl font-semibold">Yêu cầu cập nhật thông tin</h3>
           <div className="grid gap-4 mb-4 sm:grid-cols-2 my-4">
             {[
               { id: "chuyen_khoa_cu", label: "Chuyên khoa cũ", type: "text" },
@@ -360,24 +362,24 @@ const NewRequestDetail: React.FC = () => {
         </div>
 
         {/* Thông tin cá nhân bên phải */}
-        <div className="w-1/3 bg-white p-6 rounded-lg shadow-md">
+        <div className="w-1/2 bg-white p-6 rounded-lg shadow-md">
           <div className="flex flex-col items-center">
             <img
               src="/images/avt.png"
               alt="Doctor Avatar"
               className="w-30 h-30 rounded-full mb-4"
             />
-            <p className="text-xl font-semibold">
+            <p className="text-lg font-semibold">
               {requestDetail.Bac_si.Nguoi_dung.ho_va_ten}
             </p>
             {calculateAge(requestDetail.Bac_si.Nguoi_dung.ngay_sinh)} tuổi,{" "}
             {requestDetail.Bac_si.Nguoi_dung.gioi_tinh}
           </div>
 
-          <hr className="mt-10 mb-3" />
+          <hr className="my-3" />
           <div className="">
             <table className="table-auto w-full text-center">
-              <thead className="text-gray-600 text-lg bg-gray-100">
+              <thead className="text-gray-600 text-base bg-gray-100">
                 <tr>
                   <th className="px-4 py-2">Mã yêu cầu</th>
                   <th className="px-4 py-2">Thời gian yêu cầu</th>
@@ -389,7 +391,7 @@ const NewRequestDetail: React.FC = () => {
                   <tr
                     key={request.ma_yeu_cau}
                     className="bg-whit
-                    e hover:bg-gray-100 cursor-pointer"
+                    e hover:bg-gray-100 cursor-pointer text-sm"
                     onClick={() =>
                       navigate(
                         `/newRequestDetail/${request.ma_yeu_cau}/${doctorId}`

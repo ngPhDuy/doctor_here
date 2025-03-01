@@ -1,3 +1,4 @@
+import apiURL from "../../../svConfig";
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ChangeDoctorInforModal from "./ChangeDoctorInfor";
@@ -59,7 +60,7 @@ const DoctorInfor: React.FC = () => {
 
   const fetchDoctor = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/api/doctor/${id}`);
+      const response = await fetch(`${apiURL}/api/doctor/${id}`);
       if (!response.ok) {
         throw new Error("Không thể tải danh sách bác sĩ.");
       }
@@ -144,7 +145,7 @@ const DoctorInfor: React.FC = () => {
   const toggleAccountStatus = async (username: string) => {
     try {
       const response = await fetch(
-        "http://localhost:3001/api/account/toggle_active",
+        `${apiURL}/api/account/toggle_active`,
         {
           method: "POST",
           headers: {
@@ -165,9 +166,9 @@ const DoctorInfor: React.FC = () => {
   };
 
   return (
-    <div className="h-full bg-gray-50 p-6">
+    <div className="h-full bg-gray-50">
       {/* Header */}
-      <div className="flex items-center mb-4 bg-white p-4 rounded-lg shadow-md">
+      <div className="flex items-center mb-4 bg-white rounded-lg shadow-md">
         <div className="p-3 cursor-pointer" onClick={() => navigate("/")}>
           <svg
             width="24"
@@ -203,8 +204,8 @@ const DoctorInfor: React.FC = () => {
         <div className="w-2/3 bg-white p-6 rounded-lg shadow-md">
           <div className="flex items-center mb-8">
             <svg
-              width="45"
-              height="45"
+              width="35"
+              height="35"
               viewBox="0 0 45 45"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -247,10 +248,9 @@ const DoctorInfor: React.FC = () => {
                 stroke-linejoin="round"
               />
             </svg>
-            <h2 className="text-xl font-semibold ml-4">Chi tiết bác sĩ</h2>
+            <h2 className="text-lg font-semibold ml-4">Chi tiết bác sĩ</h2>
           </div>
 
-          <h3 className="text-xl font-semibold">Thông tin chuyên ngành</h3>
           <div className="grid gap-4 mb-4 sm:grid-cols-2 my-4">
             {[
               {
@@ -321,17 +321,17 @@ const DoctorInfor: React.FC = () => {
               alt="Doctor Avatar"
               className="w-30 h-30 rounded-full mb-4"
             />
-            <p className="text-xl font-semibold">
+            <p className="text-lg font-semibold">
               Bác sĩ {doctor.nguoi_dung_ho_va_ten}
             </p>
-            <p className="text-xl font-semibold">({doctor.ma_bac_si})</p>
+            <p className="text-lg font-semibold">({doctor.ma_bac_si})</p>
             <p className="text-gray-600">
               {calculateAge(doctor.nguoi_dung_ngay_sinh)} tuổi,{" "}
               {doctor.nguoi_dung_gioi_tinh}
             </p>
           </div>
 
-          <hr className="mt-10 mb-3" />
+          <hr className="my-3" />
           <div className="ml-5">
             {[
               { label: "Email", value: doctor.nguoi_dung_email },
@@ -346,8 +346,8 @@ const DoctorInfor: React.FC = () => {
               },
             ].map((info) => (
               <div className="mb-3" key={info.label}>
-                <p className="text-lg font-medium">{info.label}</p>
-                <p className="text-lg font-medium">{info.value}</p>
+                <p className="text-base font-medium">{info.label}</p>
+                <p className="text-base font-medium">{info.value}</p>
               </div>
             ))}
           </div>

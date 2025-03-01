@@ -1,3 +1,4 @@
+import apiURL from "../../../svConfig";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -19,7 +20,7 @@ const NewRequestComponent: React.FC = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        "http://localhost:3001/api/updateRequest/newRequest"
+        `${apiURL}/api/updateRequest/newRequest`
       );
 
       if (!response.ok) {
@@ -46,39 +47,39 @@ const NewRequestComponent: React.FC = () => {
     <div className="p-5 h-full bg-gray-50">
       <div className="flex items-center mb-4 bg-white p-4 rounded-lg shadow-md">
         <div
-          className="p-3 mr-5 text-blueTitle cursor-pointer"
+          className="mr-5 text-blueTitle cursor-pointer"
           onClick={() => navigate(`/newRequests`)}
         >
-          <p className="font-semibold text-xl mb-2">Yêu cầu mới</p>
+          <p className="font-semibold text-lg mb-2">Chưa xử lý</p>
           <hr className="border-t-2 border-blueTitle" />
         </div>
         <div
-          className="p-3 cursor-pointer"
+          className="ml-5 cursor-pointer"
           onClick={() => navigate(`/oldRequests`)}
         >
-          <p className="font-semibold text-xl mb-2">Yêu cầu cũ</p>
+          <p className="font-semibold text-lg mb-2">Đã xử lý</p>
         </div>
       </div>
       <div className="flex items-center w-full pb-4 p-3 mb-4  justify-between bg-white">
-        <div className="font-semibold text-lg mr-50">
-          <p>Số yêu cầu (430)</p>
+        <div className="font-semibold text-base mr-50">
+          <p>Số yêu cầu ({updateRequests.length})</p>
         </div>
 
         <div className="flex items-center space-x-3">
           <img
             src="/images/AdminList/search.png"
             alt="Search"
-            className="w-10 h-10 cursor-pointer hover:bg-gray-200"
+            className="w2r-h2r cursor-pointer hover:bg-gray-200"
           />
           <img
             src="/images/AdminList/filter.png"
             alt="Filter"
-            className="w-10 h-10 cursor-pointer hover:bg-gray-200"
+            className="w2r-h2r cursor-pointer hover:bg-gray-200"
           />
         </div>
       </div>
       <table className="table-auto w-full text-center border border-gray-300 rounded-lg shadow-lg">
-        <thead className="text-gray-600 text-lg bg-gray-100">
+        <thead className="text-gray-600 text-base bg-gray-100">
           <tr>
             <th className="px-4 py-2">STT</th>
             <th className="px-4 py-2">Mã yêu cầu</th>
@@ -98,13 +99,13 @@ const NewRequestComponent: React.FC = () => {
                 )
               }
             >
-              <td className="px-4 py-4">{index + 1}</td>
-              <td className="px-4 py-4">{request.ma_yeu_cau}</td>
-              <td className="px-4 py-4">{request.ma_bac_si}</td>
-              <td className="px-4 py-4 truncate max-w-xs">
+              <td className="px-2 py-3">{index + 1}</td>
+              <td className="px-2 py-3">{request.ma_yeu_cau}</td>
+              <td className="px-2 py-3">{request.ma_bac_si}</td>
+              <td className="px-2 py-3 truncate max-w-xs">
                 {request.ho_va_ten}
               </td>
-              <td className="px-4 py-4">
+              <td className="px-2 py-3">
                 {new Date(request.thoi_diem_yeu_cau).toLocaleString()}
               </td>
             </tr>

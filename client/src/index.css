@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*padding for sidebar items*/
+.psi {
+    padding-left: 1rem;
+    padding-right: 0.5rem;
+}
+
+.w2r-h2r {
+    width: 2rem;
+    height: 2rem;
+}

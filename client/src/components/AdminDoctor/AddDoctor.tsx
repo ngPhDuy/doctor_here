@@ -1,3 +1,4 @@
+import apiURL from "../../../svConfig";
 import React, { useState } from "react";
 import {
   TextInput,
@@ -49,7 +50,7 @@ const AddDoctorModal: React.FC<AddDoctorModalProps> = ({
     e.preventDefault();
     try {
       const response = await fetch(
-        "http://localhost:3001/api/doctor/addDoctor",
+        `${apiURL}/api/doctor/addDoctor`,
         {
           method: "POST",
           headers: {

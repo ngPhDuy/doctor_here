@@ -36,7 +36,7 @@ export const TextInput: React.FC<TextInputProps> = ({
       onChange={onChange}
       className={
         `block w-full p-2.5 text-sm text-blueText border border-gray-300 rounded-lg ` +
-        (disabled ? "bg-gray-200 cursor-not-allowed" : "bg-gray-50")
+        (disabled ? "bg-gray-200 cursor-not-allowed" : "bg-white")
       }
     />
   </div>

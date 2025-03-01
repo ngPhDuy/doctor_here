@@ -1,3 +1,4 @@
+import apiURL from "../../../svConfig";
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ChangePatientPasswordModal from "./ChangePatientPassword";
@@ -68,7 +69,7 @@ const PatientDetail: React.FC = () => {
   ): Promise<Patient | null> => {
     try {
       const response = await fetch(
-        `http://localhost:3001/api/patient/detail/${patientID}`
+        `${apiURL}/api/patient/detail/${patientID}`
       );
       if (!response.ok) throw new Error("Không thể tải thông tin bệnh nhân.");
 
@@ -126,7 +127,7 @@ const PatientDetail: React.FC = () => {
   const toggleAccountStatus = async (username: string) => {
     try {
       const response = await fetch(
-        "http://localhost:3001/api/account/toggle_active",
+        `${apiURL}/api/account/toggle_active`,
         {
           method: "POST",
           headers: {
@@ -146,9 +147,9 @@ const PatientDetail: React.FC = () => {
   };
 
   return (
-    <div className="h-full bg-gray-50 p-6">
+    <div className="h-full bg-gray-50">
       {/* Header */}
-      <div className="flex items-center mb-4 bg-white p-4 rounded-lg shadow-md">
+      <div className="flex items-center mb-4 bg-white rounded-lg shadow-md">
         <div
           className="p-3 cursor-pointer"
           onClick={() => navigate("/patientList")}
@@ -187,8 +188,8 @@ const PatientDetail: React.FC = () => {
         <div className="w-2/3 bg-white p-6 rounded-lg shadow-md">
           <div className="flex items-center mb-8">
             <svg
-              width="45"
-              height="45"
+              width="35"
+              height="35"
               viewBox="0 0 45 45"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -234,7 +235,6 @@ const PatientDetail: React.FC = () => {
             <h2 className="text-xl font-semibold ml-4">Chi tiết bệnh nhân</h2>
           </div>
 
-          <h3 className="text-xl font-semibold">Thông tin cá nhân</h3>
           <div className="grid gap-4 mb-4 sm:grid-cols-2 my-4">
             {[
               { id: "ho_va_ten", label: "Họ và tên", type: "text" },
@@ -295,12 +295,12 @@ const PatientDetail: React.FC = () => {
               alt="Doctor Avatar"
               className="w-30 h-30 rounded-full mb-4"
             />
-            <p className="text-xl font-semibold">{patient.ho_va_ten}</p>
-            <p className="text-xl font-semibold">{patient.ma_benh_nhan}</p>
+            <p className="text-lg font-semibold">{patient.ho_va_ten}</p>
+            <p className="text-lg font-semibold">({patient.ma_benh_nhan})</p>
             {calculateAge(patient.ngay_sinh)} tuổi, {patient.gioi_tinh}
           </div>
 
-          <hr className="mt-10 mb-3" />
+          <hr className="my-3" />
           <div className="ml-5">
             {[
               { label: "Email", value: "tantaivo2003@gmail.com" },
@@ -310,8 +310,8 @@ const PatientDetail: React.FC = () => {
               { label: "Mở tài khoản lúc", value: "07:59 07-01-2025" },
             ].map((info) => (
               <div className="mb-3" key={info.label}>
-                <p className="text-lg font-medium">{info.label}</p>
-                <p className="text-lg font-medium">{info.value}</p>
+                <p className="text-base font-medium">{info.label}</p>
+                <p className="text-base font-medium">{info.value}</p>
               </div>
             ))}
           </div>
