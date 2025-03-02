@@ -57,12 +57,31 @@ const NewRequestDetail: React.FC = () => {
   const [requestDetail, setRequestDetail] = useState(RequestDetail);
   const [requestsHistory, setRequestsHistory] = useState<RequestHistory[]>([]);
 
+  // State cho phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const requestsPerpage = 4;
+
+  const indexOfLastRequest = currentPage * requestsPerpage;
+  const indexOfFirstRequest = indexOfLastRequest - requestsPerpage;
+  const currentRequest = requestsHistory.slice(
+    indexOfFirstRequest,
+    indexOfLastRequest
+  );
+
+  // Chuyển trang
+  const totalPages = Math.ceil(requestsHistory.length / requestsPerpage);
+  const goToNextPage = () =>
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  const goToPrevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+
   useEffect(() => {
     if (!requestId) return;
     const fetchRequestDetail = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3001/api/updateRequest/requestDetail/${requestId}`,
+          `${
+            import.meta.env.VITE_API_BASE_URL
+          }/api/updateRequest/requestDetail/${requestId}`,
           {
             method: "GET",
             headers: { Accept: "application/json" },
@@ -89,7 +108,9 @@ const NewRequestDetail: React.FC = () => {
     const fetchRequestHistory = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3001/api/updateRequest/requestByDoctorID/${doctorId}`,
+          `${
+            import.meta.env.VITE_API_BASE_URL
+          }/api/updateRequest/requestByDoctorID/${doctorId}`,
           {
             method: "GET",
             headers: { Accept: "application/json" },
@@ -156,7 +177,7 @@ const NewRequestDetail: React.FC = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:3001/api/updateRequest/handleRequest",
+        `${import.meta.env.VITE_API_BASE_URL}/api/updateRequest/handleRequest`,
         {
           method: "POST",
           headers: {
@@ -193,7 +214,7 @@ const NewRequestDetail: React.FC = () => {
   return (
     <div className="h-full bg-gray-50 p-6">
       {/* Header */}
-      <div className="flex items-center mb-4 bg-white p-4 rounded-lg shadow-md">
+      <div className="flex items-center mb-4 bg-white rounded-lg shadow-md">
         <div
           className="p-3 cursor-pointer"
           onClick={() => navigate("/newRequests")}
@@ -360,12 +381,12 @@ const NewRequestDetail: React.FC = () => {
         </div>
 
         {/* Thông tin cá nhân bên phải */}
-        <div className="w-1/3 bg-white p-6 rounded-lg shadow-md">
+        <div className="w-1/3 bg-white p-3 rounded-lg shadow-md">
           <div className="flex flex-col items-center">
             <img
               src="/images/avt.png"
               alt="Doctor Avatar"
-              className="w-30 h-30 rounded-full mb-4"
+              className="w-30 h-30 rounded-full"
             />
             <p className="text-xl font-semibold">
               {requestDetail.Bac_si.Nguoi_dung.ho_va_ten}
@@ -374,7 +395,7 @@ const NewRequestDetail: React.FC = () => {
             {requestDetail.Bac_si.Nguoi_dung.gioi_tinh}
           </div>
 
-          <hr className="mt-10 mb-3" />
+          <hr className="mt-3 mb-3" />
           <div className="">
             <table className="table-auto w-full text-center">
               <thead className="text-gray-600 text-lg bg-gray-100">
@@ -385,23 +406,22 @@ const NewRequestDetail: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {requestsHistory.map((request, index) => (
+                {currentRequest.map((request, index) => (
                   <tr
                     key={request.ma_yeu_cau}
-                    className="bg-whit
-                    e hover:bg-gray-100 cursor-pointer"
+                    className="bg-white hover:bg-gray-100 cursor-pointer"
                     onClick={() =>
                       navigate(
                         `/newRequestDetail/${request.ma_yeu_cau}/${doctorId}`
                       )
                     }
                   >
-                    <td className="px-4 py-4">{request.ma_yeu_cau}</td>
-                    <td className="px-4 py-4">
+                    <td className="px-4 py-2">{request.ma_yeu_cau}</td>
+                    <td className="px-4 py-2">
                       {new Date(request.thoi_diem_yeu_cau).toLocaleString()}
                     </td>
                     <td
-                      className={`px-4 py-4 ${
+                      className={`px-4 py-2 ${
                         request.trang_thai === "Đã duyệt"
                           ? "text-green-500"
                           : request.trang_thai === "Từ chối"
@@ -415,6 +435,35 @@ const NewRequestDetail: React.FC = () => {
                 ))}
               </tbody>
             </table>
+
+            {/* Phân trang */}
+            <div className="flex justify-end mt-5 space-x-4">
+              <button
+                onClick={goToPrevPage}
+                disabled={currentPage === 1}
+                className={`px-4 py-2 rounded-lg ${
+                  currentPage === 1
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : "bg-blueButton hover:bg-blueButtonHover text-white"
+                }`}
+              >
+                Trước
+              </button>
+              <span className="px-4 py-2 border rounded-lg">
+                {currentPage} / {totalPages}
+              </span>
+              <button
+                onClick={goToNextPage}
+                disabled={currentPage === totalPages}
+                className={`px-4 py-2 rounded-lg ${
+                  currentPage === totalPages
+                    ? "bg-gray-300 cursor-not-allowed"
+                    : "bg-blueButton hover:bg-blueButtonHover text-white"
+                }`}
+              >
+                Sau
+              </button>
+            </div>
           </div>
         </div>
       </div>

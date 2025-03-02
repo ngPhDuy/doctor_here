@@ -59,7 +59,9 @@ const DoctorInfor: React.FC = () => {
 
   const fetchDoctor = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/api/doctor/${id}`);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/doctor/${id}`
+      );
       if (!response.ok) {
         throw new Error("Không thể tải danh sách bác sĩ.");
       }
@@ -144,7 +146,7 @@ const DoctorInfor: React.FC = () => {
   const toggleAccountStatus = async (username: string) => {
     try {
       const response = await fetch(
-        "http://localhost:3001/api/account/toggle_active",
+        `${import.meta.env.VITE_API_BASE_URL}/api/account/toggle_active`,
         {
           method: "POST",
           headers: {
@@ -167,7 +169,7 @@ const DoctorInfor: React.FC = () => {
   return (
     <div className="h-full bg-gray-50 p-6">
       {/* Header */}
-      <div className="flex items-center mb-4 bg-white p-4 rounded-lg shadow-md">
+      <div className="flex items-center mb-4 bg-white rounded-lg shadow-md">
         <div className="p-3 cursor-pointer" onClick={() => navigate("/")}>
           <svg
             width="24"

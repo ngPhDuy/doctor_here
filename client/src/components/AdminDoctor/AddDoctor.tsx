@@ -49,7 +49,7 @@ const AddDoctorModal: React.FC<AddDoctorModalProps> = ({
     e.preventDefault();
     try {
       const response = await fetch(
-        "http://localhost:3001/api/doctor/addDoctor",
+        `${import.meta.env.VITE_API_BASE_URL}/api/doctor/addDoctor`,
         {
           method: "POST",
           headers: {
@@ -175,13 +175,36 @@ const AddDoctorModal: React.FC<AddDoctorModalProps> = ({
               onChange={handleChange("thoiDiemVaoNghe")}
               required={true}
             />
-            <TextInput
+            <SelectInput
               label="Chuyên khoa"
               id="specialty"
               value={doctor.chuyenKhoa}
               onChange={handleChange("chuyenKhoa")}
               required={true}
+              options={[
+                { value: "Nội tổng quát", label: "Nội tổng quát" },
+                { value: "Nội tim mạch", label: "Nội tim mạch" },
+                { value: "Nội tiêu hóa", label: "Nội tiêu hóa" },
+                { value: "Nội thần kinh", label: "Nội thần kinh" },
+                {
+                  value: "Nội tiết - đái tháo đường",
+                  label: "Nội tiết - đái tháo đường",
+                },
+                { value: "Ngoại tổng quát", label: "Ngoại tổng quát" },
+                { value: "Ngoại thần kinh", label: "Ngoại thần kinh" },
+                { value: "Ngoại tim mạch", label: "Ngoại tim mạch" },
+                { value: "Sản phụ khoa", label: "Sản phụ khoa" },
+                { value: "Nhi khoa", label: "Nhi khoa" },
+                { value: "Mắt (Nhãn khoa)", label: "Mắt (Nhãn khoa)" },
+                { value: "Tai mũi họng", label: "Tai mũi họng" },
+                { value: "Răng hàm mặt", label: "Răng hàm mặt" },
+                { value: "Da liễu", label: "Da liễu" },
+                { value: "Ung bướu", label: "Ung bướu" },
+                { value: "Tâm thần", label: "Tâm thần" },
+                { value: "Phục hồi chức năng", label: "Phục hồi chức năng" },
+              ]}
             />
+
             <TextInput
               label="Học vấn"
               id="degree"

@@ -7,7 +7,6 @@ import DoctorInfor from "./components/AdminDoctor/DoctorDetail";
 import PatientListComponent from "./components/AdminPatient/PatientList";
 import PatientDetail from "./components/AdminPatient/PatientDetail";
 import OldRequestComponent from "./components/AdminRequest/OldRequest";
-import OldRequestDetail from "./components/AdminRequest/OldRequestDetail";
 import NewRequestComponent from "./components/AdminRequest/NewRequest";
 import NewRequestDetail from "./components/AdminRequest/NewRequestDetail";
 const App: React.FC = () => {
@@ -24,7 +23,6 @@ const App: React.FC = () => {
               <Route path="/patientList" element={<PatientListComponent />} />
               <Route path="/patientDetail/:id" element={<PatientDetail />} />
               <Route path="/oldRequests" element={<OldRequestComponent />} />
-              <Route path="/oldRequestDetail" element={<OldRequestDetail />} />
               <Route path="/newRequests" element={<NewRequestComponent />} />
               <Route
                 path="/newRequestDetail/:requestId/:doctorId"

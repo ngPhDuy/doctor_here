@@ -68,7 +68,7 @@ const PatientDetail: React.FC = () => {
   ): Promise<Patient | null> => {
     try {
       const response = await fetch(
-        `http://localhost:3001/api/patient/detail/${patientID}`
+        `${import.meta.env.VITE_API_BASE_URL}/api/patient/detail/${patientID}`
       );
       if (!response.ok) throw new Error("Không thể tải thông tin bệnh nhân.");
 
@@ -126,7 +126,7 @@ const PatientDetail: React.FC = () => {
   const toggleAccountStatus = async (username: string) => {
     try {
       const response = await fetch(
-        "http://localhost:3001/api/account/toggle_active",
+        `${import.meta.env.VITE_API_BASE_URL}/api/account/toggle_active`,
         {
           method: "POST",
           headers: {
@@ -148,7 +148,7 @@ const PatientDetail: React.FC = () => {
   return (
     <div className="h-full bg-gray-50 p-6">
       {/* Header */}
-      <div className="flex items-center mb-4 bg-white p-4 rounded-lg shadow-md">
+      <div className="flex items-center mb-4 bg-white rounded-lg shadow-md">
         <div
           className="p-3 cursor-pointer"
           onClick={() => navigate("/patientList")}
@@ -292,7 +292,7 @@ const PatientDetail: React.FC = () => {
           <div className="flex flex-col items-center">
             <img
               src="/images/avt.png"
-              alt="Doctor Avatar"
+              alt="patient Avatar"
               className="w-30 h-30 rounded-full mb-4"
             />
             <p className="text-xl font-semibold">{patient.ho_va_ten}</p>
@@ -303,11 +303,14 @@ const PatientDetail: React.FC = () => {
           <hr className="mt-10 mb-3" />
           <div className="ml-5">
             {[
-              { label: "Email", value: "tantaivo2003@gmail.com" },
-              { label: "SĐT", value: "0364823693" },
-              { label: "Ngày sinh", value: "27-01-2003" },
-              { label: "Địa chỉ", value: "271/1 P1 Mỹ Tho, Tiền Giang" },
-              { label: "Mở tài khoản lúc", value: "07:59 07-01-2025" },
+              { label: "Email", value: patient.email },
+              { label: "SĐT", value: patient.sdt },
+              { label: "Ngày sinh", value: patient.ngay_sinh },
+              { label: "Địa chỉ", value: patient.dia_chi },
+              {
+                label: "Mở tài khoản lúc",
+                value: new Date(patient.thoi_diem_mo_tk).toLocaleString(),
+              },
             ].map((info) => (
               <div className="mb-3" key={info.label}>
                 <p className="text-lg font-medium">{info.label}</p>

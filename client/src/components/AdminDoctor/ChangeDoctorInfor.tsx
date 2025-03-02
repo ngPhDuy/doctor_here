@@ -61,7 +61,7 @@ const ChangeDoctorInforModal: React.FC<ChangeDoctorInforModalProps> = ({
   }) => {
     try {
       const response = await fetch(
-        "http://localhost:3001/api/doctor/changeInfo",
+        `${import.meta.env.VITE_API_BASE_URL}/api/doctor/changeInfo`,
         {
           method: "POST",
           headers: {
@@ -218,7 +218,7 @@ const ChangeDoctorInforModal: React.FC<ChangeDoctorInforModalProps> = ({
           <TextInput
             label="Ngày gia nhập"
             id="tai_khoan_thoi_diem_mo_tk"
-            value={doctor.tai_khoan_thoi_diem_mo_tk}
+            value={new Date(doctor.tai_khoan_thoi_diem_mo_tk).toLocaleString()}
             disabled={true}
             onChange={handleChange("tai_khoan_thoi_diem_mo_tk")}
           />
@@ -258,7 +258,7 @@ const ChangeDoctorInforModal: React.FC<ChangeDoctorInforModalProps> = ({
             <input
               name="participateTime"
               id="participateTime"
-              value={"23:59 " + participateTime}
+              value={participateTime}
               disabled
               className="block w-full p-2.5 text-sm text-gray-900 bg-gray-200 border border-gray-300 rounded-lg"
               onChange={(e) => setParticipateTime(e.target.value)}

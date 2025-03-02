@@ -18,7 +18,7 @@ const Header = () => {
   }, [showLoginModal]);
   return (
     <header>
-      <div className="flex justify-between mr-14 my-4 items-center">
+      <div className="flex justify-between mr-14 items-center">
         <div className="flex justify-center items-center ml-8">
           <img src="/images/logo.png" alt="Logo" className="w-16 h-16" />
           <h2 className="text-xl font-semibold text-gray-800">Doctor Here</h2>

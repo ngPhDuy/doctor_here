@@ -35,7 +35,9 @@ const ChangePasswordModal: React.FC<UpdateUserModalProps> = ({
   const changePassword = async (username: string, newPassword: string) => {
     try {
       const response = await fetch(
-        "http://localhost:3001/api/account/change_password_from_admin",
+        `${
+          import.meta.env.VITE_API_BASE_URL
+        }/api/account/change_password_from_admin`,
         {
           method: "POST",
           headers: {

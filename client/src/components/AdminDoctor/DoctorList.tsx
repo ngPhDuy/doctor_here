@@ -33,10 +33,34 @@ const DoctorListComponent: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // State cho phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const doctorsPerPage = 10;
+
+  // State cho tìm kiếm và lọc
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedSpecialty, setSelectedSpecialty] = useState("");
+
+  // State cho bộ lọc ngày
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  // Hàm kiểm tra xem ngày có nằm trong khoảng đã chọn không
+  const isWithinDateRange = (doctorDate: string) => {
+    if (!startDate && !endDate) return true;
+    const doctorTimestamp = new Date(doctorDate).getTime();
+    const startTimestamp = startDate ? new Date(startDate).getTime() : 0;
+    const endTimestamp = endDate ? new Date(endDate).getTime() : Infinity;
+
+    return doctorTimestamp >= startTimestamp && doctorTimestamp <= endTimestamp;
+  };
+
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const response = await fetch("http://localhost:3001/api/doctor");
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/doctor`
+        );
         if (!response.ok) {
           throw new Error("Không thể tải danh sách bác sĩ.");
         }
@@ -56,33 +80,101 @@ const DoctorListComponent: React.FC = () => {
     setIsAddDoctor(!isAddDoctor);
   };
 
+  // Lọc danh sách bác sĩ theo từ khóa tìm kiếm
+  const filteredDoctors = doctors.filter(
+    (doctor) =>
+      doctor.Nguoi_dung.ho_va_ten
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      doctor.ma_bac_si.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Lọc danh sách bác sĩ dựa trên chuyên khoa và ngày tham gia
+  const displayedDoctors = filteredDoctors.filter(
+    (doctor) =>
+      (!selectedSpecialty || doctor.chuyen_khoa === selectedSpecialty) &&
+      isWithinDateRange(doctor.ngay_vao_nghe)
+  );
+  // Xử lý phân trang
+  const totalPages = Math.ceil(displayedDoctors.length / doctorsPerPage);
+  const indexOfLastDoctor = currentPage * doctorsPerPage;
+  const indexOfFirstDoctor = indexOfLastDoctor - doctorsPerPage;
+  const currentDoctors = displayedDoctors.slice(
+    indexOfFirstDoctor,
+    indexOfLastDoctor
+  );
+
+  // Các chuyên khoa duy nhất để lọc
+  const specialties = Array.from(
+    new Set(doctors.map((doctor) => doctor.chuyen_khoa))
+  );
+
   if (loading) return <p>Đang tải dữ liệu...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
     <div className="p-5 h-full bg-gray-50">
-      <p className="font-bold text-xl mb-4">Danh sách bác sĩ</p>
       <div className="flex items-center w-full pb-4 p-3 mb-4 justify-between bg-white">
-        <div className="font-semibold text-lg mr-50">
-          <p>Số bác sĩ ({doctors.length})</p>
+        <div className="font-semibold text-lg">
+          <p>Số bác sĩ ({displayedDoctors.length})</p>
         </div>
 
         <div className="flex items-center space-x-3">
-          <img
-            src="/images/AdminList/search.png"
-            alt="Search"
-            className="w-10 h-10 cursor-pointer hover:bg-gray-200"
+          <div className="flex items-center border rounded-lg px-3 py-2 bg-white shadow-sm focus-within:ring-2 focus-within:ring-blue-500">
+            <input
+              type="text"
+              placeholder="Tên hoặc mã bác sĩ"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-1 outline-none px-2"
+            />
+            <svg
+              width="25"
+              height="25"
+              viewBox="0 0 25 25"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M21.3176 21.3191L16.8478 16.8413M19.3248 10.857C19.3248 13.1032 18.4325 15.2574 16.8442 16.8457C15.2559 18.434 13.1017 19.3263 10.8555 19.3263C8.60933 19.3263 6.45513 18.434 4.86683 16.8457C3.27853 15.2574 2.38623 13.1032 2.38623 10.857C2.38623 8.61079 3.27853 6.4566 4.86683 4.86829C6.45513 3.27999 8.60933 2.3877 10.8555 2.3877C13.1017 2.3877 15.2559 3.27999 16.8442 4.86829C18.4325 6.4566 19.3248 8.61079 19.3248 10.857V10.857Z"
+                stroke="#333333"
+                stroke-width="2.13512"
+                stroke-linecap="round"
+              />
+            </svg>
+          </div>
+
+          <select
+            value={selectedSpecialty}
+            onChange={(e) => setSelectedSpecialty(e.target.value)}
+            className="border px-4 py-2 rounded-lg"
+          >
+            <option value="">Tất cả chuyên khoa</option>
+            {specialties.map((specialty) => (
+              <option key={specialty} value={specialty}>
+                {specialty}
+              </option>
+            ))}
+          </select>
+          {/* Bộ lọc theo ngày */}
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="border px-4 py-2 rounded-lg"
+          />
+          <span>-</span>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="border px-4 py-2 rounded-lg"
           />
           <img
             src="/images/AdminList/add.png"
             alt="Add"
             className="w-10 h-10 cursor-pointer hover:bg-gray-200"
             onClick={toggleAddDoctor}
-          />
-          <img
-            src="/images/AdminList/filter.png"
-            alt="Filter"
-            className="w-10 h-10 cursor-pointer hover:bg-gray-200"
           />
         </div>
       </div>
@@ -99,19 +191,19 @@ const DoctorListComponent: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {doctors.map((doctor, index) => (
+          {currentDoctors.map((doctor, index) => (
             <tr
               key={doctor.id}
               className="bg-white hover:bg-gray-100 cursor-pointer"
               onClick={() => navigate(`/doctorDetail/${doctor.ma_bac_si}`)}
             >
-              <td className="px-4 py-4">{index + 1}</td>
-              <td className="px-4 py-4">{doctor.ma_bac_si}</td>
-              <td className="px-4 py-4 truncate max-w-xs">
+              <td className="px-4 py-3">{indexOfFirstDoctor + index + 1}</td>
+              <td className="px-4 py-3">{doctor.ma_bac_si}</td>
+              <td className="px-4 py-3 truncate max-w-xs">
                 {doctor.Nguoi_dung.ho_va_ten}
               </td>
-              <td className="px-4 py-4">{doctor.ngay_vao_nghe}</td>
-              <td className="px-4 py-4">{doctor.Nguoi_dung.sdt}</td>
+              <td className="px-4 py-3">{doctor.ngay_vao_nghe}</td>
+              <td className="px-4 py-3">{doctor.Nguoi_dung.sdt}</td>
               <td
                 className={`px-4 py-2 rounded-lg ${
                   doctor.Nguoi_dung.Tai_khoan.active
@@ -125,6 +217,37 @@ const DoctorListComponent: React.FC = () => {
           ))}
         </tbody>
       </table>
+
+      {/* Phân trang */}
+      <div className="flex justify-end mt-5 space-x-4">
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+          className={`px-4 py-2 rounded-lg ${
+            currentPage === 1
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-blue-500 hover:bg-blue-600 text-white"
+          }`}
+        >
+          Trước
+        </button>
+        <span className="px-4 py-2 border rounded-lg">
+          {currentPage} / {totalPages}
+        </span>
+        <button
+          onClick={() =>
+            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+          }
+          disabled={currentPage === totalPages}
+          className={`px-4 py-2 rounded-lg ${
+            currentPage === totalPages
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-blue-500 hover:bg-blue-600 text-white"
+          }`}
+        >
+          Sau
+        </button>
+      </div>
 
       <AddDoctorModal isOpen={isAddDoctor} setIsOpen={toggleAddDoctor} />
     </div>

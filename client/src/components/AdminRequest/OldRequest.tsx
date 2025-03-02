@@ -15,11 +15,28 @@ const OldRequestComponent: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
 
+  // State cho phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const requestsPerpage = 7;
+
+  const indexOfLastRequest = currentPage * requestsPerpage;
+  const indexOfFirstRequest = indexOfLastRequest - requestsPerpage;
+  const currentRequest = updateRequests.slice(
+    indexOfFirstRequest,
+    indexOfLastRequest
+  );
+
+  // Chuyển trang
+  const totalPages = Math.ceil(updateRequests.length / requestsPerpage);
+  const goToNextPage = () =>
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  const goToPrevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+
   const fetchUpdateRequests = async () => {
     try {
       setLoading(true);
       const response = await fetch(
-        "http://localhost:3001/api/updateRequest/oldRequest"
+        `${import.meta.env.VITE_API_BASE_URL}/api/updateRequest/oldRequest`
       );
 
       if (!response.ok) {
@@ -44,7 +61,7 @@ const OldRequestComponent: React.FC = () => {
 
   return (
     <div className="p-5 h-full bg-gray-50">
-      <div className="flex items-center mb-4 bg-white p-4 rounded-lg shadow-md">
+      <div className="flex items-center mb-4 bg-white rounded-lg shadow-md">
         <div
           className="p-3 mr-5  cursor-pointer"
           onClick={() => navigate(`/newRequests`)}
@@ -61,7 +78,7 @@ const OldRequestComponent: React.FC = () => {
       </div>
       <div className="flex items-center w-full pb-4 p-3 mb-4  justify-between bg-white">
         <div className="font-semibold text-lg mr-50">
-          <p>Số yêu cầu (430)</p>
+          <p>Số yêu cầu ({updateRequests.length})</p>
         </div>
 
         <div className="flex items-center space-x-3">
@@ -89,7 +106,7 @@ const OldRequestComponent: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {updateRequests.map((request, index) => (
+          {currentRequest.map((request, index) => (
             <tr
               key={request.ma_yeu_cau}
               className="bg-white hover:bg-gray-100 cursor-pointer"
@@ -123,6 +140,34 @@ const OldRequestComponent: React.FC = () => {
           ))}
         </tbody>
       </table>
+      {/* Phân trang */}
+      <div className="flex justify-end mt-5 space-x-4">
+        <button
+          onClick={goToPrevPage}
+          disabled={currentPage === 1}
+          className={`px-4 py-2 rounded-lg ${
+            currentPage === 1
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-blueButton hover:bg-blueButtonHover text-white"
+          }`}
+        >
+          Trước
+        </button>
+        <span className="px-4 py-2 border rounded-lg">
+          {currentPage} / {totalPages}
+        </span>
+        <button
+          onClick={goToNextPage}
+          disabled={currentPage === totalPages}
+          className={`px-4 py-2 rounded-lg ${
+            currentPage === totalPages
+              ? "bg-gray-300 cursor-not-allowed"
+              : "bg-blueButton hover:bg-blueButtonHover text-white"
+          }`}
+        >
+          Sau
+        </button>
+      </div>
     </div>
   );
 };
