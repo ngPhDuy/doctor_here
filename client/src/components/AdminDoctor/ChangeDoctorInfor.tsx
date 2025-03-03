@@ -85,6 +85,57 @@ const ChangeDoctorInforModal: React.FC<ChangeDoctorInforModalProps> = ({
   };
   const handleUpdateDoctor = async () => {
     try {
+      //valid email
+      if (doctor.nguoi_dung_email === "") {
+        alert("Email không được để trống");
+        return;
+      }
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!emailRegex.test(doctor.nguoi_dung_email)) {
+        alert("Email không hợp lệ");
+        return;
+      }
+      //valid phone number
+      if (doctor.nguoi_dung_sdt === "") {
+        alert("Số điện thoại không được để trống");
+        return;
+      }
+      //phone k chứa chữ, có 10 số
+      const phoneRegex = /^[0-9]{10}$/;
+      if (!phoneRegex.test(doctor.nguoi_dung_sdt)) {
+        alert("Số điện thoại không hợp lệ");
+        return;
+      }
+      //valid birthday
+      if (doctor.nguoi_dung_ngay_sinh === "") {
+        alert("Ngày sinh không được để trống");
+        return;
+      }
+      if (doctor.nguoi_dung_gioi_tinh === "") {
+        alert("Giới tính không được để trống");
+        return;
+      }
+      if (doctor.mo_ta === "") {
+        alert("Mô tả không được để trống");
+        return;
+      }
+      if (doctor.ngay_vao_nghe === "") {
+        alert("Ngày vào nghề không được để trống");
+        return;
+      }
+      if (doctor.chuyen_khoa === "") {
+        alert("Chuyên khoa không được để trống");
+        return;
+      }
+      if (doctor.trinh_do_hoc_van === "") {
+        alert("Trình độ học vấn không được để trống");
+        return;
+      }
+      if (doctor.dia_chi_pk === "") {
+        alert("Địa chỉ phòng khám không được để trống");
+        return;
+      }
+
       const updatedData = {
         doctorID: doctor?.ma_bac_si,
         email: doctor.nguoi_dung_email,
@@ -107,7 +158,7 @@ const ChangeDoctorInforModal: React.FC<ChangeDoctorInforModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 pt-14 flex items-center justify-center w-full overflow-y-auto bg-gray-800 bg-opacity-75">
+    <div className="fixed inset-0 z-50 pt-1 flex items-center justify-center w-full overflow-y-auto bg-gray-800 bg-opacity-75">
       <div className="w-full mt-auto mb-10 max-w-4xl p-4 bg-white rounded-lg shadow">
         <div className="flex items-center justify-between pb-4 mb-4 border-b rounded-t sm:mb-5">
           <h3 className="text-lg font-semibold text-gray-900">
@@ -138,7 +189,9 @@ const ChangeDoctorInforModal: React.FC<ChangeDoctorInforModalProps> = ({
           <TextInput
             label="Email"
             id="nguoi_dung_email"
+            type="email"
             value={doctor.nguoi_dung_email}
+            required
             onChange={handleChange("nguoi_dung_email")}
           />
           <TextInput
@@ -153,6 +206,7 @@ const ChangeDoctorInforModal: React.FC<ChangeDoctorInforModalProps> = ({
             label="SĐT"
             id="nguoi_dung_sdt"
             value={doctor.nguoi_dung_sdt}
+            type="tel"
             onChange={handleChange("nguoi_dung_sdt")}
           />
           <TextInput

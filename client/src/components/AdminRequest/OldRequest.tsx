@@ -61,18 +61,18 @@ const OldRequestComponent: React.FC = () => {
 
   return (
     <div className="p-5 h-full bg-gray-50">
-      <div className="flex items-center mb-4 bg-white rounded-lg shadow-md">
+      <div className="flex items-center p-2 mb-4 bg-white rounded-lg shadow-md">
         <div
-          className="p-3 mr-5  cursor-pointer"
+          className="mr-5  cursor-pointer"
           onClick={() => navigate(`/newRequests`)}
         >
-          <p className="font-semibold text-xl mb-2">Yêu cầu mới</p>
+          <p className="font-semibold text-lg mb-2">Chưa xử lý</p>
         </div>
         <div
-          className="p-3 text-blueTitle cursor-pointer"
+          className="ml-5 text-blueTitle cursor-pointer"
           onClick={() => navigate(`/oldRequests`)}
         >
-          <p className="font-semibold text-xl mb-2">Yêu cầu cũ</p>
+          <p className="font-semibold text-lg mb-2">Đã xử lý</p>
           <hr className="border-t-2 border-blueTitle" />
         </div>
       </div>
@@ -85,17 +85,17 @@ const OldRequestComponent: React.FC = () => {
           <img
             src="/images/AdminList/search.png"
             alt="Search"
-            className="w-10 h-10 cursor-pointer hover:bg-gray-200"
+            className="w2r-h2r cursor-pointer hover:bg-gray-200"
           />
           <img
             src="/images/AdminList/filter.png"
             alt="Filter"
-            className="w-10 h-10 cursor-pointer hover:bg-gray-200"
+            className="w2r-h2r cursor-pointer hover:bg-gray-200"
           />
         </div>
       </div>
       <table className="table-auto w-full text-center border border-gray-300 rounded-lg shadow-lg">
-        <thead className="text-gray-600 text-lg bg-gray-100">
+        <thead className="text-gray-600 text-base bg-gray-100">
           <tr>
             <th className="px-4 py-2">STT</th>
             <th className="px-4 py-2">Mã yêu cầu</th>
@@ -116,17 +116,17 @@ const OldRequestComponent: React.FC = () => {
                 )
               }
             >
-              <td className="px-4 py-4">{index + 1}</td>
-              <td className="px-4 py-4">{request.ma_yeu_cau}</td>
-              <td className="px-4 py-4">{request.ma_bac_si}</td>
-              <td className="px-4 py-4 truncate max-w-xs">
+              <td className="px-2 py-3">{index + 1}</td>
+              <td className="px-2 py-3">{request.ma_yeu_cau}</td>
+              <td className="px-2 py-3">{request.ma_bac_si}</td>
+              <td className="px-2 py-3 truncate max-w-xs">
                 {request.ho_va_ten}
               </td>
-              <td className="px-4 py-4">
+              <td className="px-2 py-3">
                 {new Date(request.thoi_diem_yeu_cau).toLocaleString()}
               </td>
               <td
-                className={`px-4 py-4 ${
+                className={`px-2 py-3 ${
                   request.trang_thai === "Đã duyệt"
                     ? "text-green-500"
                     : request.trang_thai === "Từ chối"

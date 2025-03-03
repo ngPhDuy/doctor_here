@@ -15,6 +15,8 @@ const RequestDetail = {
   dia_chi_pk_moi: "",
   ma_bac_si: "",
   thoi_diem_thu_hoi: null,
+  chuyen_khoa_cu: "",
+  chuyen_khoa_moi: "",
   Bac_si: {
     ngay_vao_nghe: "",
     trinh_do_hoc_van: "",
@@ -212,7 +214,7 @@ const NewRequestDetail: React.FC = () => {
     window.location.reload();
   };
   return (
-    <div className="h-full bg-gray-50 p-6">
+    <div className="h-full bg-gray-50">
       {/* Header */}
       <div className="flex items-center mb-4 bg-white rounded-lg shadow-md">
         <div
@@ -253,8 +255,8 @@ const NewRequestDetail: React.FC = () => {
         <div className="w-2/3 bg-white p-6 rounded-lg shadow-md">
           <div className="flex items-center mb-8">
             <svg
-              width="45"
-              height="45"
+              width="35"
+              height="35"
               viewBox="0 0 45 45"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -297,10 +299,9 @@ const NewRequestDetail: React.FC = () => {
                 stroke-linejoin="round"
               />
             </svg>
-            <h2 className="text-xl font-semibold ml-4">Chi tiết yêu cầu</h2>
+            <h2 className="text-lg font-semibold ml-4">Yêu cầu cập nhật thông tin</h2>
           </div>
 
-          <h3 className="text-xl font-semibold">Yêu cầu cập nhật thông tin</h3>
           <div className="grid gap-4 mb-4 sm:grid-cols-2 my-4">
             {[
               { id: "chuyen_khoa_cu", label: "Chuyên khoa cũ", type: "text" },
@@ -341,9 +342,9 @@ const NewRequestDetail: React.FC = () => {
             ))}
           </div>
 
-          <div className="flex justify-end mt-10 mb-20">
+          <div className="flex justify-end my-3">
             {requestDetail.trang_thai === "Chờ duyệt" ? (
-              <div className="flex justify-end mt-10 mb-20">
+              <div className="flex justify-end">
                 <button
                   className="px-4 py-2 mr-3 bg-green-500 hover:bg-green-600 text-white rounded-lg"
                   onClick={() => handleRequest(true)}
@@ -358,7 +359,7 @@ const NewRequestDetail: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <div className="flex flex-col items-center mt-10 mb-20">
+              <div className="flex flex-col items-center my-3">
                 <div
                   className={`border rounded-lg px-5 py-3 ${
                     requestDetail.trang_thai === "Đã duyệt"
@@ -388,7 +389,7 @@ const NewRequestDetail: React.FC = () => {
               alt="Doctor Avatar"
               className="w-30 h-30 rounded-full"
             />
-            <p className="text-xl font-semibold">
+            <p className="text-base font-semibold">
               {requestDetail.Bac_si.Nguoi_dung.ho_va_ten}
             </p>
             {calculateAge(requestDetail.Bac_si.Nguoi_dung.ngay_sinh)} tuổi,{" "}
@@ -398,7 +399,7 @@ const NewRequestDetail: React.FC = () => {
           <hr className="mt-3 mb-3" />
           <div className="">
             <table className="table-auto w-full text-center">
-              <thead className="text-gray-600 text-lg bg-gray-100">
+              <thead className="text-gray-600 text-base bg-gray-100">
                 <tr>
                   <th className="px-4 py-2">Mã yêu cầu</th>
                   <th className="px-4 py-2">Thời gian yêu cầu</th>

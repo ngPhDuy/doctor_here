@@ -173,14 +173,14 @@ const DoctorListComponent: React.FC = () => {
           <img
             src="/images/AdminList/add.png"
             alt="Add"
-            className="w-10 h-10 cursor-pointer hover:bg-gray-200"
+            className="w2r-h2r cursor-pointer hover:bg-gray-200"
             onClick={toggleAddDoctor}
           />
         </div>
       </div>
 
       <table className="table-auto w-full text-center border border-gray-300 rounded-lg shadow-lg">
-        <thead className="text-gray-600 text-lg bg-gray-100">
+        <thead className="text-gray-600 text-base bg-gray-100">
           <tr>
             <th className="px-4 py-2">STT</th>
             <th className="px-4 py-2">Mã số BS</th>
@@ -205,7 +205,7 @@ const DoctorListComponent: React.FC = () => {
               <td className="px-4 py-3">{doctor.ngay_vao_nghe}</td>
               <td className="px-4 py-3">{doctor.Nguoi_dung.sdt}</td>
               <td
-                className={`px-4 py-2 rounded-lg ${
+                className={`px-4 py-3 rounded-lg ${
                   doctor.Nguoi_dung.Tai_khoan.active
                     ? "text-green-600"
                     : "text-red-600"

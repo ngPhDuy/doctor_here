@@ -156,7 +156,7 @@ const PatientListComponent: React.FC = () => {
         </div>
       </div>
       <table className="table-auto w-full text-center border border-gray-300 rounded-lg shadow-lg">
-        <thead className="text-gray-600 text-lg bg-gray-100">
+        <thead className="text-gray-600 text-base bg-gray-100">
           <tr>
             <th className="px-4 py-2">STT</th>
             <th className="px-4 py-2">Mã số BN</th>

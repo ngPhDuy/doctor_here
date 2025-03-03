@@ -31,11 +31,15 @@ const Sidebar = () => {
   const activeColor = "text-blueTitle";
 
   return (
-    <div className="w-60 h-screen border-r border-gray-300 shadow-md">
-      <nav className="m-3">
-        <ul className="pt-10">
+    <div className="h-screen border-r border-gray-300 shadow-md"
+    style = {{
+      width: "30%",
+      maxWidth: "180px",
+    }}>
+      <nav className="">
+        <ul className="" style={{paddingTop: "1rem"}}>
           <li
-            className={`px-6 py-3 flex text-lg hover:bg-gray-200 cursor-pointer rounded-lg ${
+            className={`psi py-3 flex text-lg hover:bg-gray-200 cursor-pointer rounded-lg ${
               isActive(doctorPages) || location.pathname == "/"
                 ? activeColor
                 : defaultColor
@@ -43,7 +47,7 @@ const Sidebar = () => {
             onClick={() => navigate(`/`)}
           >
             <DoctorIcon
-              size={30}
+              size={25}
               color={
                 isActive(doctorPages) || location.pathname == "/"
                   ? "blue"
@@ -53,32 +57,31 @@ const Sidebar = () => {
             <span className="ml-2">Bác sĩ</span>
           </li>
           <li
-            className={`px-6 py-3 text-lg flex hover:bg-gray-200 cursor-pointer rounded-lg ${
+            className={`psi py-3 text-lg flex hover:bg-gray-200 cursor-pointer rounded-lg ${
               isActive(patientPages) ? activeColor : defaultColor
             }`}
             onClick={() => navigate(`/patientList`)}
           >
             <PatientIcon
-              size={30}
+              size={25}
               color={isActive(patientPages) ? "blue" : "gray"}
             />
             <span className="ml-2">Bệnh nhân</span>
           </li>
           <li
-            className={`px-6 py-3 text-lg flex hover:bg-gray-200 cursor-pointer rounded-lg ${
+            className={`psi py-3 text-lg flex hover:bg-gray-200 cursor-pointer rounded-lg ${
               isActive(requestPages) ? activeColor : defaultColor
             }`}
             onClick={() => navigate(`/newRequests`)}
           >
             <EmailIcon
-              width={30}
-              height={30}
+              width={25}
+              height={25}
               color={isActive(requestPages) ? "blue" : "gray"}
             />
             <span className="ml-2">Yêu cầu</span>
           </li>
         </ul>
-        <hr className="mt-10" />
       </nav>
     </div>
   );
