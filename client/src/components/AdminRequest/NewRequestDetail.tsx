@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { TextInput } from "../Input/InputComponents";
 
+const urlIMG = "https://res.cloudinary.com/dpquv4bcu/image/upload/v1741016174/uploads/smearerqnrwuutrks12l.png";
 const adminID = "QT0000011"; // ID của quản trị viên xử lý yêu cầu
 
 const RequestDetail = {
@@ -39,6 +40,7 @@ const RequestDetail = {
     yeu_cau_cap_nhat: "",
     ma_qtv: "",
     thoi_diem_duyet: "",
+    ly_do: "",
   },
 };
 
@@ -58,6 +60,8 @@ const NewRequestDetail: React.FC = () => {
   }>();
   const [requestDetail, setRequestDetail] = useState(RequestDetail);
   const [requestsHistory, setRequestsHistory] = useState<RequestHistory[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [reason, setReason] = useState("");
 
   // State cho phân trang
   const [currentPage, setCurrentPage] = useState(1);
@@ -75,6 +79,22 @@ const NewRequestDetail: React.FC = () => {
   const goToNextPage = () =>
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   const goToPrevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+  
+    // Hàm mở modal
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  // Hàm đóng modal
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  // Hàm xử lý khi nhấn xác nhận
+  const handleConfirm = () => {
+    handleRequest(false, reason);  // Gọi handleRequest với lý do
+    closeModal();  // Đóng modal
+  };
 
   useEffect(() => {
     if (!requestId) return;
@@ -174,7 +194,7 @@ const NewRequestDetail: React.FC = () => {
     return age;
   };
 
-  const handleRequest = async (approved: boolean) => {
+  const handleRequest = async (approved: boolean, reason: string) => {
     if (!requestDetail) return;
 
     try {
@@ -189,6 +209,7 @@ const NewRequestDetail: React.FC = () => {
           body: JSON.stringify({
             requestID: requestDetail.ma_yeu_cau,
             approved,
+            reason,
             adminID,
           }),
         }
@@ -342,18 +363,44 @@ const NewRequestDetail: React.FC = () => {
             ))}
           </div>
 
+            {/* Ảnh minh chứng */}
+          <div className="mb-4">
+            <div className="mb-2 text-sm font-medium text-blueText">
+              Minh chứng
+            </div>
+            <div className="w-full p-2.5 text-sm text-blueText border border-gray-300 rounded-lg bg-gray-200">
+              <a href={urlIMG} download target="_blank" className="text-blue-500">
+                {
+                  urlIMG.split("/").pop()
+                }
+              </a>
+            </div>
+          </div>
+
+          {requestDetail.trang_thai === "Từ chối" ? (
+            <div className="mb-4">
+              <div className="mb-2 text-sm font-medium text-blueText">
+                Lý do từ chối
+              </div>
+              <div className="w-full p-2.5 text-sm text-blueText border border-gray-300 rounded-lg bg-gray-200">
+                {requestDetail.Duyet_yeu_cau_cap_nhat.ly_do}
+              </div>
+            </div>
+          ) : null
+          }
+
           <div className="flex justify-end my-3">
             {requestDetail.trang_thai === "Chờ duyệt" ? (
               <div className="flex justify-end">
                 <button
                   className="px-4 py-2 mr-3 bg-green-500 hover:bg-green-600 text-white rounded-lg"
-                  onClick={() => handleRequest(true)}
+                  onClick={() => handleRequest(true, "")}
                 >
                   Chấp thuận
                 </button>
                 <button
                   className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg"
-                  onClick={() => handleRequest(false)}
+                  onClick={openModal}
                 >
                   Từ chối
                 </button>
@@ -468,6 +515,35 @@ const NewRequestDetail: React.FC = () => {
           </div>
         </div>
       </div>
+
+            {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg w-1/3">
+            <h2 className="text-xl mb-4">Nhập lý do từ chối</h2>
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}  // Cập nhật lý do khi người dùng nhập
+              className="w-full p-2 border rounded mb-4"
+              placeholder="Nhập lý do..."
+            />
+            <div className="flex justify-end">
+              <button
+                onClick={closeModal}  // Đóng modal mà không làm gì
+                className="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg mr-2"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleConfirm}  // Xác nhận từ chối với lý do
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg"
+              >
+                Xác nhận
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
