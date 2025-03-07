@@ -133,16 +133,33 @@ const DoctorInfor: React.FC = () => {
   };
 
   const [isChangeDoctorInfor, setIsChangeDoctorInfor] = useState(false);
-  const [isChangePassword, setIsChangePassword] = useState(false);
 
   const toggleChangeDoctorInfor = () => {
     setIsChangeDoctorInfor(!isChangeDoctorInfor);
     fetchDoctor();
   };
 
-  const toggleChangePassword = () => {
-    setIsChangePassword(!isChangePassword);
+  const resetPassword = async (username: string) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/account/reset_password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Không thể đặt lại mật khẩu.");
+      alert("Đặt lại mật khẩu thành công");
+    } catch (error) {
+      console.error(error);
+      alert("Đặt lại mật khẩu thất bại!");
+    }
   };
+
   const toggleAccountStatus = async (username: string) => {
     try {
       const response = await fetch(
@@ -295,7 +312,7 @@ const DoctorInfor: React.FC = () => {
             </button>
             <button
               className="px-4 py-2 mr-3 bg-yellowButton hover:bg-yellowButtonHover text-white rounded-lg"
-              onClick={toggleChangePassword}
+              onClick={() => resetPassword(doctor.nguoi_dung_ten_dang_nhap)}
             >
               Đặt lại mật khẩu
             </button>
@@ -359,12 +376,6 @@ const DoctorInfor: React.FC = () => {
         setIsOpen={toggleChangeDoctorInfor}
         doctor={doctor}
         handleChange={handleChange}
-      />
-
-      <ChangePasswordModal
-        isOpen={isChangePassword}
-        setIsOpen={toggleChangePassword}
-        username={doctor.nguoi_dung_ten_dang_nhap}
       />
     </div>
   );

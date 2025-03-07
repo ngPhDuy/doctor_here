@@ -45,8 +45,6 @@ const PatientDetail: React.FC = () => {
   const navigate = useNavigate();
   const [patient, setPatient] = useState<Patient>(defaultPatient);
   const { id } = useParams<{ id: string }>();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   const handleChange =
     (field: string) =>
@@ -58,9 +56,25 @@ const PatientDetail: React.FC = () => {
       setPatient((prevData) => ({ ...prevData, [field]: e.target.value }));
     };
 
-  const [isChangePassword, setIsChangePassword] = useState(false);
-  const toggleChangePassword = () => {
-    setIsChangePassword(!isChangePassword);
+  const resetPassword = async (username: string) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/account/reset_password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Không thể đặt lại mật khẩu.");
+      alert("Đặt lại mật khẩu thành công");
+    } catch (error) {
+      console.error(error);
+      alert("Đặt lại mật khẩu thất bại!");
+    }
   };
 
   const fetchPatientById = async (
@@ -269,7 +283,7 @@ const PatientDetail: React.FC = () => {
           <div className="flex justify-end mt-10 mb-20">
             <button
               className="px-4 py-2 mr-3 bg-yellowButton hover:bg-yellowButtonHover text-white rounded-lg"
-              onClick={toggleChangePassword}
+              onClick={() => resetPassword(patient.ten_dang_nhap)}
             >
               Đặt lại mật khẩu
             </button>
@@ -319,12 +333,6 @@ const PatientDetail: React.FC = () => {
           </div>
         </div>
       </div>
-
-      <ChangePatientPasswordModal
-        isOpen={isChangePassword}
-        setIsOpen={toggleChangePassword}
-        username={patient.ten_dang_nhap}
-      />
     </div>
   );
 };
