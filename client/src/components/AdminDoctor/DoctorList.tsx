@@ -113,7 +113,7 @@ const DoctorListComponent: React.FC = () => {
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="p-5 h-full bg-gray-50">
+    <div className="p-5 h-full bg-gray-50 flex flex-col">
       <div className="flex items-center w-full pb-4 p-3 mb-4 justify-between bg-white">
         <div className="font-semibold text-lg">
           <p>Số bác sĩ ({displayedDoctors.length})</p>
@@ -217,6 +217,7 @@ const DoctorListComponent: React.FC = () => {
           ))}
         </tbody>
       </table>
+      
 
       {/* Phân trang */}
       <div className="flex justify-end mt-5 space-x-4">

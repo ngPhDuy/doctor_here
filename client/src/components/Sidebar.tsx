@@ -31,7 +31,7 @@ const Sidebar = () => {
   const activeColor = "text-blueTitle";
 
   return (
-    <div className="h-screen border-r border-gray-300 shadow-md"
+    <div className="h-full border-r border-gray-300 shadow-md"
     style = {{
       width: "30%",
       maxWidth: "180px",
