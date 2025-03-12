@@ -21,7 +21,7 @@
 
 /* Màu sắc khi mục active */
 .active-color {
-  background-color: black;
+  background-color: #787878; /* Màu nền khi active */
   color: white; /* Màu chữ khi active */
 }
 

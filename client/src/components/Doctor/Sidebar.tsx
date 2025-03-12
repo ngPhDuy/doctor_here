@@ -21,7 +21,9 @@ const Sidebar = () => {
     // Trường hợp đặc biệt cho / để tránh nhầm lẫn với các mục khác
     console.log(location.pathname);
     if (location.pathname === "/" && paths.includes("/")) return true;
-    return paths.includes(location.pathname);
+    return paths.some(
+      (path) => location.pathname.startsWith(path) && path !== "/"
+    );
   };
 
   return (
@@ -29,11 +31,18 @@ const Sidebar = () => {
       className="h-full border-r border-gray-300 shadow-md"
       style={{
         width: "30%",
-        maxWidth: "180px",
+        maxWidth: "200px",
       }}
     >
       <nav className="">
-        <ul className="" style={{ paddingTop: "1rem" }}>
+        <ul
+          className=""
+          style={{
+            paddingTop: "1rem",
+            paddingLeft: "0.5rem",
+            paddingRight: "0.5rem",
+          }}
+        >
           <li
             className={`sidebar-item psi py-3 flex text-lg hover:bg-gray-200 cursor-pointer rounded-lg ${
               isActive(dashBoardActive) ? "active-color" : "default-color"
