@@ -40,3 +40,9 @@
 .read-the-docs {
   color: #888;
 }
+
+html, body, #root {
+  height: 100vh;  /* Chiều cao luôn bằng 100% viewport */
+  margin: 0; /* Xóa khoảng trắng dư thừa */
+  overflow: hidden; /* Ngăn cuộn trang */
+}

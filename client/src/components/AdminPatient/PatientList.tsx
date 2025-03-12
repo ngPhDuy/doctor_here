@@ -27,7 +27,7 @@ interface Patient {
   };
 }
 
-const PatientListComponent: React.FC = () => {
+const PatientListAdminComponent: React.FC = () => {
   const navigate = useNavigate();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
@@ -231,4 +231,4 @@ const PatientListComponent: React.FC = () => {
   );
 };
 
-export default PatientListComponent;
+export default PatientListAdminComponent;
