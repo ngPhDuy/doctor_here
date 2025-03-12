@@ -5,38 +5,95 @@ import Swal from "sweetalert2";
 const DoctorRequest: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [doctor, setDoctor] = useState<DoctorInfo | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  // const [doctor, setDoctor] = useState<DoctorInfo | null>(null);
+  // const [loading, setLoading] = useState(true);
+  // const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     chuyen_khoa: "",
     dia_chi_pk: "",
     trinh_do_hoc_van: "",
-    ngay_vao_nghe: "",
-    mo_ta: "",
     files: [] as File[],
   });
 
-    // Fake data cho bảng
-    const requestHistory = [
-        { id: "2110168498", time: "20:10 20/12/2023", result: "Chấp thuận", reviewer: "Admin1" },
-        { id: "3156874561", time: "22:11 22/11/2023", result: "Từ chối", reviewer: "Admin1" },
-        { id: "1024587845", time: "08:30 10/01/2024", result: "Chấp thuận", reviewer: "Admin2" },
-        { id: "7485901234", time: "09:00 11/01/2024", result: "Chờ duyệt", reviewer: "Admin3" },
-        { id: "3154789521", time: "12:15 12/01/2024", result: "Từ chối", reviewer: "Admin4" },
-        { id: "5812369571", time: "14:45 13/01/2024", result: "Chấp thuận", reviewer: "Admin5" },
-        { id: "9746538492", time: "10:25 15/01/2024", result: "Chờ duyệt", reviewer: "Admin6" },
-        { id: "8357021493", time: "16:00 17/01/2024", result: "Chấp thuận", reviewer: "Admin7" },
-        { id: "5812369571", time: "14:45 13/01/2024", result: "Chấp thuận", reviewer: "Admin5" },
-        { id: "9746538492", time: "10:25 15/01/2024", result: "Chờ duyệt", reviewer: "Admin6" },
-        { id: "8357021493", time: "16:00 17/01/2024", result: "Chấp thuận", reviewer: "Admin7" },
-    ];
+  // Fake data cho bảng
+  const requestHistory = [
+    {
+      id: "2110168498",
+      time: "20:10 20/12/2023",
+      result: "Chấp thuận",
+      reviewer: "Admin1",
+    },
+    {
+      id: "3156874561",
+      time: "22:11 22/11/2023",
+      result: "Từ chối",
+      reviewer: "Admin1",
+    },
+    {
+      id: "1024587845",
+      time: "08:30 10/01/2024",
+      result: "Chấp thuận",
+      reviewer: "Admin2",
+    },
+    {
+      id: "7485901234",
+      time: "09:00 11/01/2024",
+      result: "Chờ duyệt",
+      reviewer: "Admin3",
+    },
+    {
+      id: "3154789521",
+      time: "12:15 12/01/2024",
+      result: "Từ chối",
+      reviewer: "Admin4",
+    },
+    {
+      id: "5812369571",
+      time: "14:45 13/01/2024",
+      result: "Chấp thuận",
+      reviewer: "Admin5",
+    },
+    {
+      id: "9746538492",
+      time: "10:25 15/01/2024",
+      result: "Chờ duyệt",
+      reviewer: "Admin6",
+    },
+    {
+      id: "8357021493",
+      time: "16:00 17/01/2024",
+      result: "Chấp thuận",
+      reviewer: "Admin7",
+    },
+    {
+      id: "5812369571",
+      time: "14:45 13/01/2024",
+      result: "Chấp thuận",
+      reviewer: "Admin5",
+    },
+    {
+      id: "9746538492",
+      time: "10:25 15/01/2024",
+      result: "Chờ duyệt",
+      reviewer: "Admin6",
+    },
+    {
+      id: "8357021493",
+      time: "16:00 17/01/2024",
+      result: "Chấp thuận",
+      reviewer: "Admin7",
+    },
+  ];
 
-    const recordsPerPage = 8;
-    const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 8;
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Hàm xử lý thay đổi input text hoặc select
-  const handleInputChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLTextAreaElement | HTMLInputElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLSelectElement | HTMLTextAreaElement | HTMLInputElement
+    >
+  ) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
@@ -64,7 +121,7 @@ const DoctorRequest: React.FC = () => {
     setFormData({ ...formData, files: newFiles });
   };
 
-  const handleSubmitRequest = () => {
+  const handleSubmitRequest = async () => {
     Swal.fire({
       title: "Xác nhận gửi yêu cầu?",
       icon: "warning",
@@ -73,26 +130,62 @@ const DoctorRequest: React.FC = () => {
       cancelButtonColor: "#d33",
       confirmButtonText: "Gửi yêu cầu",
       cancelButtonText: "Hủy",
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        Swal.fire("Thành công!", "Yêu cầu của bạn đã được gửi.", "success");
+        try {
+          const newForm = new FormData();
+          newForm.append("doctorID", "BS0000001");
+          newForm.append("speciality", formData.chuyen_khoa);
+          newForm.append("address", formData.dia_chi_pk);
+          newForm.append("education", formData.trinh_do_hoc_van);
+
+          // Thêm các file vào FormData
+          formData.files.forEach((file) => {
+            newForm.append("files", file);
+          });
+
+          const response = await fetch(
+            `${
+              import.meta.env.VITE_API_BASE_URL
+            }/api/updateRequest/createUpdateRequest`,
+            {
+              method: "POST",
+              body: newForm,
+            }
+          );
+
+          if (response.ok) {
+            Swal.fire("Thành công!", "Yêu cầu của bạn đã được gửi.", "success");
+          } else {
+            Swal.fire("Lỗi", "Đã có lỗi xảy ra khi gửi yêu cầu.", "error");
+          }
+        } catch (error) {
+          console.error(error);
+          Swal.fire("Lỗi", "Đã có lỗi xảy ra khi gửi yêu cầu.", "error");
+        }
       }
     });
   };
 
-    // Logic to calculate visible records based on the current page
-    const indexOfLastRecord = currentPage * recordsPerPage;
-    const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-    const currentRecords = requestHistory.slice(indexOfFirstRecord, indexOfLastRecord);
-  
-    const totalPages = Math.ceil(requestHistory.length / recordsPerPage);
-    const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+  // Logic to calculate visible records based on the current page
+  const indexOfLastRecord = currentPage * recordsPerPage;
+  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+  const currentRecords = requestHistory.slice(
+    indexOfFirstRecord,
+    indexOfLastRecord
+  );
+
+  const totalPages = Math.ceil(requestHistory.length / recordsPerPage);
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   return (
     <div className="h-full bg-gray-100 p-3">
       {/* Thanh điều hướng */}
       <div className="flex items-center p-3 mb-4 bg-white rounded-lg shadow-md">
-        <div className="p-3 cursor-pointer" onClick={() => navigate("/doctorList")}>
+        <div
+          className="p-3 cursor-pointer"
+          onClick={() => navigate("/doctorList")}
+        >
           <svg
             width="24"
             height="24"
@@ -122,7 +215,10 @@ const DoctorRequest: React.FC = () => {
         <div className="cursor-pointer" onClick={() => navigate("/")}>
           <p className="font-semibold text-lg mb-1">Các đánh giá</p>
         </div>
-        <div className="ml-5 cursor-pointer text-blueTitle" onClick={() => navigate("/")}>
+        <div
+          className="ml-5 cursor-pointer text-blueTitle"
+          onClick={() => navigate("/")}
+        >
           <p className="font-semibold text-lg mb-1">Các yêu cầu cập nhật</p>
           <hr className="border-t-2 border-blueTitle ml-1" />
         </div>
@@ -139,7 +235,7 @@ const DoctorRequest: React.FC = () => {
             <h1 className="text-center text-lg font-bold">GỬI YÊU CẦU</h1>
             <div>
               <label className="text-sm font-medium">Chuyên khoa</label>
-              <br/>
+              <br />
               <select
                 className="w-3/5 px-3 py-2 border rounded-lg"
                 value={formData.chuyen_khoa}
@@ -152,7 +248,7 @@ const DoctorRequest: React.FC = () => {
             </div>
             <div>
               <label className="text-sm font-medium">Địa chỉ phòng khám</label>
-              <br/>
+              <br />
               <input
                 className="w-3/5 px-3 py-2 border rounded-lg"
                 value={formData.dia_chi_pk}
@@ -167,15 +263,17 @@ const DoctorRequest: React.FC = () => {
                 className="w-full px-3 py-2 border rounded-lg"
                 rows={3}
                 value={formData.trinh_do_hoc_van}
-                name="mo_ta"
+                name="trinh_do_hoc_van"
                 onChange={handleInputChange}
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Gửi mình chứng (tối đa 5 hình ảnh)</label>
+              <label className="text-sm font-medium">
+                Gửi mình chứng (tối đa 5 hình ảnh)
+              </label>
               <div
                 className="w-full h-32 border-2 border-dashed border-gray-300 p-4 rounded-lg flex justify-center items-center cursor-pointer hover:border-blue-500 transition-all duration-300"
-                onClick={() => document.getElementById("file-input")?.click()}  // Mở chọn file khi click vào ô
+                onClick={() => document.getElementById("file-input")?.click()} // Mở chọn file khi click vào ô
               >
                 <input
                   id="file-input"
@@ -186,9 +284,15 @@ const DoctorRequest: React.FC = () => {
                   className="hidden"
                 />
                 <div className="flex flex-col items-center">
-                  <span className="text-gray-600 text-sm">Drop your file, or </span>
-                  <span className="text-blue-600 text-sm font-semibold">Browse</span>
-                  <div className="mt-2 text-gray-500 text-xs">Max size 10MB</div>
+                  <span className="text-gray-600 text-sm">
+                    Drop your file, or{" "}
+                  </span>
+                  <span className="text-blue-600 text-sm font-semibold">
+                    Browse
+                  </span>
+                  <div className="mt-2 text-gray-500 text-xs">
+                    Max size 10MB
+                  </div>
                 </div>
               </div>
             </div>
@@ -209,12 +313,10 @@ const DoctorRequest: React.FC = () => {
                     )}
                     {/* Nút xóa file */}
                     <button
-                        onClick={() => handleDeleteFile(index)}
-                        className="absolute top-0 right-0 text-white bg-red-500 hover:bg-red-700 rounded-full p-1 w-6 h-6 flex items-center justify-center transition-all duration-300 transform hover:scale-110"
-                        >
-                        <span className="text-sm font-semibold">
-                         ×
-                        </span>
+                      onClick={() => handleDeleteFile(index)}
+                      className="absolute top-0 right-0 text-white bg-red-500 hover:bg-red-700 rounded-full p-1 w-6 h-6 flex items-center justify-center transition-all duration-300 transform hover:scale-110"
+                    >
+                      <span className="text-sm font-semibold">×</span>
                     </button>
                   </div>
                 ))}
@@ -268,40 +370,44 @@ const DoctorRequest: React.FC = () => {
                         </span>
                       )}
                     </td>
-                    <td className="border px-3 py-2 text-sm">{request.reviewer}</td>
+                    <td className="border px-3 py-2 text-sm">
+                      {request.reviewer}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
             {/* Pagination Controls */}
             {requestHistory.length > 0 && (
-            <div className="flex justify-center mt-4">
+              <div className="flex justify-center mt-4">
                 <button
-                onClick={() => paginate(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="px-2 py-1 bg-gray-300 rounded-md mx-1"
+                  onClick={() => paginate(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-2 py-1 bg-gray-300 rounded-md mx-1"
                 >
-                Trước
+                  Trước
                 </button>
                 {[...Array(totalPages)].map((_, index) => (
-                <button
+                  <button
                     key={index}
                     onClick={() => paginate(index + 1)}
                     className={`px-4 py-2 mx-1 rounded-md ${
-                    currentPage === index + 1 ? "bg-blue-500 text-white" : "bg-gray-200"
+                      currentPage === index + 1
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200"
                     }`}
-                >
+                  >
                     {index + 1}
-                </button>
+                  </button>
                 ))}
                 <button
-                onClick={() => paginate(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="px-4 py-2 bg-gray-300 rounded-md mx-1"
+                  onClick={() => paginate(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 bg-gray-300 rounded-md mx-1"
                 >
-                Sau
+                  Sau
                 </button>
-            </div>
+              </div>
             )}
           </div>
         </div>
