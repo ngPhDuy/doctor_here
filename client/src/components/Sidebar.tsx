@@ -31,13 +31,15 @@ const Sidebar = () => {
   const activeColor = "text-blueTitle";
 
   return (
-    <div className="h-full border-r border-gray-300 shadow-md"
-    style = {{
-      width: "30%",
-      maxWidth: "180px",
-    }}>
+    <div
+      className="h-full border-r border-gray-300 shadow-md"
+      style={{
+        width: "30%",
+        maxWidth: "180px",
+      }}
+    >
       <nav className="">
-        <ul className="" style={{paddingTop: "1rem"}}>
+        <ul className="" style={{ paddingTop: "1rem" }}>
           <li
             className={`psi py-3 flex text-lg hover:bg-gray-200 cursor-pointer rounded-lg ${
               isActive(doctorPages) || location.pathname == "/"

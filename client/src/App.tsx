@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
+import DoctorSidebar from "./components/Doctor/Sidebar";
 import DoctorListComponent from "./components/AdminDoctor/DoctorList";
 import DoctorInfor from "./components/AdminDoctor/DoctorDetail";
 import PatientListAdminComponent from "./components/AdminPatient/PatientList";
@@ -51,7 +52,8 @@ const App: React.FC = () => {
               <div className="App flex flex-col h-screen">
                 <Header />
                 <div className="flex flex-1">
-                  <Sidebar />
+                  {role === "qtv" && <Sidebar />}
+                  {role === "bs" && <DoctorSidebar />}
                   <div className="w-full p-4">
                     <Routes>
                       {/* Routes dành cho Admin */}
@@ -129,79 +131,5 @@ const App: React.FC = () => {
     </Router>
   );
 };
-
-// const App: React.FC = () => {
-//   const role = localStorage.getItem("role");
-
-//   return (
-//     <Router>
-//       <Routes>
-//         {/* Trang đăng nhập */}
-//         <Route path="/login" element={<LoginComponent />} />
-
-//         {/* Các route yêu cầu Header và Sidebar */}
-//         <Route
-//           path="/*"
-//           element={
-//             role ? (
-//               <div className="App flex flex-col h-screen">
-//                 <Header />
-//                 <div className="flex flex-1">
-//                   <Sidebar />
-//                   <div className="w-full p-4">
-//                     <Routes>
-//                       {/* Routes dựa trên role */}
-//                       {role === "admin" ? (
-//                         <Route path="/" element={<DoctorListComponent />} />
-//                       ) : role === "doctor" ? (
-//                         <Route
-//                           path="/historyList"
-//                           element={<HistoryListComponent />}
-//                         />
-//                       ) : (
-//                         <Route path="/" element={<LoginComponent />} />
-//                       )}
-//                     </Routes>
-//                   </div>
-//                 </div>
-//               </div>
-//             ) : (
-//               <LoginComponent />
-//             )
-//           }
-//         />
-//       </Routes>
-//     </Router>
-//   );
-
-// return (
-//   <Router>
-//     <Routes>
-//       {/* Route for Login (no Header, no Sidebar) */}
-//       <Route path="/login" element={<LoginComponent />} />
-
-//       {/* Routes that require Header and Sidebar */}
-//       <Route
-//         path="/*"
-//         element={
-//           <div className="App flex flex-col h-screen">
-//             <Header />
-//             <div className="flex flex-1">
-//               <Sidebar />
-//               <div className="w-full p-4">
-//                 <Routes>
-//                   {/* Route for Admin */}
-
-//                   {/* Route for Doctor */}
-
-//                 </Routes>
-//               </div>
-//             </div>
-//           </div>
-//         }
-//       />
-//     </Routes>
-//   </Router>
-// );
 
 export default App;

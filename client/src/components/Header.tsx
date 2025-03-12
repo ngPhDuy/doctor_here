@@ -56,7 +56,6 @@ const Header = () => {
           <img
             src="./images/avt.png"
             alt="User Avatar"
-            onClick={() => setShowLoginModal(true)}
             className="w-12 h-12 block items-center justify-center rounded-full mr-2"
           />
 
@@ -69,11 +68,11 @@ const Header = () => {
         </div>
       </div>
       <hr />
-      <LoginComponent
+      {/* <LoginComponent
         showModal={showLoginModal}
         toggleLoginModal={() => setShowLoginModal(false)}
         toggleRegisterModal={() => console.log("Chuyển sang đăng ký")}
-      />
+      /> */}
     </header>
   );
 };

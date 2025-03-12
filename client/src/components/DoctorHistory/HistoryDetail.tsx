@@ -372,7 +372,7 @@ const HistoryDetailComponent: React.FC = () => {
               <label className="text-sm font-medium">Mã đơn hẹn</label>
               <input
                 className="w-full px-3 py-2 border rounded-lg bg-gray-100"
-                value={appointment.ma_benh_nhan_dat_hen}
+                value={appointment.id}
                 disabled
               />
             </div>
