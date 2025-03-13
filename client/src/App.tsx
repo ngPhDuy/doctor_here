@@ -22,6 +22,7 @@ import PatientDetailInfo from "./components/DoctorPatient/PatientDetailInfo";
 import PatientDetailHistory from "./components/DoctorPatient/PatientDetailHistory";
 import DoctorSettingInfo from "./components/DoctorSetting/DoctorSettingInfo";
 import DoctorRequest from "./components/DoctorSetting/DoctorRequest";
+import DoctorSchedule from "./components/DoctorSetting/DoctorSchedule";
 import LoginComponent from "./pages/Login";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -117,6 +118,10 @@ const App: React.FC = () => {
                           <Route
                             path="/doctorRequest"
                             element={<DoctorRequest />}
+                          />
+                          <Route
+                            path="/doctorSchedule"
+                            element={<DoctorSchedule />}
                           />
                         </>
                       )}
