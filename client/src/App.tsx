@@ -24,6 +24,7 @@ import DoctorSettingInfo from "./components/DoctorSetting/DoctorSettingInfo";
 import DoctorRequest from "./components/DoctorSetting/DoctorRequest";
 import DoctorSchedule from "./components/DoctorSetting/DoctorSchedule";
 import LoginComponent from "./pages/Login";
+import Conversations from "./components/DoctorMess/Conversations";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const role = localStorage.getItem("role");
@@ -55,7 +56,7 @@ const App: React.FC = () => {
                 <div className="flex flex-1">
                   {role === "qtv" && <Sidebar />}
                   {role === "bs" && <DoctorSidebar />}
-                  <div className="w-full p-4">
+                  <div className="w-full">
                     <Routes>
                       {/* Routes dành cho Admin */}
                       {role === "qtv" && (
@@ -122,6 +123,10 @@ const App: React.FC = () => {
                           <Route
                             path="/doctorSchedule"
                             element={<DoctorSchedule />}
+                          />
+                          <Route
+                            path="/conversations"
+                            element={<Conversations />}
                           />
                         </>
                       )}
