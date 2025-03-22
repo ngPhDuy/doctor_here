@@ -1,106 +1,148 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import socket, {
+  registerUser,
+  sendMessage,
+  onMessageReceived,
+} from "../../socket";
 
-//Dữ liệu mẫu: Danh sách các trò chuyện bao gồm tên bác sĩ và số tin nhắn chưa đọc
-const conversations = [
-  {
-    avatar: "./images/avt.png",
-    doctorName: "Bệnh nhân 1",
-    unreadCount: 3,
-  },
-  {
-    avatar: "./images/avt.png",
-    doctorName: "Bệnh nhân 2",
-    unreadCount: 1,
-  },
-  {
-    avatar: "./images/avt.png",
-    doctorName: "Bệnh nhân 3",
-    unreadCount: 0,
-  },
-  {
-    avatar: "./images/avt.png",
-    doctorName: "Bệnh nhân 1",
-    unreadCount: 3,
-  },
-  {
-    avatar: "./images/avt.png",
-    doctorName: "Bệnh nhân 2",
-    unreadCount: 1,
-  },
-  {
-    avatar: "./images/avt.png",
-    doctorName: "Bệnh nhân 3",
-    unreadCount: 0,
-  },
-  {
-    avatar: "./images/avt.png",
-    doctorName: "Bệnh nhân 1",
-    unreadCount: 3,
-  },
-  {
-    avatar: "./images/avt.png",
-    doctorName: "Bệnh nhân 2",
-    unreadCount: 1,
-  },
-  {
-    avatar: "./images/avt.png",
-    doctorName: "Bệnh nhân 3",
-    unreadCount: 0,
-  },
-];
 //Dữ liệu mẫu: bệnh nhân đang chọn bao gồm tên, ảnh đại diện
 const patient = {
   name: "Bệnh nhân 1",
   avatar: "./images/avt.png",
 };
-//Dữ liệu mẫu: Danh sách các tin nhắn của 1 trò chuyện đang mở bao gồm nội dung, người gửi và thời gian gửi
-const messages = [
-  {
-    content: "Chào bác sĩ",
-    sender: "patient",
-    time: "10:00",
-  },
-  {
-    content: "Chào bạn",
-    sender: "doctor",
-    time: "10:01",
-  },
-  {
-    content: "Bạn cần hỗ trợ gì không?",
-    sender: "doctor",
-    time: "10:02",
-  },
-  {
-    content: "Chào bác sĩ",
-    sender: "patient",
-    time: "10:00",
-  },
-  {
-    content: "Chào bạn",
-    sender: "doctor",
-    time: "10:01",
-  },
-  {
-    content: "Bạn cần hỗ trợ gì không?",
-    sender: "doctor",
-    time: "10:02",
-  },
-];
+
+interface Message {
+  id: number;
+  kieu_noi_dung: string;
+  noi_dung_van_ban: string;
+  media_url: string | null;
+  thoi_diem_gui: string;
+  thoi_diem_da_xem: string | null;
+  cuoc_hoi_thoai: number;
+  ben_gui_di: string;
+}
+
+interface Conversation {
+  cuoc_hoi_thoai: number;
+  nguoi_dung: {
+    ma: string;
+    avt_url: string | null;
+    ho_va_ten: string;
+  };
+  so_tin_moi: number;
+}
 
 const Conversations: React.FC = () => {
+  let drID = localStorage.getItem("drID") || "BS0000001";
   const [search, setSearch] = useState("");
-  const [filteredConversations, setFilteredConversations] =
-    useState(conversations);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [filteredConversations, setFilteredConversations] = useState<
+    Conversation[]
+  >([]);
+  const [selectedConversation, setSelectedConversation] =
+    useState<Conversation | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [content, setContent] = useState("");
+  // const { conversationID } = useParams();
+  // const navigate = useNavigate();
+
+  useEffect(() => {
+    // Đăng ký người dùng
+    registerUser(drID);
+
+    // Lắng nghe tin nhắn mới từ server
+    // onMessageReceived((message: string) => {
+    //   const parsedMessage: Message = JSON.parse(message);
+    //   setMessages((prevMessages) => [
+    //     ...prevMessages,
+    //     {
+    //       content: parsedMessage.content,
+    //       sender: "patient",
+    //       time: new Date().toLocaleTimeString(),
+    //     },
+    //   ]);
+    // });
+
+    return () => {
+      // Hủy lắng nghe tin nhắn khi component bị hủy
+      socket.off("chat_message");
+    };
+  }, [drID]);
+
+  //Lấy danh sách trò chuyện từ server qua API ${import.meta.env.VITE_API_BASE_URL}/api/conversation/user/:userID
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/conversation/user/${drID}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setConversations(data);
+        setFilteredConversations(data);
+
+        if (!selectedConversation) {
+          setSelectedConversation(data[0]);
+        }
+      });
+
+    return () => {};
+  }, [drID]);
+
+  //Lấy tin nhắn từ server qua API ${import.meta.env.VITE_API_BASE_URL}/api/messages/conversation/:conversationID
+  useEffect(() => {
+    if (selectedConversation) {
+      fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/messages/conversation/${
+          selectedConversation.cuoc_hoi_thoai
+        }`
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          setMessages(data);
+        });
+    }
+  }, [selectedConversation]);
 
   //Lọc danh sách trò chuyện theo tên bác sĩ
   useEffect(() => {
     setFilteredConversations(
       conversations.filter((conversation) =>
-        conversation.doctorName.toLowerCase().includes(search.toLowerCase())
+        conversation.nguoi_dung.ho_va_ten
+          .toLowerCase()
+          .includes(search.toLowerCase())
       )
     );
   }, [search]);
+
+  const handleSendMessage = (content: string) => {
+    // Gửi tin nhắn đến server
+    sendMessage(drID, "BN0000006", content);
+    //   setMessages((prevMessages) => [
+    //     ...prevMessages,
+    //     {
+    //       content,
+    //       sender: "doctor",
+    //       time: new Date().toLocaleTimeString(),
+    //     },
+    //   ]);
+  };
+
+  const handleContentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setContent(e.target.value);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      // Ngừng hành động mặc định của Enter (ví dụ, ngừng submit form)
+      e.preventDefault();
+
+      if (content.trim()) {
+        // Gửi tin nhắn ở đây
+        handleSendMessage(content);
+
+        // Sau khi gửi tin nhắn, bạn có thể làm gì đó như xóa nội dung
+        setContent("");
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -119,19 +161,20 @@ const Conversations: React.FC = () => {
               <div
                 key={index}
                 className="flex items-center justify-between p-2 hover:bg-gray-300 cursor-pointer w-full"
+                onClick={() => setSelectedConversation(conversation)}
               >
                 <div className="flex justify-evenly items-center gap-2">
                   <img
-                    src={conversation.avatar}
-                    alt=""
+                    src={conversation.nguoi_dung.avt_url || "./images/avt.png"}
+                    alt="avatar"
                     className="w-10 h-10 rounded-full"
                   />
 
-                  <span>{conversation.doctorName}</span>
+                  <span>{conversation.nguoi_dung.ho_va_ten}</span>
                 </div>
-                {conversation.unreadCount > 0 && (
+                {conversation.so_tin_moi > 0 && (
                   <span className="bg-red-500 text-white rounded-full h-6 w-6 flex items-center justify-center text-sm">
-                    {conversation.unreadCount}
+                    {conversation.so_tin_moi}
                   </span>
                 )}
               </div>
@@ -143,11 +186,15 @@ const Conversations: React.FC = () => {
           <div className="flex items-center justify-between p-2 bg-gray-200 rounded-lg">
             <div className="flex items-center gap-2">
               <img
-                src={patient.avatar}
+                src={
+                  selectedConversation?.nguoi_dung.avt_url || "./images/avt.png"
+                }
                 alt=""
                 className="w-10 h-10 rounded-full"
               />
-              <span className="font-semibold">{patient.name}</span>
+              <span className="font-semibold">
+                {selectedConversation?.nguoi_dung.ho_va_ten}
+              </span>
             </div>
             <button className="p-2 rounded-full">
               <img
@@ -162,20 +209,26 @@ const Conversations: React.FC = () => {
               <div
                 key={index}
                 className={`${
-                  message.sender === "patient"
+                  message.ben_gui_di === "bn"
                     ? "mr-auto bg-white"
                     : "ml-auto bg-blue-500 text-white"
                 } p-2 shadow-md rounded-lg my-2 max-w-xs`}
               >
-                <p>{message.content}</p>
+                <p>{message.noi_dung_van_ban}</p>
                 <span
                   className={`text-xs ${
-                    message.sender === "patient"
+                    message.ben_gui_di === "bn"
                       ? "text-gray-500"
                       : "text-gray-200"
                   }`}
                 >
-                  {message.time}
+                  {
+                    //giờ Việt Nam, định dạng 24h hh:mm
+                    new Date(message.thoi_diem_gui).toLocaleString("vi-VN", {
+                      hour: "numeric",
+                      minute: "numeric",
+                    })
+                  }
                 </span>
               </div>
             ))}
@@ -202,8 +255,17 @@ const Conversations: React.FC = () => {
               type="text"
               placeholder="Nhập tin nhắn..."
               className="p-2 border border-gray-300 rounded-lg flex-grow"
+              value={content}
+              onChange={handleContentChange}
+              onKeyDown={handleKeyDown}
             />
-            <button className="p-2 bg-blue-500 text-white rounded-lg">
+            <button
+              className="p-2 bg-blue-500 text-white rounded-lg"
+              onClick={() => {
+                handleSendMessage(content);
+                setContent("");
+              }}
+            >
               Gửi
             </button>
           </div>

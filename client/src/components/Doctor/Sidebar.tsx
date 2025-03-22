@@ -31,7 +31,7 @@ const Sidebar = () => {
       className="h-full border-r border-gray-300 shadow-md"
       style={{
         width: "30%",
-        maxWidth: "200px",
+        maxWidth: "180px",
       }}
     >
       <nav className="">
@@ -44,7 +44,7 @@ const Sidebar = () => {
           }}
         >
           <li
-            className={`sidebar-item psi py-3 flex text-lg hover:bg-gray-200 cursor-pointer rounded-lg ${
+            className={`sidebar-item psi py-3 flex text-base hover:bg-gray-200 cursor-pointer rounded-lg ${
               isActive(dashBoardActive) ? "active-color" : "default-color"
             }`}
             onClick={() => navigate(`/`)}
@@ -60,7 +60,7 @@ const Sidebar = () => {
             <span className="ml-2">Trang chủ</span>
           </li>
           <li
-            className={`psi py-3 text-lg flex hover:bg-gray-200 cursor-pointer rounded-lg ${
+            className={`psi py-3 text-base flex hover:bg-gray-200 cursor-pointer rounded-lg ${
               isActive(calendarActive) ? "active-color" : "default-color"
             }`}
             onClick={() => navigate(`/historyList`)}
@@ -76,7 +76,7 @@ const Sidebar = () => {
             <span className="ml-2">Cuộc hẹn</span>
           </li>
           <li
-            className={`psi py-3 text-lg flex hover:bg-gray-200 cursor-pointer rounded-lg ${
+            className={`psi py-3 text-base flex hover:bg-gray-200 cursor-pointer rounded-lg ${
               isActive(peopleActive) ? "active-color" : "default-color"
             }`}
             onClick={() => navigate(`/patientListDoctor`)}
@@ -92,7 +92,7 @@ const Sidebar = () => {
             <span className="ml-2">Bệnh nhân</span>
           </li>
           <li
-            className={`psi py-3 text-lg flex hover:bg-gray-200 cursor-pointer rounded-lg ${
+            className={`psi py-3 text-base flex hover:bg-gray-200 cursor-pointer rounded-lg ${
               isActive(mailActive) ? "active-color" : "default-color"
             }`}
             onClick={() => navigate(`/newRequests`)}
@@ -108,7 +108,7 @@ const Sidebar = () => {
             <span className="ml-2">Tin nhắn</span>
           </li>
           <li
-            className={`psi py-3 text-lg flex hover:bg-gray-200 cursor-pointer rounded-lg ${
+            className={`psi py-3 text-base flex hover:bg-gray-200 cursor-pointer rounded-lg ${
               isActive(uploadActive) ? "active-color" : "default-color"
             }`}
             onClick={() => navigate(`/newRequests`)}
@@ -124,7 +124,7 @@ const Sidebar = () => {
             <span className="ml-2">KQ khám bệnh</span>
           </li>
           <li
-            className={`psi py-3 text-lg flex hover:bg-gray-200 cursor-pointer rounded-lg ${
+            className={`psi py-3 text-base flex hover:bg-gray-200 cursor-pointer rounded-lg ${
               isActive(settingActive) ? "active-color" : "default-color"
             }`}
             onClick={() => navigate(`/doctorSettingInfo`)}

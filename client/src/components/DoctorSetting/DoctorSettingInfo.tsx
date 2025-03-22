@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ChangePasswordModal from "./ChangePassword";
 import Swal from "sweetalert2";
+import NavBar from "./NavBar";
 
 interface DoctorInfo {
   id: number;
@@ -189,45 +190,7 @@ const DoctorSettingInfo: React.FC = () => {
   return (
     <div className="h-full bg-gray-100 p-4">
       {/* Thanh điều hướng */}
-      <div className="flex items-center p-3 mb-4 bg-white rounded-lg shadow-md">
-        <div
-          className="p-3 cursor-pointer"
-          onClick={() => navigate("/doctorList")}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M9.57 5.92969L3.5 11.9997L9.57 18.0697"
-              stroke="#292D32"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M20.5 12H3.67001"
-              stroke="#292D32"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </div>
-        <div className="mr-5 text-blueTitle cursor-pointer">
-          <p className="font-semibold text-lg mb-1 ml-1">Cá nhân</p>
-          <hr className="border-t-2 border-blueTitle ml-1" />
-        </div>
-        <div className="cursor-pointer" onClick={() => navigate("/")}>
-          <p className="font-semibold text-lg mb-1">Các đánh giá</p>
-        </div>
-        <div
-          className="ml-5 cursor-pointer"
-          onClick={() => navigate("/doctorRequest")}
-        >
-          <p className="font-semibold text-lg mb-1">Các yêu cầu cập nhật</p>
-        </div>
-        <div className="ml-5 cursor-pointer" onClick={() => navigate("/")}>
-          <p className="font-semibold text-lg mb-1">Lịch làm việc</p>
-        </div>
-      </div>
+      <NavBar curPage="profile" />
 
       {/* Nội dung chính */}
       <div className="bg-white p-8 rounded-lg shadow-md">
