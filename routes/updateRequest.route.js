@@ -1,6 +1,8 @@
-const express = require('express');
+const express = require("express");
+const multer = require("multer");
+const upload = multer(); // Multer middleware để nhận nhiều file từ client
 const router = express.Router();
-const updateRequestController = require('../controllers/updateRequest.controller');
+const updateRequestController = require("../controllers/updateRequest.controller");
 /**
  * @swagger
  * /api/updateRequest/newRequest:
@@ -43,7 +45,7 @@ const updateRequestController = require('../controllers/updateRequest.controller
  *       500:
  *         description: Lỗi máy chủ nội bộ
  */
-router.get('/newRequest', updateRequestController.getAllNewRequest);
+router.get("/newRequest", updateRequestController.getAllNewRequest);
 /**
  * @swagger
  * /api/updateRequest/oldRequest:
@@ -86,7 +88,7 @@ router.get('/newRequest', updateRequestController.getAllNewRequest);
  *       500:
  *         description: Lỗi máy chủ nội bộ
  */
-router.get('/oldRequest', updateRequestController.getOldRequest);
+router.get("/oldRequest", updateRequestController.getOldRequest);
 /**
  * @swagger
  * /api/updateRequest/requestDetail/{requestID}:
@@ -237,7 +239,10 @@ router.get('/oldRequest', updateRequestController.getOldRequest);
  *       500:
  *         description: Lỗi máy chủ nội bộ
  */
-router.get('/requestDetail/:requestID', updateRequestController.getRequestDetail);
+router.get(
+  "/requestDetail/:requestID",
+  updateRequestController.getRequestDetail
+);
 /**
  * @swagger
  * /api/updateRequest/requestByDoctorID/{doctorID}:
@@ -369,7 +374,10 @@ router.get('/requestDetail/:requestID', updateRequestController.getRequestDetail
  *       500:
  *         description: Lỗi máy chủ nội bộ
  */
-router.get('/requestByDoctorID/:doctorID', updateRequestController.getRequestByDoctorID);
+router.get(
+  "/requestByDoctorID/:doctorID",
+  updateRequestController.getRequestByDoctorID
+);
 /**
  * @swagger
  * /api/updateRequest/handleRequest:
@@ -411,7 +419,7 @@ router.get('/requestByDoctorID/:doctorID', updateRequestController.getRequestByD
  *       500:
  *         description: Lỗi máy chủ nội bộ.
  */
-router.post('/handleRequest', updateRequestController.handleRequest);
+router.post("/handleRequest", updateRequestController.handleRequest);
 /**
  * @swagger
  * /api/updateRequest/createUpdateRequest:
@@ -456,7 +464,11 @@ router.post('/handleRequest', updateRequestController.handleRequest);
  *       400:
  *         description: Tham số đầu vào không hợp lệ
  */
-router.post('/createUpdateRequest', updateRequestController.createUpdateRequest);
+router.post(
+  "/createUpdateRequest",
+  upload.array("files"),
+  updateRequestController.createUpdateRequest
+);
 /**
  * @swagger
  * /api/updateRequest/cancelRequest:
@@ -489,5 +501,5 @@ router.post('/createUpdateRequest', updateRequestController.createUpdateRequest)
  *       400:
  *         description: Tham số đầu vào không hợp lệ hoặc yêu cầu không tồn tại
  */
-router.post('/cancelRequest', updateRequestController.cancelRequest);
+router.post("/cancelRequest", updateRequestController.cancelRequest);
 module.exports = router;

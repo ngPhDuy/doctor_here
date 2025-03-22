@@ -21,12 +21,12 @@ DECLARE
 BEGIN
     -- Insert into Tai_khoan table
     INSERT INTO "Tai_khoan" ("ten_dang_nhap", "mat_khau", "active", "thoi_diem_mo_tk")
-    VALUES (in_ten_dang_nhap, in_mat_khau, TRUE, CURRENT_TIMESTAMP)
+    VALUES (in_ten_dang_nhap, in_mat_khau, TRUE, CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')
     RETURNING "ten_dang_nhap" INTO new_ten_dang_nhap;
 
     -- Insert into Nguoi_dung table
-    INSERT INTO "Nguoi_dung" ("ten_dang_nhap", "email", "sdt", "ngay_sinh", "gioi_tinh", "phan_loai", "ho_va_ten")
-    VALUES (new_ten_dang_nhap, in_email, in_sdt, in_ngay_sinh, in_gioi_tinh, 'bs', in_ho_va_ten)
+    INSERT INTO "Nguoi_dung" ("ten_dang_nhap", "email", "sdt", "ngay_sinh", "gioi_tinh", "phan_loai", "ho_va_ten", "avt_url")
+    VALUES (new_ten_dang_nhap, in_email, in_sdt, in_ngay_sinh, in_gioi_tinh, 'bs', in_ho_va_ten, NULL)
     RETURNING "id" INTO new_id;
 
     -- Generate doctor code and insert into Bac_si table
@@ -57,11 +57,11 @@ DECLARE
     generated_code VARCHAR(9);
 BEGIN
     INSERT INTO "Tai_khoan" ("ten_dang_nhap", "mat_khau", "active", "thoi_diem_mo_tk")
-    VALUES (in_ten_dang_nhap, in_mat_khau, TRUE, CURRENT_TIMESTAMP)
+    VALUES (in_ten_dang_nhap, in_mat_khau, TRUE, CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')
     RETURNING "ten_dang_nhap" INTO new_ten_dang_nhap;
 
-    INSERT INTO "Nguoi_dung" ("ten_dang_nhap", "email", "sdt", "ngay_sinh", "gioi_tinh", "phan_loai", "ho_va_ten")
-    VALUES (new_ten_dang_nhap, in_email, in_sdt, in_ngay_sinh, in_gioi_tinh, 'qtv', in_ho_va_ten)
+    INSERT INTO "Nguoi_dung" ("ten_dang_nhap", "email", "sdt", "ngay_sinh", "gioi_tinh", "phan_loai", "ho_va_ten", "avt_url")
+    VALUES (new_ten_dang_nhap, in_email, in_sdt, in_ngay_sinh, in_gioi_tinh, 'qtv', in_ho_va_ten, NULL)
     RETURNING "id" INTO new_id;
 
     generated_code := CONCAT('QT', LPAD(new_id::TEXT, 7, '0'));
@@ -93,11 +93,11 @@ DECLARE
     generated_code VARCHAR(9);
 BEGIN
     INSERT INTO "Tai_khoan" ("ten_dang_nhap", "mat_khau", "active", "thoi_diem_mo_tk")
-    VALUES (in_ten_dang_nhap, in_mat_khau, TRUE, CURRENT_TIMESTAMP)
+    VALUES (in_ten_dang_nhap, in_mat_khau, TRUE, CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh')
     RETURNING "ten_dang_nhap" INTO new_ten_dang_nhap;
 
-    INSERT INTO "Nguoi_dung" ("ten_dang_nhap", "email", "sdt", "ngay_sinh", "gioi_tinh", "phan_loai", "ho_va_ten")
-    VALUES (new_ten_dang_nhap, in_email, in_sdt, in_ngay_sinh, in_gioi_tinh, 'bn', in_ho_va_ten)
+    INSERT INTO "Nguoi_dung" ("ten_dang_nhap", "email", "sdt", "ngay_sinh", "gioi_tinh", "phan_loai", "ho_va_ten", "avt_url")
+    VALUES (new_ten_dang_nhap, in_email, in_sdt, in_ngay_sinh, in_gioi_tinh, 'bn', in_ho_va_ten, NULL)
     RETURNING "id" INTO new_id;
 
     generated_code := CONCAT('BN', LPAD(new_id::TEXT, 7, '0'));
@@ -217,7 +217,8 @@ CREATE OR REPLACE PROCEDURE create_update_request(
     in_trinh_do_hoc_van_moi VARCHAR(255),
     in_dia_chi_pk_moi VARCHAR(255),
     in_chuyen_khoa_moi VARCHAR(50),
-    in_ma_bac_si VARCHAR(9)
+    in_ma_bac_si VARCHAR(9),
+    OUT out_ma_yeu_cau VARCHAR(9) -- Thêm OUT parameter để trả về ma_yeu_cau
 )
 LANGUAGE plpgsql
 AS $$
@@ -254,7 +255,7 @@ BEGIN
     )
     VALUES (
         'Chờ duyệt',
-        CURRENT_TIMESTAMP,
+        CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Ho_Chi_Minh',
         'N/A',
         current_trinh_do_hoc_van,
         in_trinh_do_hoc_van_moi,
@@ -271,8 +272,14 @@ BEGIN
     UPDATE "Yeu_cau_cap_nhat_thong_tin"
     SET "ma_yeu_cau" = generated_code
     WHERE "id" = new_id;
+
+    -- Cập nhật OUT parameter với ma_yeu_cau
+    SELECT "ma_yeu_cau" INTO out_ma_yeu_cau
+    FROM "Yeu_cau_cap_nhat_thong_tin"
+    WHERE "id" = new_id;
 END;
 $$;
+
 
 CREATE OR REPLACE PROCEDURE insert_weekly_work(
     in_ma_bac_si VARCHAR(9),

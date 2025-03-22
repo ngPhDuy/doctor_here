@@ -1,0 +1,4 @@
+{
+  "appService.defaultWebAppToDeploy": "/subscriptions/50af588e-d759-4758-b713-ae5d2c78bfd6/resourceGroups/doctor_here/providers/Microsoft.Web/sites/doctor-here",
+  "appService.deploySubpath": "."
+}

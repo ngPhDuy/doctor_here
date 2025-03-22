@@ -25,6 +25,10 @@ module.exports = (sequelize) => {
         thoi_diem_duyet: {
             type: DataTypes.DATE,
             allowNull: true
+        },
+        ly_do: {
+            type: DataTypes.STRING(255),
+            allowNull: true
         }
     }, {   
         tableName: "Duyet_yeu_cau_cap_nhat",

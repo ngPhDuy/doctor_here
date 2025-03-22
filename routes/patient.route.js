@@ -1,6 +1,6 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const patientController = require('../controllers/patient.controller');
+const patientController = require("../controllers/patient.controller");
 
 /**
  * @swagger
@@ -175,7 +175,7 @@ const patientController = require('../controllers/patient.controller');
  *         description: Lỗi từ server khi xử lý yêu cầu.
  */
 
-router.get('/', patientController.getAllPatient);
+router.get("/", patientController.getAllPatient);
 /**
  * @swagger
  * /api/patient/detail/{patientID}:
@@ -261,11 +261,26 @@ router.get('/', patientController.getAllPatient);
  *                           type: string
  *                           format: date-time
  *                           example: "2025-02-17T08:10:02.410Z"
+ *                 Bao_hiem_y_te:
+ *                   type: object
+ *                   properties:
+ *                     ma_bhyt:
+ *                       type: string
+ *                       example: "089141222333"
+ *                     bv_dang_ky:
+ *                       type: string
+ *                       example: "BV A"
+ *                     ngay_cap:
+ *                       type: string
+ *                       example: "2022-01-01"
+ *                     ngay_het_han:
+ *                       type: string
+ *                       example: "2022-12-31"
  *       500:
  *         description: Lỗi từ server khi xử lý yêu cầu.
  */
 
-router.get('/detail/:patientID', patientController.getPatientInfo);
+router.get("/detail/:patientID", patientController.getPatientInfo);
 /**
  * @swagger
  * /api/patient/getAllByDoctorID:
@@ -338,6 +353,18 @@ router.get('/detail/:patientID', patientController.getPatientInfo);
  *                   ma_benh_nhan:
  *                     type: string
  *                     description: Mã bệnh nhân
+ *                   ma_bhyt:
+ *                     type: string
+ *                     description: Mã bảo hiểm y tế
+ *                   bv_dang_ky:
+ *                     type: string
+ *                     description: Bệnh viện đăng ký
+ *                   ngay_cap:
+ *                     type: string
+ *                     description: Ngày cấp
+ *                   ngay_het_han:
+ *                     type: string
+ *                     description: Ngày hết hạn
  *       500:
  *         description: Lỗi máy chủ khi lấy danh sách bệnh nhân
  *         content:
@@ -349,6 +376,6 @@ router.get('/detail/:patientID', patientController.getPatientInfo);
  *                   type: string
  *                   example: "Có lỗi xảy ra: <lỗi cụ thể>"
  */
-router.get('/getAllByDoctorID', patientController.getAllByDoctorID);
+router.get("/getAllByDoctorID", patientController.getAllByDoctorID);
 
 module.exports = router;

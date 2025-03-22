@@ -1,6 +1,6 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const doctorController = require('../controllers/doctor.controller');
+const doctorController = require("../controllers/doctor.controller");
 /**
  * @swagger
  * components:
@@ -60,10 +60,12 @@ const doctorController = require('../controllers/doctor.controller');
  * /api/doctor:
  *   get:
  *     summary: Lấy danh sách tất cả bác sĩ
- *     tags: [Doctor]
+ *     description: API này trả về danh sách tất cả các bác sĩ, bao gồm thông tin cá nhân, chuyên khoa, đánh giá trung bình và tổng số đánh giá.
+ *     tags:
+ *       - Doctor
  *     responses:
  *       200:
- *         description: Danh sách bác sĩ được trả về thành công.
+ *         description: Trả về danh sách các bác sĩ
  *         content:
  *           application/json:
  *             schema:
@@ -73,156 +75,87 @@ const doctorController = require('../controllers/doctor.controller');
  *                 properties:
  *                   id:
  *                     type: integer
+ *                     example: 1
  *                     description: ID của bác sĩ
  *                   ngay_vao_nghe:
  *                     type: string
  *                     format: date
+ *                     example: "2010-09-22"
  *                     description: Ngày bác sĩ bắt đầu hành nghề
  *                   trinh_do_hoc_van:
  *                     type: string
+ *                     example: "Tiến sĩ Y học"
  *                     description: Trình độ học vấn của bác sĩ
  *                   mo_ta:
  *                     type: string
- *                     description: Mô tả ngắn gọn về bác sĩ
+ *                     example: "Được bệnh nhân đánh giá cao"
+ *                     description: Mô tả chung về bác sĩ
  *                   dia_chi_pk:
  *                     type: string
- *                     description: Địa chỉ phòng khám
+ *                     example: "Phòng khám C, Quận 3"
+ *                     description: Địa chỉ phòng khám của bác sĩ
  *                   ma_bac_si:
  *                     type: string
+ *                     example: "BS0000001"
  *                     description: Mã bác sĩ
  *                   chuyen_khoa:
  *                     type: string
+ *                     example: "Nội tổng quát"
  *                     description: Chuyên khoa của bác sĩ
+ *                   danh_gia_trung_binh:
+ *                     type: string
+ *                     example: "3.5000000000000000"
+ *                     description: Điểm đánh giá trung bình của bác sĩ
+ *                   tong_so_danh_gia:
+ *                     type: string
+ *                     example: "2"
+ *                     description: Tổng số lượt đánh giá của bác sĩ
  *                   Nguoi_dung:
  *                     type: object
  *                     properties:
  *                       ten_dang_nhap:
  *                         type: string
- *                         description: Tên đăng nhập của bác sĩ
+ *                         example: "bacsi1"
  *                       email:
  *                         type: string
- *                         format: email
- *                         description: Email của bác sĩ
+ *                         example: "bacsi1@example.com"
  *                       sdt:
  *                         type: string
- *                         description: Số điện thoại của bác sĩ
+ *                         example: "0123456785"
  *                       ngay_sinh:
  *                         type: string
  *                         format: date
- *                         description: Ngày sinh của bác sĩ
+ *                         example: "1985-01-05"
  *                       gioi_tinh:
  *                         type: string
- *                         description: Giới tính của bác sĩ
+ *                         example: "Nam"
  *                       phan_loai:
  *                         type: string
- *                         description: Phân loại người dùng (bs - bác sĩ)
+ *                         example: "bs"
  *                       ho_va_ten:
  *                         type: string
- *                         description: Họ và tên bác sĩ
+ *                         example: "Nguyễn Trung Hiếu"
+ *                       avt_url:
+ *                         type: string
+ *                         nullable: true
+ *                         example: null
  *                       Tai_khoan:
  *                         type: object
  *                         properties:
  *                           ten_dang_nhap:
  *                             type: string
- *                             description: Tên đăng nhập của tài khoản
+ *                             example: "bacsi1"
  *                           active:
  *                             type: boolean
- *                             description: Trạng thái hoạt động của tài khoản
+ *                             example: true
  *                           thoi_diem_mo_tk:
  *                             type: string
  *                             format: date-time
- *                             description: Thời điểm mở tài khoản
+ *                             example: "2025-02-28T01:55:00.651Z"
  *       500:
- *         description: Lỗi từ server khi xử lý yêu cầu.
+ *         description: Lỗi máy chủ
  */
-router.get('/', doctorController.getAllDoctor);
-/**
- * @swagger
- * /api/doctor/{doctorID}:
- *   get:
- *     summary: Lấy thông tin chi tiết của một bác sĩ
- *     tags: [Doctor]
- *     parameters:
- *       - in: path
- *         name: doctorID
- *         required: true
- *         schema:
- *           type: string
- *         description: Mã định danh của bác sĩ cần lấy thông tin.
- *         example: "BS0000001"
- *     responses:
- *       200:
- *         description: Thông tin chi tiết của bác sĩ được trả về thành công.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: integer
- *                   example: 1
- *                 ngay_vao_nghe:
- *                   type: string
- *                   format: date
- *                   example: "2010-09-22"
- *                 trinh_do_hoc_van:
- *                   type: string
- *                   example: "Thạc sĩ Y học"
- *                 mo_ta:
- *                   type: string
- *                   example: "Được bệnh nhân đánh giá cao"
- *                 dia_chi_pk:
- *                   type: string
- *                   example: "Phòng khám B, Quận 2"
- *                 ma_bac_si:
- *                   type: string
- *                   example: "BS0000001"
- *                 chuyen_khoa:
- *                   type: string
- *                   example: "Nhi khoa"
- *                 Nguoi_dung:
- *                   type: object
- *                   properties:
- *                     ten_dang_nhap:
- *                       type: string
- *                       example: "bacsi1"
- *                     email:
- *                       type: string
- *                       format: email
- *                       example: "bacsi1@example.com"
- *                     sdt:
- *                       type: string
- *                       example: "0123456789"
- *                     ngay_sinh:
- *                       type: string
- *                       format: date
- *                       example: "1985-01-15"
- *                     gioi_tinh:
- *                       type: string
- *                       example: "Nam"
- *                     phan_loai:
- *                       type: string
- *                       example: "bs"
- *                     ho_va_ten:
- *                       type: string
- *                       example: "Nguyễn Trung Hiếu"
- *                     Tai_khoan:
- *                       type: object
- *                       properties:
- *                         ten_dang_nhap:
- *                           type: string
- *                           example: "bacsi1"
- *                         active:
- *                           type: boolean
- *                           example: true
- *                         thoi_diem_mo_tk:
- *                           type: string
- *                           format: date-time
- *                           example: "2025-02-17T08:10:02.410Z"
- *       500:
- *         description: Lỗi từ server khi xử lý yêu cầu.
- */
-router.get('/:doctorID', doctorController.getDoctorInfo);
+router.get("/", doctorController.getAllDoctor);
 /**
  * @swagger
  * /api/doctor/changeInfo:
@@ -297,7 +230,7 @@ router.get('/:doctorID', doctorController.getDoctorInfo);
  *                   type: string
  *                   example: "Internal server error"
  */
-router.post('/changeInfo', doctorController.changeInfo);
+router.post("/changeInfo", doctorController.changeInfo);
 /**
  * @swagger
  * /api/doctor/addDoctor:
@@ -383,7 +316,7 @@ router.post('/changeInfo', doctorController.changeInfo);
  *                   type: string
  *                   example: "Lỗi xảy ra khi thêm bác sĩ"
  */
-router.post('/addDoctor', doctorController.insertDoctor);
+router.post("/addDoctor", doctorController.insertDoctor);
 /**
  * @swagger
  * /api/doctor/addWeeklyWork:
@@ -443,5 +376,145 @@ router.post('/addDoctor', doctorController.insertDoctor);
  *                   type: string
  *                   example: "Có lỗi xảy ra: <lỗi cụ thể>"
  */
-router.post('/addWeeklyWork', doctorController.insertWeeklyWork);
+router.post("/addWeeklyWork", doctorController.insertWeeklyWork);
+/**
+ * @swagger
+ * /api/doctor/specialization:
+ *   get:
+ *     summary: Lấy danh sách tất cả chuyên khoa
+ *     description: API này trả về danh sách tất cả các chuyên khoa hiện có trong hệ thống.
+ *     tags:
+ *       - Doctor
+ *     responses:
+ *       200:
+ *         description: Trả về danh sách các chuyên khoa
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   ten_chuyen_khoa:
+ *                     type: string
+ *                     example: "Nhi khoa"
+ *                     description: Tên của chuyên khoa
+ *                   img_url:
+ *                     type: string
+ *                     nullable: true
+ *                     example: null
+ *                     description: URL hình ảnh đại diện cho chuyên khoa (có thể null nếu không có)
+ *       500:
+ *         description: Lỗi máy chủ
+ */
+router.get("/specialization", doctorController.getAllSpecialization);
+/**
+ * @swagger
+ * /api/doctor/{doctorID}:
+ *   get:
+ *     summary: Lấy thông tin chi tiết của một bác sĩ
+ *     description: API này trả về thông tin chi tiết của bác sĩ bao gồm thông tin cá nhân, chuyên khoa, đánh giá trung bình và tổng số đánh giá.
+ *     tags:
+ *       - Doctor
+ *     parameters:
+ *       - in: path
+ *         name: doctorID
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Mã bác sĩ cần lấy thông tin chi tiết
+ *         example: "BS0000001"
+ *     responses:
+ *       200:
+ *         description: Trả về thông tin chi tiết của bác sĩ
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                   example: 1
+ *                   description: ID của bác sĩ
+ *                 ngay_vao_nghe:
+ *                   type: string
+ *                   format: date
+ *                   example: "2010-09-22"
+ *                   description: Ngày bác sĩ bắt đầu hành nghề
+ *                 trinh_do_hoc_van:
+ *                   type: string
+ *                   example: "trình độ mới 5"
+ *                   description: Trình độ học vấn của bác sĩ
+ *                 mo_ta:
+ *                   type: string
+ *                   example: "Được bệnh nhân đánh giá cao"
+ *                   description: Mô tả chung về bác sĩ
+ *                 dia_chi_pk:
+ *                   type: string
+ *                   example: "địa chỉ mới 5"
+ *                   description: Địa chỉ phòng khám của bác sĩ
+ *                 ma_bac_si:
+ *                   type: string
+ *                   example: "BS0000001"
+ *                   description: Mã bác sĩ
+ *                 chuyen_khoa:
+ *                   type: string
+ *                   example: "Nội tổng quát"
+ *                   description: Chuyên khoa của bác sĩ
+ *                 danh_gia_trung_binh:
+ *                   type: string
+ *                   example: "3.5000000000000000"
+ *                   description: Điểm đánh giá trung bình của bác sĩ
+ *                 tong_so_danh_gia:
+ *                   type: string
+ *                   example: "2"
+ *                   description: Tổng số lượt đánh giá của bác sĩ
+ *                 Nguoi_dung:
+ *                   type: object
+ *                   properties:
+ *                     ten_dang_nhap:
+ *                       type: string
+ *                       example: "bacsi1"
+ *                     email:
+ *                       type: string
+ *                       example: "bacsi1@example.com"
+ *                     sdt:
+ *                       type: string
+ *                       example: "0123456785"
+ *                     ngay_sinh:
+ *                       type: string
+ *                       format: date
+ *                       example: "1985-01-05"
+ *                     gioi_tinh:
+ *                       type: string
+ *                       example: "Nữ"
+ *                     phan_loai:
+ *                       type: string
+ *                       example: "bs"
+ *                     ho_va_ten:
+ *                       type: string
+ *                       example: "Nguyễn Trung Hiếu"
+ *                     avt_url:
+ *                       type: string
+ *                       nullable: true
+ *                       example: null
+ *                     Tai_khoan:
+ *                       type: object
+ *                       properties:
+ *                         ten_dang_nhap:
+ *                           type: string
+ *                           example: "bacsi1"
+ *                         active:
+ *                           type: boolean
+ *                           example: true
+ *                         thoi_diem_mo_tk:
+ *                           type: string
+ *                           format: date-time
+ *                           example: "2025-02-28T01:55:00.651Z"
+ *       404:
+ *         description: Không tìm thấy bác sĩ với ID này
+ *       500:
+ *         description: Lỗi máy chủ
+ */
+router.get("/:doctorID", doctorController.getDoctorInfo);
 module.exports = router;

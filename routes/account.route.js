@@ -1,6 +1,6 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const accountController = require('../controllers/account.controller');
+const accountController = require("../controllers/account.controller");
 
 //swagger comment
 /**
@@ -31,7 +31,7 @@ const accountController = require('../controllers/account.controller');
  *       400:
  *        description: Đổi mật khẩu thất bại
  */
-router.post('/change_password', accountController.changePassword);
+router.post("/change_password", accountController.changePassword);
 /**
  * @swagger
  * /api/account/toggle_active:
@@ -75,7 +75,7 @@ router.post('/change_password', accountController.changePassword);
  *                   type: string
  *                   example: "Thay đổi trạng thái thất bại!"
  */
-router.post('/toggle_active', accountController.toggleActive);
+router.post("/toggle_active", accountController.toggleActive);
 /**
  * @swagger
  * /api/account/change_password_from_admin:
@@ -101,5 +101,10 @@ router.post('/toggle_active', accountController.toggleActive);
  *       400:
  *         description: Đổi mật khẩu thất bại
  */
-router.post('/change_password_from_admin', accountController.changePasswordFromAdmin);
+router.post(
+  "/change_password_from_admin",
+  accountController.changePasswordFromAdmin
+);
+
+router.post("/reset_password", accountController.resetPassword);
 module.exports = router;

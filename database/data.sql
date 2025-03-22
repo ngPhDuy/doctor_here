@@ -152,3 +152,13 @@ call create_update_request('trình độ mới 3', 'địa chỉ mới 3', 'chuy
 call create_update_request('trình độ mới 1', 'địa chỉ mới 1', 'chuyên khoa mới 1', 'BS0000003');
 call create_update_request('trình độ mới 2', 'địa chỉ mới 2', 'chuyên khoa mới 2', 'BS0000003');
 call create_update_request('trình độ mới 3', 'địa chỉ mới 3', 'chuyên khoa mới 3', 'BS0000003');
+
+INSERT INTO "Yeu_thich_bac_si" ("ma_benh_nhan", "ma_bac_si")
+VALUES
+('BN0000006', 'BS0000002'),
+('BN0000006', 'BS0000004'),
+('BN0000006', 'BS0000005'),
+('BN0000007', 'BS0000004'),
+('BN0000007', 'BS0000005'),
+('BN0000008', 'BS0000004'),
+('BN0000009', 'BS0000004');

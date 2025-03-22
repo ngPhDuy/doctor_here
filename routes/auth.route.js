@@ -1,7 +1,7 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const authController = require('../controllers/auth.controller');
-const authMiddleware = require('../middleware/auth.middleware');
+const authController = require("../controllers/auth.controller");
+const authMiddleware = require("../middleware/auth.middleware");
 
 /**
  * @swagger
@@ -52,8 +52,7 @@ const authMiddleware = require('../middleware/auth.middleware');
  *                   type: string
  *                   example: Sai tên đăng nhập hoặc mật khẩu.
  */
-
-router.post('/login', authController.login);
+router.post("/login", authController.login);
 /**
  * @swagger
  * /api/auth/logout:
@@ -82,10 +81,12 @@ router.post('/login', authController.login);
  *                   type: string
  *                   example: Không thể đăng xuất!
  */
-
-router.get('/logout', authController.logout);
-router.get('/protected', authMiddleware.protect, (req, res) => {
-    res.status(200).json({ message: 'Bạn đã truy cập vào route được bảo vệ!', user: req.session.user });
+router.get("/logout", authController.logout);
+router.get("/protected", authMiddleware.protect, (req, res) => {
+  res.status(200).json({
+    message: "Bạn đã truy cập vào route được bảo vệ!",
+    user: req.session.user,
+  });
 });
 
 module.exports = router;
