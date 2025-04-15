@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { FiSearch } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 
 interface Patient {
@@ -26,49 +27,55 @@ interface Patient {
 }
 
 const PatientListDoctorComponent: React.FC = () => {
-    const navigate = useNavigate();
-    const [patients, setPatients] = useState<Patient[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+  const navigate = useNavigate();
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-    // State cho phân trang
-    const [currentPage, setCurrentPage] = useState(1);
-    const patientsPerPage = 10;
+  // State cho phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const patientsPerPage = 10;
 
-    // State cho tìm kiếm và lọc
-    const [searchTerm, setSearchTerm] = useState("");
+  // State cho tìm kiếm và lọc
+  const [searchTerm, setSearchTerm] = useState("");
 
-    // State cho bộ lọc ngày
-    const [startDate, setStartDate] = useState("");
-    const [endDate, setEndDate] = useState("");
+  // State cho bộ lọc ngày
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
-    useEffect(() => {
-        const fetchAppointments = async () => {
-        try {
-            const response = await fetch(
-            `${import.meta.env.VITE_API_BASE_URL}/api/patient/getAllByDoctorID?doctorID=BS0000001`
-            );
-            if (!response.ok) {
-                throw new Error("Không thể tải danh sách bệnh nhân.");
-            }
-            const data: Patient[] = await response.json();
-            setPatients(data);
-        } catch (err) {
-            setError("Lỗi khi tải danh sách bệnh nhân.");
-        } finally {
-            setLoading(false);
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const response = await fetch(
+          `${
+            import.meta.env.VITE_API_BASE_URL
+          }/api/patient/getAllByDoctorID?doctorID=${localStorage.getItem("id")}`
+        );
+        if (!response.ok) {
+          throw new Error("Không thể tải danh sách bệnh nhân.");
         }
-        };
-        fetchAppointments();
-    }, []);
+        const data: Patient[] = await response.json();
+        setPatients(data);
+      } catch (err) {
+        setError("Lỗi khi tải danh sách bệnh nhân.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAppointments();
+  }, []);
 
   // Lọc danh sách bác sĩ theo từ khóa tìm kiếm và theo ngày
   const filteredPatients = patients.filter((patient) => {
     const patientDate = patient.ngay_sinh.split("T")[0];
-  
-    const startDateStr = startDate ? new Date(startDate).toISOString().split("T")[0] : "";
-    const endDateStr = endDate ? new Date(endDate).toISOString().split("T")[0] : "";
-  
+
+    const startDateStr = startDate
+      ? new Date(startDate).toISOString().split("T")[0]
+      : "";
+    const endDateStr = endDate
+      ? new Date(endDate).toISOString().split("T")[0]
+      : "";
+
     const lowerSearchTerm = searchTerm.toLowerCase();
     return (
       // Lọc theo từ khóa tìm kiếm (ho_va_ten, ma_bhyt, bv_dang_ky)
@@ -80,57 +87,48 @@ const PatientListDoctorComponent: React.FC = () => {
       (!endDateStr || patientDate <= endDateStr)
     );
   });
-  
 
   // Xử lý phân trang
   const totalPages = Math.ceil(filteredPatients.length / patientsPerPage);
   const indexOfLastPatient = currentPage * patientsPerPage;
-  const indexOfFirstPatient = indexOfLastPatient- patientsPerPage;
+  const indexOfFirstPatient = indexOfLastPatient - patientsPerPage;
   const currentPatients = filteredPatients.slice(
     indexOfFirstPatient,
     indexOfLastPatient
   );
 
-  if (loading) return <p>Đang tải dữ liệu...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="p-5 h-full bg-gray-50">
+    <div className="p-2 h-full bg-gray-50">
       {/* <div className="font-medium text-xl mb-4 text-blue-600">Lịch sử cuộc hẹn</div> */}
-      <div className="flex items-center w-full pb-4 p-3 mb-4 justify-between bg-white">
+      <div className="flex items-center w-full pb-4 p-3 mb-4 justify-between bg-white shadow-md">
         <div className="font-semibold text-lg">
           <p>Tổng bệnh nhân ({filteredPatients.length})</p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center gap-2 text-sm">
           <div className="flex items-center border rounded-lg px-3 py-2 bg-white shadow-sm focus-within:ring-2 focus-within:ring-blue-500">
             <input
               type="text"
               placeholder="Tên, BHYT, Bệnh viện"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
               className="flex-1 outline-none px-2"
             />
-            <svg
-              width="25"
-              height="25"
-              viewBox="0 0 25 25"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M21.3176 21.3191L16.8478 16.8413M19.3248 10.857C19.3248 13.1032 18.4325 15.2574 16.8442 16.8457C15.2559 18.434 13.1017 19.3263 10.8555 19.3263C8.60933 19.3263 6.45513 18.434 4.86683 16.8457C3.27853 15.2574 2.38623 13.1032 2.38623 10.857C2.38623 8.61079 3.27853 6.4566 4.86683 4.86829C6.45513 3.27999 8.60933 2.3877 10.8555 2.3877C13.1017 2.3877 15.2559 3.27999 16.8442 4.86829C18.4325 6.4566 19.3248 8.61079 19.3248 10.857V10.857Z"
-                stroke="#333333"
-                stroke-width="2.13512"
-                stroke-linecap="round"
-              />
-            </svg>
+            <FiSearch size={18} />
           </div>
 
           <input
             type="date"
             value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
+            onChange={(e) => {
+              setStartDate(e.target.value);
+              setCurrentPage(1);
+            }}
             className="border px-4 py-2 rounded-lg"
           />
           <span>-</span>
@@ -149,10 +147,9 @@ const PatientListDoctorComponent: React.FC = () => {
             <th className="px-4 py-2">STT</th>
             <th className="px-4 py-2">Mã bệnh nhân</th>
             <th className="px-4 py-2">Tên bệnh nhân</th>
-            <th className="px-4 py-2">CCCD</th>
             <th className="px-4 py-2">Ngày sinh</th>
             <th className="px-4 py-2">BHYT</th>
-            <th className="px-4 py-2">Bệnh viên đăng ký</th>
+            <th className="px-4 py-2">Bệnh viện đăng ký</th>
           </tr>
         </thead>
         <tbody>
@@ -160,14 +157,15 @@ const PatientListDoctorComponent: React.FC = () => {
             <tr
               key={patient.id}
               className="bg-white hover:bg-gray-100 cursor-pointer"
-              onClick={() => navigate(`/patientInfoDoctor/${patient.ma_benh_nhan}`)}
+              onClick={() =>
+                navigate(`/patientInfoDoctor/${patient.ma_benh_nhan}`)
+              }
             >
               <td className="px-4 py-3">{indexOfFirstPatient + index + 1}</td>
               <td className="px-4 py-3">{patient.ma_benh_nhan}</td>
               <td className="px-4 py-3 truncate max-w-xs">
                 {patient.ho_va_ten}
               </td>
-              <td className="px-4 py-3">{patient.cccd}</td>
               <td className="px-4 py-3">{patient.ngay_sinh}</td>
               <td className="px-4 py-3">{patient.ma_bhyt}</td>
               <td className="px-4 py-3">{patient.bv_dang_ky}</td>
@@ -177,7 +175,7 @@ const PatientListDoctorComponent: React.FC = () => {
       </table>
 
       {/* Phân trang */}
-      <div className="flex justify-end mt-5 space-x-4">
+      <div className="flex justify-end mt-5 space-x-4 text-sm">
         <button
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}

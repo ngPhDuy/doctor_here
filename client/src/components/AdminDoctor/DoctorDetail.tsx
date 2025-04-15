@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import ChangeDoctorInforModal from "./ChangeDoctorInfor";
 import ChangePasswordModal from "./ChangePassword";
 import { TextInput, TextAreaInput } from "../Input/InputComponents";
+import Swal from "sweetalert2";
 
 interface Doctor {
   id: number;
@@ -21,6 +22,7 @@ interface Doctor {
   nguoi_dung_gioi_tinh: string;
   nguoi_dung_phan_loai: string;
   nguoi_dung_ho_va_ten: string;
+  nguoi_dung_avt_url: string;
 
   // Thông tin từ Tai_khoan
   tai_khoan_ten_dang_nhap: string;
@@ -44,6 +46,7 @@ const defaultDoctor: Doctor = {
   nguoi_dung_gioi_tinh: "",
   nguoi_dung_phan_loai: "",
   nguoi_dung_ho_va_ten: "",
+  nguoi_dung_avt_url: "",
 
   tai_khoan_ten_dang_nhap: "",
   tai_khoan_active: false,
@@ -84,6 +87,7 @@ const DoctorInfor: React.FC = () => {
         nguoi_dung_gioi_tinh: data.Nguoi_dung.gioi_tinh,
         nguoi_dung_phan_loai: data.Nguoi_dung.phan_loai,
         nguoi_dung_ho_va_ten: data.Nguoi_dung.ho_va_ten,
+        nguoi_dung_avt_url: data.Nguoi_dung.avt_url,
 
         tai_khoan_ten_dang_nhap: data.Nguoi_dung.Tai_khoan.ten_dang_nhap,
         tai_khoan_active: data.Nguoi_dung.Tai_khoan.active,
@@ -141,86 +145,110 @@ const DoctorInfor: React.FC = () => {
 
   const resetPassword = async (username: string) => {
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/account/reset_password`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ username }),
-        }
-      );
+      Swal.fire({
+        title: "Xác nhận",
+        text: "Bạn có chắc chắn muốn đặt lại mật khẩu cho tài khoản này không?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Có",
+        cancelButtonText: "Không",
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          // Nếu người dùng xác nhận, thực hiện đặt lại mật khẩu
+          const response = await fetch(
+            `${import.meta.env.VITE_API_BASE_URL}/api/account/reset_password`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ username }),
+            }
+          );
 
-      if (!response.ok) throw new Error("Không thể đặt lại mật khẩu.");
-      alert("Đặt lại mật khẩu thành công");
+          if (!response.ok) throw new Error("Không thể đặt lại mật khẩu.");
+
+          Swal.fire({
+            title: "Thành công",
+            text: "Đặt lại mật khẩu thành công!",
+            icon: "success",
+            confirmButtonText: "OK",
+          });
+        }
+      });
     } catch (error) {
       console.error(error);
-      alert("Đặt lại mật khẩu thất bại!");
+      Swal.fire({
+        title: "Lỗi",
+        text: "Có lỗi xảy ra khi đặt lại mật khẩu.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
   };
 
   const toggleAccountStatus = async (username: string) => {
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/account/toggle_active`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ username }),
-        }
-      );
+      //Modal để xác nhận trước
+      let mess = doctor.tai_khoan_active
+        ? "Bạn có chắc chắn muốn khóa tài khoản này không?"
+        : "Bạn có chắc chắn muốn mở khóa tài khoản này không?";
 
-      if (!response.ok)
-        throw new Error("Không thể thay đổi trạng thái tài khoản.");
-      alert("Thay đổi trạng thái tài khoản thành công");
+      Swal.fire({
+        title: "Xác nhận",
+        text: mess,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Có",
+        cancelButtonText: "Không",
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          // Nếu người dùng xác nhận, thực hiện thay đổi trạng thái tài khoản
+          const response = await fetch(
+            `${import.meta.env.VITE_API_BASE_URL}/api/account/toggle_active`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ username }),
+            }
+          );
+
+          if (!response.ok)
+            throw new Error("Không thể thay đổi trạng thái tài khoản.");
+
+          //Sửa lại doctor trong state
+          setDoctor((prevDoctor) => ({
+            ...prevDoctor,
+            tai_khoan_active: !prevDoctor.tai_khoan_active,
+          }));
+
+          Swal.fire({
+            title: "Thành công",
+            text: "Thay đổi trạng thái tài khoản thành công",
+            icon: "success",
+            confirmButtonText: "OK",
+          });
+        }
+      });
     } catch (error) {
       console.error(error);
-      alert("Thay đổi trạng thái tài khoản thất bại!");
+      Swal.fire({
+        title: "Lỗi",
+        text: "Có lỗi xảy ra khi thay đổi trạng thái tài khoản.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
-    window.location.reload();
   };
 
   return (
-    <div className="h-full bg-gray-50">
-      {/* Header */}
-      <div className="flex items-center mb-4 bg-white rounded-lg shadow-md">
-        <div className="p-3 cursor-pointer" onClick={() => navigate("/")}>
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M9.57 5.92969L3.5 11.9997L9.57 18.0697"
-              stroke="#292D32"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M20.5 12H3.67001"
-              stroke="#292D32"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </div>
-        <div className="p-3 mr-5 text-blueTitle cursor-pointer">
-          <p className="font-semibold text-xl mb-2">Thông tin chi tiết</p>
-          <hr className="border-t-2 border-blueTitle" />
-        </div>
-      </div>
-
-      <div className="flex gap-8">
+    <div className="h-full bg-gray-50 p-2">
+      <div className="flex gap-4 h-full">
         {/* Thông tin chuyên ngành bên trái */}
-        <div className="w-2/3 bg-white p-6 rounded-lg shadow-md">
-          <div className="flex items-center mb-8">
+        <div className="w-2/3 bg-white px-6 py-4 rounded-lg shadow-md">
+          <div className="flex items-center mb-4">
             <svg
               width="35"
               height="35"
@@ -333,16 +361,19 @@ const DoctorInfor: React.FC = () => {
 
         {/* Thông tin cá nhân bên phải */}
         <div className="w-1/3 bg-white p-6 rounded-lg shadow-md">
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center text-base">
             <img
-              src="/images/avt.png"
+              src={
+                doctor.nguoi_dung_avt_url
+                  ? doctor.nguoi_dung_avt_url
+                  : "/images/avt.png"
+              }
               alt="Doctor Avatar"
               className="w-20 h-20 rounded-full mb-4"
             />
-            <p className="text-base font-semibold">
+            <p className="font-semibold text-center">
               {doctor.nguoi_dung_ho_va_ten}
             </p>
-            <p className="text-base font-semibold">({doctor.ma_bac_si})</p>
             <p className="text-gray-600">
               {calculateAge(doctor.nguoi_dung_ngay_sinh)} tuổi,{" "}
               {doctor.nguoi_dung_gioi_tinh}
@@ -350,7 +381,7 @@ const DoctorInfor: React.FC = () => {
           </div>
 
           <hr className="my-3" />
-          <div className="ml-5">
+          <div className="ml-5 text-base">
             {[
               { label: "Email", value: doctor.nguoi_dung_email },
               { label: "SĐT", value: doctor.nguoi_dung_sdt },
@@ -364,8 +395,8 @@ const DoctorInfor: React.FC = () => {
               },
             ].map((info) => (
               <div className="mb-3" key={info.label}>
-                <p className="text-base font-medium">{info.label}</p>
-                <p className="text-base font-medium">{info.value}</p>
+                <p className="font-medium">{info.label}</p>
+                <p className="text-gray-500">{info.value}</p>
               </div>
             ))}
           </div>

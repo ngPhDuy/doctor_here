@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   BrowserRouter as Router,
   Route,
@@ -23,8 +23,14 @@ import PatientDetailHistory from "./components/DoctorPatient/PatientDetailHistor
 import DoctorSettingInfo from "./components/DoctorSetting/DoctorSettingInfo";
 import DoctorRequest from "./components/DoctorSetting/DoctorRequest";
 import DoctorSchedule from "./components/DoctorSetting/DoctorSchedule";
+import DoctorRating from "./components/DoctorSetting/DoctorRating";
 import LoginComponent from "./pages/Login";
 import Conversations from "./components/DoctorMess/Conversations";
+import DoctorHomepage from "./components/Doctor/DoctorHomepage";
+import ResultList from "./components/DoctorResult/ResultList";
+import ResultDetail from "./components/DoctorResult/ResultDetail";
+import RequestDetail from "./components/DoctorSetting/RequestDetail";
+import MedicineList from "./components/AdminMedicine/MedicineList";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const role = localStorage.getItem("role");
@@ -36,7 +42,23 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App: React.FC = () => {
-  const role = localStorage.getItem("role"); // Kiểm tra role đã lưu trong localStorage
+  const [role, setRole] = useState<string | null>(localStorage.getItem("role"));
+
+  // Đảm bảo rằng state `role` được cập nhật mỗi khi giá trị trong localStorage thay đổi
+  useEffect(() => {
+    const handleStorageChange = () => {
+      console.log("LocalStorage changed:", localStorage.getItem("role"));
+      setRole(localStorage.getItem("role"));
+    };
+
+    // Lắng nghe sự thay đổi của localStorage
+    window.addEventListener("storage", handleStorageChange);
+
+    // Dọn dẹp sự kiện khi component unmount
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, []);
 
   console.log(role + " from App Component");
 
@@ -44,7 +66,7 @@ const App: React.FC = () => {
     <Router>
       <Routes>
         {/* Route cho trang đăng nhập */}
-        <Route path="/login" element={<LoginComponent />} />
+        <Route path="/login" element={<LoginComponent setRole={setRole} />} />
 
         {/* Các route yêu cầu Header và Sidebar */}
         <Route
@@ -86,12 +108,17 @@ const App: React.FC = () => {
                             path="/newRequestDetail/:requestId/:doctorId"
                             element={<NewRequestDetail />}
                           />
+                          <Route
+                            path="/medicineList"
+                            element={<MedicineList />}
+                          />
                         </>
                       )}
 
                       {/* Routes dành cho Doctor */}
                       {role === "bs" && (
                         <>
+                          <Route path="/" element={<DoctorHomepage />} />
                           <Route
                             path="/historyList"
                             element={<HistoryListComponent />}
@@ -112,6 +139,16 @@ const App: React.FC = () => {
                             path="/patientDetailHistory/:patientId"
                             element={<PatientDetailHistory />}
                           />
+
+                          <Route
+                            path="/resultList/:status"
+                            element={<ResultList />}
+                          />
+                          <Route
+                            path="/resultDetail/:id"
+                            element={<ResultDetail />}
+                          />
+
                           <Route
                             path="/doctorSettingInfo"
                             element={<DoctorSettingInfo />}
@@ -119,6 +156,14 @@ const App: React.FC = () => {
                           <Route
                             path="/doctorRequest"
                             element={<DoctorRequest />}
+                          />
+                          <Route
+                            path="/requestDetail/:requestID"
+                            element={<RequestDetail />}
+                          />
+                          <Route
+                            path="/doctorRating"
+                            element={<DoctorRating />}
                           />
                           <Route
                             path="/doctorSchedule"

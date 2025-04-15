@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
+import NavBar from "./NavBar";
+
+interface RequestHistory {
+  thoi_diem_yeu_cau: string;
+  ma_yeu_cau: string;
+  trang_thai: string;
+}
 
 const DoctorRequest: React.FC = () => {
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
   // const [doctor, setDoctor] = useState<DoctorInfo | null>(null);
   // const [loading, setLoading] = useState(true);
   // const [error, setError] = useState("");
@@ -14,79 +20,59 @@ const DoctorRequest: React.FC = () => {
     trinh_do_hoc_van: "",
     files: [] as File[],
   });
+  const [requestHistory, setRequestHistory] = useState<RequestHistory[]>([]);
+  const [specialization, setSpecialization] = useState<string[]>([]);
 
-  // Fake data cho bảng
-  const requestHistory = [
-    {
-      id: "2110168498",
-      time: "20:10 20/12/2023",
-      result: "Chấp thuận",
-      reviewer: "Admin1",
-    },
-    {
-      id: "3156874561",
-      time: "22:11 22/11/2023",
-      result: "Từ chối",
-      reviewer: "Admin1",
-    },
-    {
-      id: "1024587845",
-      time: "08:30 10/01/2024",
-      result: "Chấp thuận",
-      reviewer: "Admin2",
-    },
-    {
-      id: "7485901234",
-      time: "09:00 11/01/2024",
-      result: "Chờ duyệt",
-      reviewer: "Admin3",
-    },
-    {
-      id: "3154789521",
-      time: "12:15 12/01/2024",
-      result: "Từ chối",
-      reviewer: "Admin4",
-    },
-    {
-      id: "5812369571",
-      time: "14:45 13/01/2024",
-      result: "Chấp thuận",
-      reviewer: "Admin5",
-    },
-    {
-      id: "9746538492",
-      time: "10:25 15/01/2024",
-      result: "Chờ duyệt",
-      reviewer: "Admin6",
-    },
-    {
-      id: "8357021493",
-      time: "16:00 17/01/2024",
-      result: "Chấp thuận",
-      reviewer: "Admin7",
-    },
-    {
-      id: "5812369571",
-      time: "14:45 13/01/2024",
-      result: "Chấp thuận",
-      reviewer: "Admin5",
-    },
-    {
-      id: "9746538492",
-      time: "10:25 15/01/2024",
-      result: "Chờ duyệt",
-      reviewer: "Admin6",
-    },
-    {
-      id: "8357021493",
-      time: "16:00 17/01/2024",
-      result: "Chấp thuận",
-      reviewer: "Admin7",
-    },
-  ];
-
-  const recordsPerPage = 8;
+  const recordsPerPage = 7;
   const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    const fetchRequestHistory = async () => {
+      try {
+        const response = await fetch(
+          `${
+            import.meta.env.VITE_API_BASE_URL
+          }/api/updateRequest/requestByDoctorID/${localStorage.getItem("id")}`
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch request history");
+        }
+        const data = await response.json();
+
+        const formattedData = data.map((request: any) => ({
+          thoi_diem_yeu_cau: request.thoi_diem_yeu_cau,
+          trang_thai: request.trang_thai,
+          ma_yeu_cau: request.ma_yeu_cau,
+        }));
+
+        setRequestHistory(formattedData);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchRequestHistory();
+  }, []);
+
+  useEffect(() => {
+    const fetchSpecialization = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/doctor/specialization`
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch specialization");
+        }
+        const data = await response.json();
+        let specialization = data.map((item: any) => item.ten_chuyen_khoa);
+        setSpecialization(specialization);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchSpecialization();
+  }, []);
 
   // Hàm xử lý thay đổi input text hoặc select
   const handleInputChange = (
@@ -132,6 +118,21 @@ const DoctorRequest: React.FC = () => {
       cancelButtonText: "Hủy",
     }).then(async (result) => {
       if (result.isConfirmed) {
+        // Kiểm tra xem đã chọn đủ thông tin chưa: ít nhất chứa 1 trường, file thì ít nhất là 1
+        if (
+          formData.chuyen_khoa === "" &&
+          formData.dia_chi_pk === "" &&
+          formData.trinh_do_hoc_van === ""
+        ) {
+          Swal.fire("Lỗi", "Vui lòng điền đầy đủ thông tin yêu cầu.", "error");
+          return;
+        }
+
+        if (formData.files.length === 0) {
+          Swal.fire("Lỗi", "Vui lòng gửi ít nhất 1 minh chứng.", "error");
+          return;
+        }
+
         try {
           const newForm = new FormData();
           newForm.append("doctorID", "BS0000001");
@@ -156,6 +157,24 @@ const DoctorRequest: React.FC = () => {
 
           if (response.ok) {
             Swal.fire("Thành công!", "Yêu cầu của bạn đã được gửi.", "success");
+            //Cập nhật lại request history
+            const data = await response.json();
+            console.log(data);
+            let newRequest: RequestHistory = {
+              thoi_diem_yeu_cau: new Date().toISOString(),
+              trang_thai: "Chờ duyệt",
+              ma_yeu_cau: data.ma_yeu_cau,
+            };
+            console.log("newRequest", newRequest);
+
+            setRequestHistory((prev) => [newRequest, ...prev]);
+            //clear form
+            setFormData({
+              chuyen_khoa: "",
+              dia_chi_pk: "",
+              trinh_do_hoc_van: "",
+              files: [],
+            });
           } else {
             Swal.fire("Lỗi", "Đã có lỗi xảy ra khi gửi yêu cầu.", "error");
           }
@@ -179,86 +198,53 @@ const DoctorRequest: React.FC = () => {
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   return (
-    <div className="h-full bg-gray-100 p-3">
+    <div className="h-full bg-gray-100 p-2">
       {/* Thanh điều hướng */}
-      <div className="flex items-center p-3 mb-4 bg-white rounded-lg shadow-md">
-        <div
-          className="p-3 cursor-pointer"
-          onClick={() => navigate("/doctorList")}
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M9.57 5.92969L3.5 11.9997L9.57 18.0697"
-              stroke="#292D32"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M20.5 12H3.67001"
-              stroke="#292D32"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </div>
-        <div className="mr-5 cursor-pointer">
-          <p className="font-semibold text-lg mb-1 ml-1">Cá nhân</p>
-        </div>
-        <div className="cursor-pointer" onClick={() => navigate("/")}>
-          <p className="font-semibold text-lg mb-1">Các đánh giá</p>
-        </div>
-        <div
-          className="ml-5 cursor-pointer text-blueTitle"
-          onClick={() => navigate("/")}
-        >
-          <p className="font-semibold text-lg mb-1">Các yêu cầu cập nhật</p>
-          <hr className="border-t-2 border-blueTitle ml-1" />
-        </div>
-        <div className="ml-5 cursor-pointer" onClick={() => navigate("/")}>
-          <p className="font-semibold text-lg mb-1">Lịch làm việc</p>
-        </div>
-      </div>
+      <NavBar curPage="request" />
 
       {/* Main content */}
-      <div className="flex gap-6">
+      <div className="flex gap-4" style={{ height: "90%" }}>
         {/* Left Side: Form */}
-        <div className="w-7/12 bg-white py-8 px-4 rounded-lg shadow-md">
+        <div className="w-7/12 bg-white py-4 px-8 rounded-lg shadow-md text-sm">
           <div className="grid grid-cols-1 gap-y-2">
-            <h1 className="text-center text-lg font-bold">GỬI YÊU CẦU</h1>
-            <div>
-              <label className="text-sm font-medium">Chuyên khoa</label>
-              <br />
-              <select
-                className="w-3/5 px-3 py-2 border rounded-lg"
-                value={formData.chuyen_khoa}
-                name="chuyen_khoa"
-                onChange={handleInputChange}
-              >
-                <option value="Ngoại">Ngoại</option>
-                <option value="Nội">Nội</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-sm font-medium">Địa chỉ phòng khám</label>
-              <br />
-              <input
-                className="w-3/5 px-3 py-2 border rounded-lg"
-                value={formData.dia_chi_pk}
-                name="dia_chi_pk"
-                onChange={handleInputChange}
-              />
+            <h1 className="text-center text-base font-bold mb-2">
+              GỬI YÊU CẦU
+            </h1>
+            <div className="flex flex-row w-full justify-between items-center gap-2">
+              <div className="w-4/12 flex flex-col gap-2">
+                <label className="text-sm font-medium block">Chuyên khoa</label>
+                <select
+                  className="px-3 py-2 border rounded-lg"
+                  value={formData.chuyen_khoa}
+                  name="chuyen_khoa"
+                  onChange={handleInputChange}
+                >
+                  <option value="">Chọn chuyên khoa</option>
+                  {specialization &&
+                    specialization.map((item: string, index: number) => (
+                      <option key={index} value={item}>
+                        {item}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <div className="w-8/12 flex flex-col gap-2">
+                <label className="text-sm font-medium block">
+                  Địa chỉ phòng khám
+                </label>
+                <input
+                  className="px-3 py-2 border rounded-lg"
+                  value={formData.dia_chi_pk}
+                  name="dia_chi_pk"
+                  onChange={handleInputChange}
+                />
+              </div>
             </div>
 
             <div>
-              <label className="text-sm font-medium">Trình độ học vấn</label>
+              <label className="text-sm font-medium block mb-2">
+                Trình độ học vấn
+              </label>
               <textarea
                 className="w-full px-3 py-2 border rounded-lg"
                 rows={3}
@@ -268,7 +254,7 @@ const DoctorRequest: React.FC = () => {
               />
             </div>
             <div>
-              <label className="text-sm font-medium">
+              <label className="text-sm font-medium block mb-2">
                 Gửi mình chứng (tối đa 5 hình ảnh)
               </label>
               <div
@@ -299,7 +285,7 @@ const DoctorRequest: React.FC = () => {
 
             {/* Hiển thị các file đã chọn */}
             {formData.files.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-4">
+              <div className="mt-2 flex flex-wrap gap-4">
                 {formData.files.map((file, index) => (
                   <div key={index} className="relative w-20 h-20">
                     {file.type.startsWith("image/") ? (
@@ -336,43 +322,67 @@ const DoctorRequest: React.FC = () => {
         </div>
 
         {/* Right Side: Request History */}
-        <div className="w-5/12 bg-white py-2 px-6 rounded-lg shadow-md">
+        <div className="w-5/12 h-full bg-white py-4 px-6 rounded-lg shadow-md text-sm">
           <div>
-            <h3 className="font-semibold  mb-3">Lịch sử yêu cầu</h3>
+            <h3 className="font-semibold mb-2 text-base">Lịch sử yêu cầu</h3>
             <table className="w-full table-auto">
               <thead>
                 <tr>
                   <th className="px-3 py-2 text-sm">Mã yêu cầu</th>
-                  <th className="px-3 py-2 text-sm">Thời điểm</th>
+                  <th className="px-3 py-2 text-sm">Tạo lúc</th>
                   <th className="px-3 py-2 text-sm">Kết quả</th>
-                  <th className="px-3 py-2 text-sm">Duyệt bởi</th>
+                  {/* <th className="px-3 py-2 text-sm">Duyệt bởi</th> */}
                 </tr>
               </thead>
               <tbody>
                 {currentRecords.map((request, index) => (
-                  <tr key={index}>
-                    <td className="border px-3 py-2 text-sm">{request.id}</td>
-                    <td className="border px-3 py-2 text-sm">{request.time}</td>
-                    <td className="border px-3 py-3 text-sm">
-                      {request.result === "Chấp thuận" && (
-                        <span className="px-1 py-1 rounded-full bg-green-200 text-green-600 font-medium">
-                          {request.result}
-                        </span>
-                      )}
-                      {request.result === "Từ chối" && (
-                        <span className="px-2 py-1 rounded-full bg-red-200 text-red-600 font-medium">
-                          {request.result}
-                        </span>
-                      )}
-                      {request.result === "Chờ duyệt" && (
-                        <span className="px-2 py-1 rounded-full bg-blue-200 text-blue-600 font-medium">
-                          {request.result}
-                        </span>
-                      )}
+                  <tr
+                    key={index}
+                    onClick={() => {
+                      navigate(`/requestDetail/${request.ma_yeu_cau}`);
+                    }}
+                    className="cursor-pointer hover:bg-gray-100 text-center"
+                  >
+                    <td className="border px-3 py-2 text-sm">
+                      {request.ma_yeu_cau}
                     </td>
                     <td className="border px-3 py-2 text-sm">
-                      {request.reviewer}
+                      {new Date(request.thoi_diem_yeu_cau).toLocaleString(
+                        "vi-VN",
+                        {
+                          year: "numeric",
+                          month: "2-digit",
+                          day: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )}
                     </td>
+                    <td className="border p-2 text-sm flex justify-center items-center">
+                      {request.trang_thai === "Đã duyệt" && (
+                        <span className="px-1 py-1 rounded-full bg-green-200 text-green-600 font-medium w-11/12">
+                          {request.trang_thai}
+                        </span>
+                      )}
+                      {request.trang_thai === "Từ chối" && (
+                        <span className="px-2 py-1 rounded-full bg-red-200 text-red-600 font-medium w-11/12">
+                          {request.trang_thai}
+                        </span>
+                      )}
+                      {request.trang_thai === "Chờ duyệt" && (
+                        <span className="px-2 py-1 rounded-full bg-blue-200 text-blue-600 font-medium w-11/12">
+                          {request.trang_thai}
+                        </span>
+                      )}
+                      {request.trang_thai === "Thu hồi" && (
+                        <span className="px-2 py-1 rounded-full bg-orange-200 text-orange-600 font-medium w-11/12">
+                          {request.trang_thai}
+                        </span>
+                      )}
+                    </td>
+                    {/* <td className="border px-3 py-2 text-sm">
+                      {request.reviewer}
+                    </td> */}
                   </tr>
                 ))}
               </tbody>

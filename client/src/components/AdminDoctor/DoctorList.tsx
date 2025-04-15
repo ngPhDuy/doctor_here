@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AddDoctorModal from "./AddDoctor";
+import { FiUserCheck, FiUserX } from "react-icons/fi";
 
 interface Doctor {
   id: number;
@@ -113,13 +114,13 @@ const DoctorListComponent: React.FC = () => {
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="p-5 h-full bg-gray-50 flex flex-col">
-      <div className="flex items-center w-full pb-4 p-3 mb-4 justify-between bg-white">
+    <div className="p-2 h-full bg-gray-50">
+      <div className="flex items-center w-full pb-4 p-3 mb-4 justify-between bg-white shadow-md">
         <div className="font-semibold text-lg">
           <p>Số bác sĩ ({displayedDoctors.length})</p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center gap-2 text-sm">
           <div className="flex items-center border rounded-lg px-3 py-2 bg-white shadow-sm focus-within:ring-2 focus-within:ring-blue-500">
             <input
               type="text"
@@ -205,29 +206,28 @@ const DoctorListComponent: React.FC = () => {
               <td className="px-4 py-3">{doctor.ngay_vao_nghe}</td>
               <td className="px-4 py-3">{doctor.Nguoi_dung.sdt}</td>
               <td
-                className={`px-4 py-3 rounded-lg ${
-                  doctor.Nguoi_dung.Tai_khoan.active
-                    ? "text-green-600"
-                    : "text-red-600"
-                }`}
+                className={`px-4 py-3 rounded-lg flex items-center justify-center`}
               >
-                {doctor.Nguoi_dung.Tai_khoan.active ? "Kích hoạt" : "Bị khóa"}
+                {doctor.Nguoi_dung.Tai_khoan.active ? (
+                  <FiUserCheck size={20} className="text-green-500" />
+                ) : (
+                  <FiUserX size={20} className="text-red-500" />
+                )}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      
 
       {/* Phân trang */}
-      <div className="flex justify-end mt-5 space-x-4">
+      <div className="flex justify-end mt-5 space-x-4 text-sm">
         <button
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
           className={`px-4 py-2 rounded-lg ${
             currentPage === 1
               ? "bg-gray-300 cursor-not-allowed"
-              : "bg-blue-500 hover:bg-blue-600 text-white"
+              : "bg-blueButton hover:bg-blueButtonHover text-white"
           }`}
         >
           Trước
@@ -243,7 +243,7 @@ const DoctorListComponent: React.FC = () => {
           className={`px-4 py-2 rounded-lg ${
             currentPage === totalPages
               ? "bg-gray-300 cursor-not-allowed"
-              : "bg-blue-500 hover:bg-blue-600 text-white"
+              : "bg-blueButton hover:bg-blueButtonHover text-white"
           }`}
         >
           Sau

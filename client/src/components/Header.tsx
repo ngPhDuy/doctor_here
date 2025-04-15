@@ -3,6 +3,22 @@ import TooltipButton from "./TooltipButton";
 import LoginComponent from "./Auth";
 const Header = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("role");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  let avtUrl =
+    !localStorage.getItem("avtUrl") || localStorage.getItem("avtUrl") === "null"
+      ? "./images/avt.png"
+      : localStorage.getItem("avtUrl");
+
+  useEffect(() => {
+    if (token) {
+      setIsLoggedIn(true);
+    } else {
+      setIsLoggedIn(false);
+    }
+  }, [token]);
+
   // Đóng modal khi click bên ngoài
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -16,18 +32,45 @@ const Header = () => {
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [showLoginModal]);
+
+  const handleLogout = () => {
+    console.log("Token being sent:", token);
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/logout`, {
+      method: "GET",
+      // headers: {
+      //   Authorization: `Bearer ${token}`,
+      // },
+    })
+      .then((response) => {
+        if (response.ok) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("role");
+          localStorage.removeItem("id");
+          localStorage.removeItem("avtUrl");
+          localStorage.removeItem("fullName");
+          setIsLoggedIn(false);
+          window.location.href = "/login"; // Chuyển hướng về trang đăng nhập
+        } else {
+          console.error("Logout failed:", response.statusText);
+        }
+      })
+      .catch((error) => {
+        console.error("Logout error:", error);
+      });
+  };
+
   return (
     <header>
-      <div className="flex justify-between mr-14 items-center">
-        <div className="flex justify-center items-center ml-8">
-          <img src="/images/logo.png" alt="Logo" className="w-16 h-16" />
-          <h2 className="text-xl font-semibold text-gray-800">Doctor Here</h2>
+      <div className="flex justify-between items-center px-2">
+        <div className="flex justify-center items-center">
+          <img src="/images/logo.png" alt="Logo" className="w-14 h-14" />
+          <h2 className="text-lg font-semibold text-gray-800">Doctor Here</h2>
         </div>
-        <div className="flex">
-          <button type="button" id="logout" className="mr-8">
+        <div className="flex gap-2 items-center">
+          <button type="button" id="logout" className="" onClick={handleLogout}>
             <svg
               fill="#000000"
-              className="w-6 h-6"
+              className="w-4 h-4"
               version="1.1"
               id="Capa_1"
               xmlns="http://www.w3.org/2000/svg"
@@ -54,25 +97,22 @@ const Header = () => {
             </svg>
           </button>
           <img
-            src="./images/avt.png"
+            src={avtUrl || "./images/avt.png"}
             alt="User Avatar"
-            className="w-12 h-12 block items-center justify-center rounded-full mr-2"
+            className="w-10 h-10 block items-center justify-center rounded-full"
           />
 
           <div>
-            <p className="text-base text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
-              Võ Tấn Tài
+            <p className="text-sm text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
+              {localStorage.getItem("fullName") ?? "Nguyễn Văn A"}
             </p>
-            <p className="text-sm">Admin</p>{" "}
+            <p className="text-sm">
+              {role === "qtv" ? "Quản trị viên" : "Bác sĩ"}{" "}
+            </p>
           </div>
         </div>
       </div>
       <hr />
-      {/* <LoginComponent
-        showModal={showLoginModal}
-        toggleLoginModal={() => setShowLoginModal(false)}
-        toggleRegisterModal={() => console.log("Chuyển sang đăng ký")}
-      /> */}
     </header>
   );
 };

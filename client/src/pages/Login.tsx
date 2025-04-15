@@ -1,7 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const LoginComponent: React.FC = () => {
+interface LoginComponentProps {
+  setRole: (role: string) => void; // Định nghĩa props nhận hàm setRole
+}
+
+const LoginComponent: React.FC<LoginComponentProps> = ({ setRole }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -31,11 +35,17 @@ const LoginComponent: React.FC = () => {
 
       if (response.ok) {
         localStorage.setItem("token", data.token);
+        localStorage.setItem("id", data.id);
+        localStorage.setItem("avtUrl", data.avtUrl);
+        localStorage.setItem("fullName", data.fullName);
         localStorage.setItem("role", data.role);
+
+        setRole(data.role); // Cập nhật state role từ props
+
         if (data.token && data.role === "qtv") {
-          navigate("/"); // Admin dashboard
+          navigate("/");
         } else if (data.token && data.role === "bs") {
-          navigate("/historyList"); // Doctor dashboard
+          navigate("/");
         } else {
         }
       } else {

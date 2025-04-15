@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { FiSearch } from "react-icons/fi";
 
 interface UpdateRequest {
   ma_yeu_cau: string;
@@ -12,22 +13,28 @@ interface UpdateRequest {
 const NewRequestComponent: React.FC = () => {
   const navigate = useNavigate();
   const [updateRequests, setUpdateRequests] = useState<UpdateRequest[]>([]);
+  const [filteredRequests, setFilteredRequests] = useState<UpdateRequest[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // State cho bộ lọc ngày
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   // State cho phân trang
   const [currentPage, setCurrentPage] = useState(1);
-  const requestsPerpage = 7;
+  const requestsPerpage = 10;
 
   const indexOfLastRequest = currentPage * requestsPerpage;
   const indexOfFirstRequest = indexOfLastRequest - requestsPerpage;
-  const currentRequest = updateRequests.slice(
+  const currentRequest = filteredRequests.slice(
     indexOfFirstRequest,
     indexOfLastRequest
   );
 
   // Chuyển trang
-  const totalPages = Math.ceil(updateRequests.length / requestsPerpage);
+  const totalPages = Math.ceil(filteredRequests.length / requestsPerpage);
   const goToNextPage = () =>
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   const goToPrevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -45,6 +52,7 @@ const NewRequestComponent: React.FC = () => {
 
       const data: UpdateRequest[] = await response.json();
       setUpdateRequests(data);
+      setFilteredRequests(data);
     } catch (err) {
       setError("Lỗi khi tải danh sách yêu cầu.");
     } finally {
@@ -56,42 +64,88 @@ const NewRequestComponent: React.FC = () => {
     fetchUpdateRequests();
   }, []);
 
+  useEffect(() => {
+    const filtered = updateRequests.filter((request) => {
+      const isMatchingSearchTerm =
+        request.ho_va_ten.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        request.ma_yeu_cau.toLowerCase().includes(searchTerm) ||
+        request.ma_bac_si.toLowerCase().includes(searchTerm);
+
+      const requestDate = new Date(request.thoi_diem_yeu_cau).setHours(
+        0,
+        0,
+        0,
+        0
+      );
+      const startTimestamp = startDate
+        ? new Date(startDate).setHours(0, 0, 0, 0)
+        : -Infinity;
+      const endTimestamp = endDate
+        ? new Date(endDate).setHours(23, 59, 59, 999)
+        : Infinity;
+
+      const isMatchingDateRange =
+        requestDate >= startTimestamp && requestDate <= endTimestamp;
+
+      return isMatchingSearchTerm && isMatchingDateRange;
+    });
+
+    setFilteredRequests(filtered);
+    setCurrentPage(1); // Reset current page when filter changes
+  }, [searchTerm, startDate, endDate, updateRequests]);
+
   if (loading) return <p>Đang tải danh sách yêu cầu...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="p-5 h-full bg-gray-50">
-      <div className="flex items-center p-2 mb-4 bg-white rounded-lg shadow-md">
-        <div
-          className="mr-5 text-blueTitle cursor-pointer"
-          onClick={() => navigate(`/newRequests`)}
-        >
-          <p className="font-semibold text-lg mb-2">Chưa xử lý</p>
-          <hr className="border-t-2 border-blueTitle" />
-        </div>
-        <div
-          className="ml-5 cursor-pointer"
-          onClick={() => navigate(`/oldRequests`)}
-        >
-          <p className="font-semibold text-lg mb-2">Đã xử lý</p>
-        </div>
-      </div>
-      <div className="flex items-center w-full pb-4 p-3 mb-4  justify-between bg-white">
-        <div className="font-semibold text-lg mr-50">
-          <p>Số yêu cầu ({updateRequests.length})</p>
+    <div className="p-2 h-full bg-gray-50">
+      <div className="flex items-center w-full pb-4 p-3 mb-4 justify-between bg-white shadow-md">
+        <div className="font-semibold flex items-center text-lg">
+          <div
+            className="mr-5 text-blueTitle cursor-pointer"
+            onClick={() => navigate(`/newRequests`)}
+          >
+            <p className="font-semibold text-lg mb-1">Chưa xử lý</p>
+            <hr className="border-t-2 border-blueTitle" />
+          </div>
+          <div
+            className="ml-5 cursor-pointer"
+            onClick={() => navigate(`/oldRequests`)}
+          >
+            <p className="font-semibold text-lg mb-1">Đã xử lý</p>
+          </div>
         </div>
 
-        <div className="flex items-center space-x-3">
-          <img
-            src="/images/AdminList/search.png"
-            alt="Search"
-            className="w2r-h2r cursor-pointer hover:bg-gray-200"
-          />
-          <img
-            src="/images/AdminList/filter.png"
-            alt="Filter"
-            className="w2r-h2r cursor-pointer hover:bg-gray-200"
-          />
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center border rounded-lg px-3 py-2 bg-white shadow-sm focus-within:ring-2 focus-within:ring-blue-500">
+            <input
+              type="text"
+              placeholder="Tên hoặc mã bệnh nhân"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="flex-1 outline-none px-2"
+            />
+            <FiSearch size={18} />
+          </div>
+
+          <div className="flex gap-2 justify-center items-center">
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="border px-4 py-2 rounded-lg"
+            />
+            <span>-</span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="border px-4 py-2 rounded-lg"
+            />
+          </div>
         </div>
       </div>
       <table className="table-auto w-full text-center border border-gray-300 rounded-lg shadow-lg">
@@ -115,7 +169,7 @@ const NewRequestComponent: React.FC = () => {
                 )
               }
             >
-              <td className="px-2 py-3">{index + 1}</td>
+              <td className="px-2 py-3">{index + 1 + indexOfFirstRequest}</td>
               <td className="px-2 py-3">{request.ma_yeu_cau}</td>
               <td className="px-2 py-3">{request.ma_bac_si}</td>
               <td className="px-2 py-3 truncate max-w-xs">
@@ -129,33 +183,38 @@ const NewRequestComponent: React.FC = () => {
         </tbody>
       </table>
       {/* Phân trang */}
-      <div className="flex justify-end mt-5 space-x-4">
-        <button
-          onClick={goToPrevPage}
-          disabled={currentPage === 1}
-          className={`px-4 py-2 rounded-lg ${
-            currentPage === 1
-              ? "bg-gray-300 cursor-not-allowed"
-              : "bg-blueButton hover:bg-blueButtonHover text-white"
-          }`}
-        >
-          Trước
-        </button>
-        <span className="px-4 py-2 border rounded-lg">
-          {currentPage} / {totalPages}
-        </span>
-        <button
-          onClick={goToNextPage}
-          disabled={currentPage === totalPages}
-          className={`px-4 py-2 rounded-lg ${
-            currentPage === totalPages
-              ? "bg-gray-300 cursor-not-allowed"
-              : "bg-blueButton hover:bg-blueButtonHover text-white"
-          }`}
-        >
-          Sau
-        </button>
-      </div>
+      {totalPages > 1 && (
+        <>
+          <div className="flex justify-end mt-5 space-x-4 text-sm">
+            <button
+              onClick={goToPrevPage}
+              disabled={currentPage === 1}
+              className={`px-4 py-2 rounded-lg ${
+                currentPage === 1
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-blueButton hover:bg-blueButtonHover text-white"
+              }`}
+            >
+              Trước
+            </button>
+            <span className="px-4 py-2 border rounded-lg">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              onClick={goToNextPage}
+              disabled={currentPage === totalPages}
+              className={`px-4 py-2 rounded-lg ${
+                currentPage === totalPages
+                  ? "bg-gray-300 cursor-not-allowed"
+                  : "bg-blueButton hover:bg-blueButtonHover text-white"
+              }`}
+            >
+              Sau
+            </button>
+          </div>
+        </>
+      )}
+      {/* Modal lọc */}
     </div>
   );
 };

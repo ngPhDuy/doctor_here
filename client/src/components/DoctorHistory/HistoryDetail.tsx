@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import Swal from "sweetalert2";
 
 interface Appointment {
   id: number;
@@ -28,6 +29,7 @@ interface Appointment {
   benh_nhan_gioi_tinh: string;
   benh_nhan_phan_loai: string;
   benh_nhan_ho_va_ten: string;
+  benh_nhan_avt_url: string;
 
   // Thông tin bác sĩ
   bac_si_ngay_vao_nghe: string;
@@ -74,6 +76,7 @@ const defaultAppointment: Appointment = {
   benh_nhan_gioi_tinh: "",
   benh_nhan_phan_loai: "",
   benh_nhan_ho_va_ten: "",
+  benh_nhan_avt_url: "",
 
   // Thông tin bác sĩ
   bac_si_ngay_vao_nghe: "",
@@ -98,13 +101,63 @@ const HistoryDetailComponent: React.FC = () => {
   const [appointment, setAppointment] =
     useState<Appointment>(defaultAppointment);
   const { id } = useParams<{ id: string }>();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   const [message, setMessage] = useState<string | null>(null);
   const [messageType, setMessageType] = useState<"success" | "error" | null>(
     null
   );
+
+  const clickFinishHandler = () => {
+    Swal.fire({
+      title: "Xác nhận",
+      text: "Bạn có chắc chắn muốn hoàn thành cuộc hẹn này không?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Có",
+      cancelButtonText: "Không",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        finishHandler();
+      }
+    });
+  };
+
+  const finishHandler = async () => {
+    // Xử lý hoàn thành ở đây
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/appointment/finish/${id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        console.log("Response:", response);
+        if (!response.ok) {
+          return response.json().then((data) => {
+            // Trả về thông báo lỗi từ server
+            console.log(data.message);
+            throw new Error(
+              data.message || "Không thể cập nhật trạng thái cuộc hẹn."
+            );
+          });
+        }
+        return response.json();
+      })
+      .then((data) => {
+        //Đổi appointment.trang_thai thành "Hoàn thành"
+        console.log("Trạng thái cuộc hẹn đã được cập nhật:", data);
+        setAppointment((prev) => ({ ...prev, trang_thai: "Hoàn thành" }));
+        Swal.fire("Thành công!", "Cuộc hẹn đã được hoàn thành.", "success");
+      })
+      .catch((error) => {
+        console.error("Lỗi khi cập nhật:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi",
+          text: error.message,
+        });
+      });
+  };
 
   const formatTime = (isoString: string): string => {
     if (!isoString) return "00:00";
@@ -141,9 +194,7 @@ const HistoryDetailComponent: React.FC = () => {
   const fetchAppointment = async () => {
     try {
       const response = await fetch(
-        `${
-          import.meta.env.VITE_API_BASE_URL
-        }/api/appointment/detail?appointmentID= ${id}`
+        `${import.meta.env.VITE_API_BASE_URL}/api/appointment/detail/${id}`
       );
       if (!response.ok) {
         throw new Error("Không thể tải danh sách lịch sử cuộc hẹn.");
@@ -178,6 +229,7 @@ const HistoryDetailComponent: React.FC = () => {
         benh_nhan_gioi_tinh: data.Benh_nhan.Nguoi_dung.gioi_tinh,
         benh_nhan_phan_loai: data.Benh_nhan.Nguoi_dung.phan_loai,
         benh_nhan_ho_va_ten: data.Benh_nhan.Nguoi_dung.ho_va_ten,
+        benh_nhan_avt_url: data.Benh_nhan.Nguoi_dung.avt_url,
 
         // Thông tin bác sĩ
         bac_si_ngay_vao_nghe: data.Bac_si.ngay_vao_nghe,
@@ -203,11 +255,10 @@ const HistoryDetailComponent: React.FC = () => {
       console.log(flatAppointment);
       setAppointment(flatAppointment);
     } catch (err) {
-      setError("Lỗi khi tải danh sách lịch sử cuộc hẹn.");
-    } finally {
-      setLoading(false);
+      console.error("Lỗi khi tải dữ liệu:", err);
     }
   };
+
   useEffect(() => {
     fetchAppointment();
   }, []);
@@ -269,46 +320,11 @@ const HistoryDetailComponent: React.FC = () => {
   };
 
   return (
-    <div className="h-full bg-gray-50">
-      {/* Header */}
-      <div className="flex items-center mb-4 bg-white rounded-lg shadow-md">
-        <div
-          className="p-3 cursor-pointer"
-          onClick={() => navigate("/historyList")}
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M9.57 5.92969L3.5 11.9997L9.57 18.0697"
-              stroke="#292D32"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M20.5 12H3.67001"
-              stroke="#292D32"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </div>
-        <div className="p-3 mr-5 text-blueTitle cursor-pointer">
-          <p className="font-semibold text-xl mb-2">Chi tiết cuộc hẹn</p>
-          <hr className="border-t-2 border-blueTitle" />
-        </div>
-      </div>
-
-      <div className="flex gap-8">
+    <div className="h-full bg-gray-50 p-2">
+      <div className="flex gap-4 h-full">
         {/* Thông tin chuyên ngành bên trái */}
-        <div className="w-2/3 bg-white p-6 rounded-lg shadow-md">
-          <div className="flex items-center mb-8">
+        <div className="w-2/3 bg-white px-6 py-4 rounded-lg shadow-md">
+          <div className="flex items-center mb-4">
             <svg
               width="35"
               height="35"
@@ -367,28 +383,32 @@ const HistoryDetailComponent: React.FC = () => {
               {appointment.trang_thai}
             </span>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2">
             <div>
-              <label className="text-sm font-medium">Mã đơn hẹn</label>
+              <label className="text-sm font-medium block mb-2">
+                Mã đơn hẹn
+              </label>
               <input
-                className="w-full px-3 py-2 border rounded-lg bg-gray-100"
+                className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-sm"
                 value={appointment.id}
                 disabled
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Tạo lúc</label>
+              <label className="text-sm font-medium block mb-2">Tạo lúc</label>
               <input
-                className="w-full px-3 py-2 border rounded-lg bg-gray-100"
+                className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-sm"
                 value={formatDateTime(appointment.thoi_diem_tao)}
                 disabled
               />
             </div>
 
             <div>
-              <label className="text-sm font-medium">Hình thức</label>
+              <label className="text-sm font-medium block mb-2">
+                Hình thức
+              </label>
               <input
-                className="w-full px-3 py-2 border rounded-lg bg-gray-100"
+                className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-sm"
                 value={
                   appointment.ca_lam_viec_lam_viec_onl ? "Online" : "Offline"
                 }
@@ -396,9 +416,11 @@ const HistoryDetailComponent: React.FC = () => {
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Thời điểm hẹn</label>
+              <label className="text-sm font-medium block mb-2">
+                Thời điểm hẹn
+              </label>
               <input
-                className="w-full px-3 py-2 border rounded-lg bg-gray-100"
+                className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-sm"
                 value={`${formatTime(
                   appointment.gio_hen_thoi_diem_bat_dau
                 )} - ${formatTime(
@@ -409,9 +431,9 @@ const HistoryDetailComponent: React.FC = () => {
             </div>
 
             <div className="col-span-2">
-              <label className="text-sm font-medium">Địa chỉ</label>
+              <label className="text-sm font-medium block mb-2">Địa chỉ</label>
               <input
-                className="w-full px-3 py-2 border rounded-lg bg-gray-100"
+                className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-sm"
                 value={appointment.bac_si_dia_chi_pk}
                 disabled
               />
@@ -419,9 +441,11 @@ const HistoryDetailComponent: React.FC = () => {
           </div>
           {/* Văn bản bổ sung */}
           <div className="mt-2">
-            <label className="text-sm font-medium">Văn bản bổ sung</label>
+            <label className="text-sm font-medium block mb-2">
+              Văn bản bổ sung
+            </label>
             <textarea
-              className="w-full px-3 py-2 border rounded-lg bg-gray-100"
+              className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-sm"
               rows={3}
               value={appointment.van_ban_bo_sung}
               disabled
@@ -430,8 +454,10 @@ const HistoryDetailComponent: React.FC = () => {
 
           {/* File đính kèm */}
           <div className="mt-2">
-            <label className="text-sm font-medium">Hình ảnh bổ sung</label>
-            <div className="w-full px-3 py-2 border rounded-lg bg-gray-100">
+            <label className="text-sm font-medium block mb-2">
+              Hình ảnh bổ sung
+            </label>
+            <div className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-sm">
               {appointment.hinh_anh_bo_sung &&
               appointment.hinh_anh_bo_sung.length > 0 ? (
                 appointment.hinh_anh_bo_sung.map(
@@ -477,15 +503,15 @@ const HistoryDetailComponent: React.FC = () => {
 
             {/* Nút chức năng */}
             {appointment.trang_thai?.toLowerCase() === "đang chờ" ? (
-              <div className="flex justify-center gap-4 mt-6">
+              <div className="flex justify-center gap-4 mt-6 text-sm">
                 <button
-                  onClick={() => handleUpdateStatus("Đang chờ")}
+                  onClick={() => navigate(`/resultDetail/${id}`)}
                   className="px-6 py-2 text-white bg-blue-800 rounded-lg font-medium hover:bg-blue-900 transition duration-200"
                 >
                   Gửi kết quả
                 </button>
                 <button
-                  onClick={() => handleUpdateStatus("Hoàn thành")}
+                  onClick={clickFinishHandler}
                   className="px-6 py-2 text-white bg-green-600 rounded-lg font-medium hover:bg-green-700 transition duration-200"
                 >
                   Hoàn thành
@@ -493,7 +519,10 @@ const HistoryDetailComponent: React.FC = () => {
               </div>
             ) : appointment.trang_thai?.toLowerCase() === "hoàn thành" ? (
               <div className="mt-6 text-center">
-                <button className="text-blue-500 underline">
+                <button
+                  className="text-blue-500 underline"
+                  onClick={() => navigate(`/resultDetail/${id}`)}
+                >
                   Bác sĩ kê đơn
                 </button>
               </div>
@@ -503,15 +532,26 @@ const HistoryDetailComponent: React.FC = () => {
 
         {/* Thông tin cá nhân bên phải */}
         <div className="w-1/3 bg-white p-6 rounded-lg shadow-md">
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center text-base">
             <img
-              src="/images/avt.png"
+              src={
+                appointment.benh_nhan_avt_url
+                  ? appointment.benh_nhan_avt_url
+                  : "/images/avt.png"
+              }
               alt="Doctor Avatar"
               className="w-20 h-20 rounded-full mb-4"
             />
-            <p className="text-base font-semibold text-red-600">
-              {appointment.benh_nhan_ho_va_ten} (
-              {appointment.benh_nhan_ma_benh_nhan})
+            <p
+              className="font-semibold text-center text-blue-500 cursor-pointer hover:text-blue-700 hover:underline"
+              onClick={() =>
+                navigate(
+                  `/patientInfoDoctor/${appointment.ma_benh_nhan_dat_hen}`
+                )
+              }
+            >
+              {appointment.benh_nhan_ho_va_ten}
+              <br />({appointment.ma_benh_nhan_dat_hen})
             </p>
             <p className="text-gray-600">
               {calculateAge(appointment.benh_nhan_ngay_sinh)} tuổi,{" "}
@@ -520,20 +560,32 @@ const HistoryDetailComponent: React.FC = () => {
           </div>
 
           <hr className="my-3" />
-          <div className="ml-5">
+          <div className="ml-5 text-base">
             {[
-              { label: "Email", value: appointment.benh_nhan_email },
+              {
+                label: "Email",
+                value: appointment.benh_nhan_email
+                  ? appointment.benh_nhan_email
+                  : "Chưa có",
+              },
               { label: "SĐT", value: appointment.benh_nhan_sdt },
               { label: "Ngày sinh", value: appointment.benh_nhan_ngay_sinh },
-              { label: "Địa chỉ", value: appointment.benh_nhan_dia_chi },
+              {
+                label: "Địa chỉ",
+                value: appointment.benh_nhan_dia_chi
+                  ? appointment.benh_nhan_dia_chi
+                  : "Chưa có",
+              },
               {
                 label: "Tiền sử bệnh lý",
-                value: appointment.benh_nhan_tien_su_benh,
+                value: appointment.benh_nhan_tien_su_benh
+                  ? appointment.benh_nhan_tien_su_benh
+                  : "Chưa có",
               },
             ].map((info) => (
               <div className="mb-3" key={info.label}>
-                <p className="text-base font-medium">{info.label}</p>
-                <p className="text-base text-gray-500">{info.value}</p>
+                <p className="font-medium">{info.label}</p>
+                <p className="text-gray-500">{info.value}</p>
               </div>
             ))}
           </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { FiUserCheck, FiUserX } from "react-icons/fi";
 
 // Định nghĩa kiểu dữ liệu của một bệnh nhân
 interface Patient {
@@ -108,13 +109,12 @@ const PatientListAdminComponent: React.FC = () => {
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="p-5 h-full bg-gray-50">
-      <div className="flex items-center w-full pb-4 p-3 mb-4  justify-between bg-white">
-        <div className="font-semibold text-lg mr-50">
+    <div className="p-2 h-full bg-gray-50">
+      <div className="flex items-center w-full pb-4 p-3 mb-4 justify-between bg-white shadow-md">
+        <div className="font-semibold text-lg">
           <p>Số bệnh nhân ({displayedPatients.length})</p>
         </div>
-
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center gap-2 text-sm">
           <div className="flex items-center border rounded-lg px-3 py-2 bg-white shadow-sm focus-within:ring-2 focus-within:ring-blue-500">
             <input
               type="text"
@@ -155,6 +155,7 @@ const PatientListAdminComponent: React.FC = () => {
           />
         </div>
       </div>
+
       <table className="table-auto w-full text-center border border-gray-300 rounded-lg shadow-lg">
         <thead className="text-gray-600 text-base bg-gray-100">
           <tr>
@@ -173,7 +174,7 @@ const PatientListAdminComponent: React.FC = () => {
               className="bg-white hover:bg-gray-100 cursor-pointer"
               onClick={() => navigate(`/patientDetail/${Patient.ma_benh_nhan}`)}
             >
-              <td className="px-4 py-3">{index + 1}</td>
+              <td className="px-4 py-3">{index + 1 + indexOfFirstPatient}</td>
               <td className="px-4 py-3">{Patient.ma_benh_nhan}</td>
               <td className="px-4 py-3 truncate max-w-xs">
                 {Patient.Nguoi_dung.ho_va_ten}
@@ -187,20 +188,21 @@ const PatientListAdminComponent: React.FC = () => {
               </td>
               <td className="px-4 py-3">{Patient.Nguoi_dung.sdt}</td>
               <td
-                className={`px-4 py-2 rounded-lg ${
-                  Patient.Nguoi_dung.Tai_khoan.active
-                    ? "text-green-600"
-                    : "text-red-600"
-                }`}
+                className={`px-4 py-3 rounded-lg flex items-center justify-center`}
               >
-                {Patient.Nguoi_dung.Tai_khoan.active ? "Kích hoạt" : "Bị khóa"}
+                {Patient.Nguoi_dung.Tai_khoan.active ? (
+                  <FiUserCheck size={20} className="text-green-500" />
+                ) : (
+                  <FiUserX size={20} className="text-red-500" />
+                )}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
       {/* Phân trang */}
-      <div className="flex justify-end mt-5 space-x-4">
+      <div className="flex justify-end mt-5 space-x-4 text-sm">
         <button
           onClick={goToPrevPage}
           disabled={currentPage === 1}

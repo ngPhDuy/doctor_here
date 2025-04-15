@@ -9,9 +9,12 @@ export const registerUser = (username: string) => {
 export const sendMessage = (
   sender: string,
   receiver: string,
-  content: string
+  content: string,
+  time: string,
+  type: string,
+  url: string
 ) => {
-  socket.emit("chat_message", { sender, receiver, content });
+  socket.emit("chat_message", { sender, receiver, content, time, type, url });
 };
 
 export const onMessageReceived = (callback: (message: string) => void) => {

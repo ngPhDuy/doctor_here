@@ -1,8 +1,16 @@
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import socket, {
+  registerUser,
+  sendMessage,
+  onMessageReceived,
+} from "../../socket";
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  let drID = localStorage.getItem("drID") || "BS0000001";
+  const [isNewMessage, setNewMessage] = useState(false);
 
   // Danh sách các đường dẫn tương ứng với từng mục
   const dashBoardActive = ["/"];
@@ -10,16 +18,34 @@ const Sidebar = () => {
   const peopleActive = [
     "/patientListDoctor",
     "/patientInfoDoctor",
-    "patientDetailHistory",
+    "/patientDetailHistory",
   ];
-  const mailActive = ["/"];
-  const uploadActive = ["/upload"];
-  const settingActive = ["/doctorSettingInfo", "doctorRequest"];
+  const mailActive = ["/conversations"];
+  const uploadActive = ["/resultList", "/resultDetail"];
+  const settingActive = [
+    "/doctorSettingInfo",
+    "/doctorRequest",
+    "/doctorSchedule",
+    "/doctorRating",
+  ];
+
+  useEffect(() => {
+    registerUser(drID);
+
+    if (location.pathname !== "/conversations") {
+      onMessageReceived((data) => {
+        console.log(data);
+        setNewMessage(true);
+      });
+    }
+
+    return () => {
+      socket.off("chat_message");
+    };
+  }, [location.pathname]);
 
   // Hàm kiểm tra đường dẫn có nằm trong danh sách không
   const isActive = (paths: string[]) => {
-    // Trường hợp đặc biệt cho / để tránh nhầm lẫn với các mục khác
-    console.log(location.pathname);
     if (location.pathname === "/" && paths.includes("/")) return true;
     return paths.some(
       (path) => location.pathname.startsWith(path) && path !== "/"
@@ -31,7 +57,8 @@ const Sidebar = () => {
       className="h-full border-r border-gray-300 shadow-md"
       style={{
         width: "30%",
-        maxWidth: "180px",
+        // maxWidth: "180px",
+        maxWidth: "10rem",
       }}
     >
       <nav className="">
@@ -44,7 +71,7 @@ const Sidebar = () => {
           }}
         >
           <li
-            className={`sidebar-item psi py-3 flex text-base hover:bg-gray-200 cursor-pointer rounded-lg ${
+            className={`sidebar-item psi py-3 flex text-sm font-semibold hover:bg-gray-200 cursor-pointer rounded-lg ${
               isActive(dashBoardActive) ? "active-color" : "default-color"
             }`}
             onClick={() => navigate(`/`)}
@@ -60,7 +87,7 @@ const Sidebar = () => {
             <span className="ml-2">Trang chủ</span>
           </li>
           <li
-            className={`psi py-3 text-base flex hover:bg-gray-200 cursor-pointer rounded-lg ${
+            className={`psi py-3 text-sm font-semibold flex hover:bg-gray-200 cursor-pointer rounded-lg ${
               isActive(calendarActive) ? "active-color" : "default-color"
             }`}
             onClick={() => navigate(`/historyList`)}
@@ -76,7 +103,7 @@ const Sidebar = () => {
             <span className="ml-2">Cuộc hẹn</span>
           </li>
           <li
-            className={`psi py-3 text-base flex hover:bg-gray-200 cursor-pointer rounded-lg ${
+            className={`psi py-3 text-sm font-semibold flex hover:bg-gray-200 cursor-pointer rounded-lg ${
               isActive(peopleActive) ? "active-color" : "default-color"
             }`}
             onClick={() => navigate(`/patientListDoctor`)}
@@ -92,10 +119,13 @@ const Sidebar = () => {
             <span className="ml-2">Bệnh nhân</span>
           </li>
           <li
-            className={`psi py-3 text-base flex hover:bg-gray-200 cursor-pointer rounded-lg ${
+            className={`psi py-3 text-sm font-semibold flex hover:bg-gray-200 cursor-pointer rounded-lg ${
               isActive(mailActive) ? "active-color" : "default-color"
             }`}
-            onClick={() => navigate(`/newRequests`)}
+            onClick={() => {
+              setNewMessage(false);
+              navigate(`/conversations`);
+            }}
           >
             <img
               src={
@@ -106,12 +136,15 @@ const Sidebar = () => {
               alt="People"
             />
             <span className="ml-2">Tin nhắn</span>
+            {isNewMessage && (
+              <span className="ml-2 bg-red-500 text-white rounded-full h-2 w-2 flex items-center justify-center text-sm font-semibold"></span>
+            )}
           </li>
           <li
-            className={`psi py-3 text-base flex hover:bg-gray-200 cursor-pointer rounded-lg ${
+            className={`psi py-3 text-sm font-semibold flex hover:bg-gray-200 cursor-pointer rounded-lg ${
               isActive(uploadActive) ? "active-color" : "default-color"
             }`}
-            onClick={() => navigate(`/newRequests`)}
+            onClick={() => navigate(`/resultList/pending`)}
           >
             <img
               src={
@@ -124,7 +157,7 @@ const Sidebar = () => {
             <span className="ml-2">KQ khám bệnh</span>
           </li>
           <li
-            className={`psi py-3 text-base flex hover:bg-gray-200 cursor-pointer rounded-lg ${
+            className={`psi py-3 text-sm font-semibold flex hover:bg-gray-200 cursor-pointer rounded-lg ${
               isActive(settingActive) ? "active-color" : "default-color"
             }`}
             onClick={() => navigate(`/doctorSettingInfo`)}

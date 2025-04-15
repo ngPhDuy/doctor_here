@@ -4,13 +4,16 @@ import EmailIcon from "./SVG/EmailIcon";
 import DoctorIcon from "./SVG/DoctorIcon";
 import PatientIcon from "./SVG/PatientIcon";
 import TransIcon from "./SVG/TransIcon";
+import { FaUserDoctor, FaUserGroup } from "react-icons/fa6";
+import { RiMedicineBottleFill } from "react-icons/ri";
+import { MdEmail } from "react-icons/md";
 
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
   // Danh sách các đường dẫn tương ứng với từng mục
-  const doctorPages = ["/doctorDetail", "/doctorSchedule"];
+  const doctorPages = ["/", "/doctorDetail", "/doctorSchedule"];
   const transactionPages = ["/transactions", "/paymentHistory"];
   const patientPages = ["/patientList", "/patientDetail"];
   const requestPages = [
@@ -20,10 +23,19 @@ const Sidebar = () => {
     "/newRequestDetail",
     "/pendingRequests",
   ];
+  const medicinePages = [
+    "/medicineList",
+    "/medicineDetail",
+    "/addMedicine",
+    "/updateMedicine",
+  ];
 
   // Hàm kiểm tra đường dẫn có nằm trong danh sách không
   const isActive = (paths: string[]) => {
-    return paths.some((path) => location.pathname.startsWith(path));
+    if (location.pathname === "/" && paths.includes("/")) return true;
+    return paths.some(
+      (path) => location.pathname.startsWith(path) && path !== "/"
+    );
   };
 
   // Màu mặc định và màu khi active
@@ -35,53 +47,81 @@ const Sidebar = () => {
       className="h-full border-r border-gray-300 shadow-md"
       style={{
         width: "30%",
-        maxWidth: "180px",
+        maxWidth: "10rem", // Giống Doctor Sidebar
       }}
     >
-      <nav className="">
-        <ul className="" style={{ paddingTop: "1rem" }}>
+      <nav>
+        <ul
+          className=""
+          style={{
+            paddingTop: "1rem",
+            paddingLeft: "0.5rem",
+            paddingRight: "0.5rem",
+          }}
+        >
           <li
-            className={`psi py-3 flex text-lg hover:bg-gray-200 cursor-pointer rounded-lg ${
-              isActive(doctorPages) || location.pathname == "/"
-                ? activeColor
-                : defaultColor
-            }`}
+            className={`psi py-3 flex text-sm font-semibold hover:bg-gray-200 cursor-pointer rounded-lg`}
             onClick={() => navigate(`/`)}
           >
-            <DoctorIcon
+            <FaUserDoctor
               size={25}
-              color={
-                isActive(doctorPages) || location.pathname == "/"
-                  ? "blue"
-                  : "gray"
-              }
+              color={isActive(doctorPages) ? "#3b82f6" : "gray"}
             />
-            <span className="ml-2">Bác sĩ</span>
+            <span
+              className={`ml-2 ${
+                isActive(doctorPages) ? "text-[#3b82f6]" : "text-gray-600"
+              }`}
+            >
+              Bác sĩ
+            </span>
           </li>
           <li
-            className={`psi py-3 text-lg flex hover:bg-gray-200 cursor-pointer rounded-lg ${
-              isActive(patientPages) ? activeColor : defaultColor
-            }`}
+            className={`psi py-3 text-sm font-semibold flex hover:bg-gray-200 cursor-pointer rounded-lg`}
             onClick={() => navigate(`/patientList`)}
           >
-            <PatientIcon
+            <FaUserGroup
               size={25}
-              color={isActive(patientPages) ? "blue" : "gray"}
+              color={isActive(patientPages) ? "#3b82f6" : "gray"}
             />
-            <span className="ml-2">Bệnh nhân</span>
+            <span
+              className={`ml-2 ${
+                isActive(patientPages) ? "text-[#3b82f6]" : "text-gray-600"
+              }`}
+            >
+              Bệnh nhân
+            </span>
           </li>
           <li
-            className={`psi py-3 text-lg flex hover:bg-gray-200 cursor-pointer rounded-lg ${
-              isActive(requestPages) ? activeColor : defaultColor
-            }`}
+            className={`psi py-3 text-sm font-semibold flex hover:bg-gray-200 cursor-pointer rounded-lg`}
             onClick={() => navigate(`/newRequests`)}
           >
-            <EmailIcon
-              width={25}
-              height={25}
-              color={isActive(requestPages) ? "blue" : "gray"}
+            <MdEmail
+              size={25}
+              color={isActive(requestPages) ? "#3b82f6" : "gray"}
             />
-            <span className="ml-2">Yêu cầu</span>
+            <span
+              className={`ml-2 ${
+                isActive(requestPages) ? "text-[#3b82f6]" : "text-gray-600"
+              }`}
+            >
+              Yêu cầu
+            </span>
+          </li>
+          <li
+            className={`psi py-3 text-sm font-semibold flex hover:bg-gray-200 cursor-pointer rounded-lg`}
+            onClick={() => navigate(`/medicineList`)}
+          >
+            <RiMedicineBottleFill
+              size={25}
+              color={isActive(medicinePages) ? "#3b82f6" : "gray"}
+            />
+            <span
+              className={`ml-2 ${
+                isActive(medicinePages) ? "text-[#3b82f6]" : "text-gray-600"
+              }`}
+            >
+              Thuốc
+            </span>
           </li>
         </ul>
       </nav>

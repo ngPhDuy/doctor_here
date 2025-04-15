@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { TextInput } from "../Input/InputComponents";
+import Swal from "sweetalert2";
 
-//const urlIMG = "https://res.cloudinary.com/dpquv4bcu/image/upload/v1741016174/uploads/smearerqnrwuutrks12l.png";
 const adminID = "QT0000011"; // ID của quản trị viên xử lý yêu cầu
 
-// "Anh_minh_chung": [
-//   {
-//     "url": "https://res.cloudinary.com/dpquv4bcu/image/upload/v1741016174/uploads/smearerqnrwuutrks12l.png"
-//   }
-// ],
 const RequestDetail = {
   id: 0,
   trang_thai: "Chờ duyệt",
@@ -74,7 +69,7 @@ const NewRequestDetail: React.FC = () => {
 
   // State cho phân trang
   const [currentPage, setCurrentPage] = useState(1);
-  const requestsPerpage = 4;
+  const requestsPerpage = 5;
 
   const indexOfLastRequest = currentPage * requestsPerpage;
   const indexOfFirstRequest = indexOfLastRequest - requestsPerpage;
@@ -103,6 +98,21 @@ const NewRequestDetail: React.FC = () => {
   const handleConfirm = () => {
     handleRequest(false, reason); // Gọi handleRequest với lý do
     closeModal(); // Đóng modal
+  };
+
+  const acceptHandler = () => {
+    Swal.fire({
+      title: "Xác nhận",
+      text: "Bạn có chắc chắn muốn chấp thuận yêu cầu này không?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Chấp thuận",
+      cancelButtonText: "Hủy bỏ",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        handleRequest(true, "");
+      }
+    });
   };
 
   useEffect(() => {
@@ -228,6 +238,13 @@ const NewRequestDetail: React.FC = () => {
         throw new Error("Không thể xử lý yêu cầu.");
       }
 
+      Swal.fire({
+        title: "Thành công",
+        text: "Yêu cầu đã được xử lý thành công.",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+
       const data = await response.json();
       alert(data.message); // Hiển thị thông báo từ server
 
@@ -239,51 +256,21 @@ const NewRequestDetail: React.FC = () => {
       );
     } catch (error) {
       console.error("Lỗi khi xử lý yêu cầu:", error);
-      alert("Có lỗi xảy ra. Vui lòng thử lại.");
+      Swal.fire({
+        title: "Lỗi",
+        text: "Có lỗi xảy ra khi xử lý yêu cầu.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
     window.location.reload();
   };
   return (
-    <div className="h-full bg-gray-50">
-      {/* Header */}
-      <div className="flex items-center mb-4 bg-white rounded-lg shadow-md">
-        <div
-          className="p-3 cursor-pointer"
-          onClick={() => navigate("/newRequests")}
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M9.57 5.92969L3.5 11.9997L9.57 18.0697"
-              stroke="#292D32"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M20.5 12H3.67001"
-              stroke="#292D32"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </div>
-        <div className="p-3 mr-5 text-blueTitle cursor-pointer">
-          <p className="font-semibold text-xl mb-2">Thông tin chi tiết</p>
-          <hr className="border-t-2 border-blueTitle" />
-        </div>
-      </div>
-
-      <div className="flex gap-8">
+    <div className="h-full bg-gray-50 p-2">
+      <div className="flex gap-4 h-full">
         {/* Thông tin chuyên ngành bên trái */}
-        <div className="w-2/3 bg-white p-6 rounded-lg shadow-md">
-          <div className="flex items-center mb-8">
+        <div className="w-6/12 bg-white px-6 py-4 rounded-lg shadow-md">
+          <div className="flex items-center mb-4">
             <svg
               width="35"
               height="35"
@@ -334,7 +321,7 @@ const NewRequestDetail: React.FC = () => {
             </h2>
           </div>
 
-          <div className="grid gap-4 mb-4 sm:grid-cols-2 my-4">
+          <div className="grid gap-4 mb-4 sm:grid-cols-2 my-4 text-sm">
             {[
               { id: "chuyen_khoa_cu", label: "Chuyên khoa cũ", type: "text" },
               { id: "chuyen_khoa_moi", label: "Chuyên khoa mới", type: "text" },
@@ -380,14 +367,6 @@ const NewRequestDetail: React.FC = () => {
               Minh chứng
             </div>
             <div className="w-full p-2.5 text-sm text-blueText border border-gray-300 rounded-lg bg-gray-200">
-              {/* <a
-                href={urlIMG}
-                download
-                target="_blank"
-                className="text-blue-500"
-              >
-                {urlIMG.split("/").pop()}
-              </a> */}
               {requestDetail.Anh_minh_chung[0]?.url ? (
                 <a
                   href={requestDetail.Anh_minh_chung[0]?.url}
@@ -403,7 +382,7 @@ const NewRequestDetail: React.FC = () => {
             </div>
           </div>
 
-          {requestDetail.trang_thai === "Từ chối" ? (
+          {/* {requestDetail.trang_thai === "Từ chối" ? (
             <div className="mb-4">
               <div className="mb-2 text-sm font-medium text-blueText">
                 Lý do từ chối
@@ -412,14 +391,14 @@ const NewRequestDetail: React.FC = () => {
                 {requestDetail.Duyet_yeu_cau_cap_nhat.ly_do}
               </div>
             </div>
-          ) : null}
+          ) : null} */}
 
           <div className="flex justify-end my-3">
             {requestDetail.trang_thai === "Chờ duyệt" ? (
               <div className="flex justify-end">
                 <button
                   className="px-4 py-2 mr-3 bg-green-500 hover:bg-green-600 text-white rounded-lg"
-                  onClick={() => handleRequest(true, "")}
+                  onClick={acceptHandler}
                 >
                   Chấp thuận
                 </button>
@@ -454,8 +433,8 @@ const NewRequestDetail: React.FC = () => {
         </div>
 
         {/* Thông tin cá nhân bên phải */}
-        <div className="w-1/3 bg-white p-3 rounded-lg shadow-md">
-          <div className="flex flex-col items-center">
+        <div className="w-6/12 bg-white p-3 rounded-lg shadow-md">
+          <div className="flex flex-col items-center text-base">
             <img
               src="/images/avt.png"
               alt="Doctor Avatar"
@@ -494,15 +473,21 @@ const NewRequestDetail: React.FC = () => {
                       {new Date(request.thoi_diem_yeu_cau).toLocaleString()}
                     </td>
                     <td
-                      className={`px-4 py-2 ${
-                        request.trang_thai === "Đã duyệt"
-                          ? "text-green-500"
-                          : request.trang_thai === "Từ chối"
-                          ? "text-red-500"
-                          : "text-yellow-500"
-                      }`}
+                      className={`px-2 py-3 flex justify-center items-center`}
                     >
-                      {request.trang_thai}
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm font-medium block w-10/12 ${
+                          request.trang_thai === "Đã duyệt"
+                            ? "bg-green-200 text-green-600"
+                            : request.trang_thai === "Từ chối"
+                            ? "bg-red-200 text-red-600"
+                            : request.trang_thai === "Chờ duyệt"
+                            ? "bg-blue-200 text-blue-600"
+                            : "bg-orange-200 text-orange-600"
+                        }`}
+                      >
+                        {request.trang_thai}
+                      </span>
                     </td>
                   </tr>
                 ))}
@@ -510,7 +495,7 @@ const NewRequestDetail: React.FC = () => {
             </table>
 
             {/* Phân trang */}
-            <div className="flex justify-end mt-5 space-x-4">
+            <div className="flex justify-end mt-5 text-sm gap-2">
               <button
                 onClick={goToPrevPage}
                 disabled={currentPage === 1}

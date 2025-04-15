@@ -572,24 +572,26 @@ const DoctorSchedule: React.FC = () => {
   };
   //Return DoctorSchedule
   return (
-    <div className="h-full bg-gray-100 pt-4 ps-4 pe-2">
+    <div className="h-full bg-gray-100 p-2">
       <NavBar curPage="schedule" />
       <div
-        className="bg-white p-4 rounded-lg shadow-md overflow-y-auto"
-        // style={{ maxHeight: "calc(100vh - 180px)" }}
+        className="bg-white p-4 rounded-lg shadow-md overflow-y-auto text-sm flex flex-col justify-start items-center"
+        // style={{ height: "90%" }}
       >
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold text-center flex-1">
+        <div className="flex justify-between items-center w-full">
+          <h2 className="text-base font-bold text-center flex-1">
             Bảng thời gian làm việc
           </h2>
         </div>
         {/* Nút thêm */}
-        <button
-          className="p-2 bg-blue-600 text-white font-semibold rounded mb-1 text-sm"
-          onClick={() => setShowAddForm(!isShowAddForm)}
-        >
-          Thêm khung giờ
-        </button>
+        <div className="w-full">
+          <button
+            className="p-1.5 bg-blue-600 text-white font-semibold rounded mb-1 text-sm"
+            onClick={() => setShowAddForm(!isShowAddForm)}
+          >
+            Thêm khung giờ
+          </button>
+        </div>
         {/* Bảng thời gian làm việc */}
         <table className="table-auto w-full border-collapse">
           <thead>
@@ -608,16 +610,13 @@ const DoctorSchedule: React.FC = () => {
             </tr>
           </thead>
         </table>
-        <div
-          className="overflow-y-auto"
-          style={{ maxHeight: "calc(100vh - 19rem)" }}
-        >
+        <div className="overflow-y-auto w-full h-auto">
           <table className="table-auto w-full border-collapse">
             <tbody>
               {hours.map((hour, index) => (
                 <tr key={index}>
                   <td
-                    className="p-2 text-center h-5 text-sm"
+                    className="p-1.5 text-center text-sm"
                     style={{ width: "12.5%" }}
                   >
                     {hour}
@@ -651,8 +650,6 @@ const DoctorSchedule: React.FC = () => {
                         mergedCells.add(`${day}-${str}`);
                       }
                     }
-
-                    // console.log(mergedCells);
 
                     return (
                       <td
