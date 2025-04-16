@@ -1,30 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import socket, {
-  registerUser,
-  sendMessage,
-  onMessageReceived,
-} from "../../socket";
+import socket, { sendMessage, onMessageReceived } from "../../socket";
 import Swal from "sweetalert2";
-
-//Dữ liệu mẫu: bệnh nhân đang chọn bao gồm tên, ảnh đại diện
-// const patientsEx = [
-//   {
-//     ma_benh_nhan: "BN0000006",
-//     ho_va_ten: "Nguyễn Văn A",
-//     avt_url: "./images/avt.png",
-//   },
-//   {
-//     ma_benh_nhan: "BN0000007",
-//     ho_va_ten: "Nguyễn Văn B",
-//     avt_url: "./images/avt.png",
-//   },
-//   {
-//     ma_benh_nhan: "BN0000008",
-//     ho_va_ten: "Nguyễn Văn C",
-//     avt_url: "./images/avt.png",
-//   },
-// ];
 
 interface Patient {
   ma_benh_nhan: string;
@@ -99,6 +76,7 @@ const Conversations: React.FC = () => {
     onMessageReceived((message: string) => {
       // Kiểm tra xem tin nhắn mới có phải của cuộc trò chuyện đang được chọn không
       const parsedMessage: Message = JSON.parse(message);
+      console.log("Tin nhắn mới từ socket", parsedMessage);
       console.log(selectedConversation?.cuoc_hoi_thoai);
       console.log(parsedMessage.cuoc_hoi_thoai);
       if (
@@ -148,11 +126,6 @@ const Conversations: React.FC = () => {
     return () => {};
   }, [drID]);
 
-  // useEffect(() => {
-  //   setPatients(patientsEx);
-  //   setFilteredPatients(patientsEx);
-  // }, [drID]);
-
   //Lấy tin nhắn từ server qua API ${import.meta.env.VITE_API_BASE_URL}/api/message/conversation/:conversationID
   useEffect(() => {
     if (selectedConversation) {
@@ -163,6 +136,7 @@ const Conversations: React.FC = () => {
       )
         .then((res) => res.json())
         .then((data) => {
+          console.log(data);
           setMessages(data);
         });
     }
@@ -249,6 +223,7 @@ const Conversations: React.FC = () => {
   const handleSendMessage = (content: string) => {
     // Gửi tin nhắn đến server
     let time = new Date().toISOString();
+    console.log(time);
 
     // Kiểm tra xem tin nhắn có phải là file không
     if (files.length > 0) {
@@ -580,7 +555,7 @@ const Conversations: React.FC = () => {
                     <div
                       className={`${
                         message.ben_gui_di === "bn" ? "mr-auto" : "ml-auto"
-                      } p-2 shadow-md rounded-lg my-2 max-w-xs w-fit cursor-pointer`}
+                      } p-2 py-0  my-2 max-w-xs w-fit cursor-pointer`}
                       onClick={() => handleImageClick(message.media_url || "")}
                     >
                       <img
@@ -588,6 +563,25 @@ const Conversations: React.FC = () => {
                         alt=""
                         className="w-32 h-32 object-cover rounded-lg"
                       />
+                      <span
+                        className={`text-xs text-gray-500 block w-full
+                          ${
+                            message.ben_gui_di === "bn"
+                              ? "text-left"
+                              : "text-right"
+                          }`}
+                      >
+                        {
+                          //giờ Việt Nam, định dạng 24h hh:mm
+                          new Date(message.thoi_diem_gui).toLocaleString(
+                            "vi-VN",
+                            {
+                              hour: "numeric",
+                              minute: "numeric",
+                            }
+                          )
+                        }
+                      </span>
                     </div>
                   )}
                 </div>

@@ -1,6 +1,10 @@
 import { io, Socket } from "socket.io-client";
 
-const socket: Socket = io("http://localhost:3001");
+// const socket: Socket = io("http://localhost:3001");
+//Lấy địa chỉ IP của máy chủ từ biến môi trường VITE_API_BASE_URL
+const socket: Socket = io(import.meta.env.VITE_API_BASE_URL, {
+  transports: ["websocket"],
+});
 
 export const registerUser = (username: string) => {
   socket.emit("register", username);

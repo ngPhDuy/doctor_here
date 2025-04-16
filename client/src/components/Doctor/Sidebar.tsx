@@ -39,6 +39,8 @@ const Sidebar = () => {
       });
     }
 
+    console.log("Socket connected");
+
     return () => {
       socket.off("chat_message");
     };
