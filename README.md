@@ -40,6 +40,7 @@
 ## **Cấu trúc thư mục**
 
 - `server/`: Backend API (NodeJS + ExpressJS)
+- `client/`: Frontend (ReactJS + TypeScript)
 - `ai_service/`: AI Service
 - `production/`: File cấu hình Docker, nginx, môi trường production
 - `README.md`: Tài liệu hướng dẫn sử dụng
