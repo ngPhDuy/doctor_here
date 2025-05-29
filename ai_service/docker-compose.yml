@@ -1,0 +1,11 @@
+services:
+  ai_service:
+    build: .
+    container_name: ai_service
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    restart: unless-stopped
+#docker-compose up --build
+#docker-compose up
