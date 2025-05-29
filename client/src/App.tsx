@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   BrowserRouter as Router,
   Route,
   Routes,
   Navigate,
+  useNavigate,
 } from "react-router-dom";
+
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import DoctorSidebar from "./components/Doctor/Sidebar";
@@ -31,6 +33,15 @@ import ResultList from "./components/DoctorResult/ResultList";
 import ResultDetail from "./components/DoctorResult/ResultDetail";
 import RequestDetail from "./components/DoctorSetting/RequestDetail";
 import MedicineList from "./components/AdminMedicine/MedicineList";
+import MedicineDetail from "./components/AdminMedicine/MedicineDetail";
+import MedicineAddNew from "./components/AdminMedicine/AddNew";
+import VideoCall from "./components/DoctorMess/VideoCall";
+import ResultHistory from "./components/DoctorPatient/ResultHistory";
+import PatientResult from "./components/DoctorPatient/PatientResult";
+import ResultAccessSetting from "./components/DoctorSetting/ResultAccessSetting";
+
+import CallNotification from "./components/Doctor/CallNotification";
+import defaultAvatar from "./assets/images/avt.png";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const role = localStorage.getItem("role");
@@ -41,8 +52,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const App: React.FC = () => {
+interface AppProps {
+  setUserInfo: (info: { id: string | null; name: string | null }) => void;
+}
+
+const App: React.FC<AppProps> = ({ setUserInfo }) => {
   const [role, setRole] = useState<string | null>(localStorage.getItem("role"));
+  //Các state cho video call
 
   // Đảm bảo rằng state `role` được cập nhật mỗi khi giá trị trong localStorage thay đổi
   useEffect(() => {
@@ -66,7 +82,15 @@ const App: React.FC = () => {
     <Router>
       <Routes>
         {/* Route cho trang đăng nhập */}
-        <Route path="/login" element={<LoginComponent setRole={setRole} />} />
+        <Route
+          path="/login"
+          element={
+            <LoginComponent setRole={setRole} setUserInfo={setUserInfo} />
+          }
+        />
+        {role === "bs" && (
+          <Route path="/video_call/:ptID/:callId" element={<VideoCall />} />
+        )}
 
         {/* Các route yêu cầu Header và Sidebar */}
         <Route
@@ -108,9 +132,14 @@ const App: React.FC = () => {
                             path="/newRequestDetail/:requestId/:doctorId"
                             element={<NewRequestDetail />}
                           />
+                          <Route path="/medicine" element={<MedicineList />} />
                           <Route
-                            path="/medicineList"
-                            element={<MedicineList />}
+                            path="/medicine/:id"
+                            element={<MedicineDetail />}
+                          />
+                          <Route
+                            path="/medicine/add"
+                            element={<MedicineAddNew />}
                           />
                         </>
                       )}
@@ -138,6 +167,14 @@ const App: React.FC = () => {
                           <Route
                             path="/patientDetailHistory/:patientId"
                             element={<PatientDetailHistory />}
+                          />
+                          <Route
+                            path="/resultHistory/:ptID"
+                            element={<ResultHistory />}
+                          />
+                          <Route
+                            path="/patientResult/:id"
+                            element={<PatientResult />}
                           />
 
                           <Route
@@ -170,8 +207,12 @@ const App: React.FC = () => {
                             element={<DoctorSchedule />}
                           />
                           <Route
-                            path="/conversations"
+                            path="/conversations/:ptID?"
                             element={<Conversations />}
+                          />
+                          <Route
+                            path="/resultAccessSetting"
+                            element={<ResultAccessSetting />}
                           />
                         </>
                       )}

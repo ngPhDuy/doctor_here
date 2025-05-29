@@ -1,17 +1,33 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { FiFilter, FiSearch } from "react-icons/fi";
+import { FaLock, FaLockOpen } from "react-icons/fa6";
+import { BsCheckCircle, BsLock, BsUnlock } from "react-icons/bs";
+import defaultAvatar from "../../assets/images/avt.png";
+import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 
-// dữ liệu mẫu: mã đơn hẹn, tên bệnh nhân, mã bệnh nhân, thời điểm đặt hẹn, hình thức gồm 15 mẫu
+// Result
+//   {
+//     "ho_va_ten_bac_si": "Nguyễn Trung Hiếu",
+//     "avt_url_bac_si": "https://res.cloudinary.com/dpquv4bcu/image/upload/v1744614905/avatar/e9juhyvm3o5t44cuk9v6.jpg",
+//     "ma_bac_si": "BS0000001",
+//     "ma_benh_nhan": "BN0000006",
+//     "duoc_chia_se": false,
+//     "lam_viec_onl": false,
+//     "thoi_diem_bat_dau": "2025-05-07T01:30:00.000Z"
+//   }
 interface Result {
-  id: string;
-  ten_benh_nhan: string;
+  ho_va_ten_bac_si: string;
+  avt_url_bac_si: string;
+  ma_bac_si: string;
   ma_benh_nhan: string;
-  thoi_diem_bat_dau: string;
+  duoc_chia_se: boolean;
   lam_viec_onl: boolean;
+  thoi_diem_bat_dau: string;
+  id_cuoc_hen: string;
 }
 
-const ResultList: React.FC = () => {
+const ResultHistory: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredDate, setFilteredDate] = useState("");
@@ -19,33 +35,18 @@ const ResultList: React.FC = () => {
   const [results, setResults] = useState<Result[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isOnlineFilter, setIsOnlineFilter] = useState<boolean | null>(null);
-  const { status } = useParams<string>();
+  const { ptID } = useParams<string>();
 
   // State cho sắp xếp
   const [sortField, setSortField] = useState("thoi_diem_bat_dau"); // "id" or "thoi_diem_bat_dau"
   const [sortOrder, setSortOrder] = useState("asc"); // "asc" or "desc"
 
-  console.log(status);
-
   useEffect(() => {
     const fetchResults = async () => {
-      if (status !== "pending" && status !== "success") {
-        console.error("Invalid status parameter:", status);
-        return;
-      }
-      console.log(
-        `${
-          import.meta.env.VITE_API_BASE_URL
-        }/api/appointment/doctor/${localStorage.getItem("id")}/status/${
-          status === "pending" ? "1" : "2"
-        }`
-      );
       const response = await fetch(
         `${
           import.meta.env.VITE_API_BASE_URL
-        }/api/appointment/doctor/${localStorage.getItem("id")}/status/${
-          status === "pending" ? "1" : "2"
-        }`
+        }/api/diagnosis/from_other/patient/${ptID}`
       );
 
       if (!response.ok) {
@@ -54,21 +55,15 @@ const ResultList: React.FC = () => {
 
       const data = await response.json();
 
-      //format lại dữ liệu để phù hợp với kiểu Result
-      const results = data.map((item: any) => ({
-        id: item.id,
-        ten_benh_nhan: item.Benh_nhan.Nguoi_dung.ho_va_ten,
-        ma_benh_nhan: item.Benh_nhan.ma_benh_nhan,
-        thoi_diem_bat_dau: item.Gio_hen.thoi_diem_bat_dau,
-        lam_viec_onl: item.Gio_hen.Ca_lam_viec_trong_tuan.lam_viec_onl,
-      }));
+      console.log(data);
 
-      setResults(results);
+      setResults(data);
     };
 
     fetchResults();
-  }, [status]);
+  }, []);
 
+  console.log("Results:", results);
   const filteredResults = results.filter((item) => {
     const isOnlineMatch =
       isOnlineFilter === null || item.lam_viec_onl === isOnlineFilter;
@@ -78,30 +73,36 @@ const ResultList: React.FC = () => {
         new Date(filteredDate).toLocaleDateString();
     const searchMatch =
       searchTerm === "" ||
-      item.ten_benh_nhan.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.ma_benh_nhan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.id.toLowerCase().includes(searchTerm.toLowerCase());
+      item.ma_bac_si.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.id_cuoc_hen
+        .toString()
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
     return isOnlineMatch && dateMatch && searchMatch;
   });
 
+  console.log("Filtered results:", filteredResults);
+
   const sortedResults = [...filteredResults].sort((a, b) => {
     if (sortField === "id") {
-      return sortOrder === "asc" ? +a.id - +b.id : +b.id - +a.id;
+      return sortOrder === "asc"
+        ? +a.id_cuoc_hen - +b.id_cuoc_hen
+        : +b.id_cuoc_hen - +a.id_cuoc_hen;
     }
     if (sortField === "thoi_diem_bat_dau") {
       const dateA = new Date(a.thoi_diem_bat_dau).getTime();
       const dateB = new Date(b.thoi_diem_bat_dau).getTime();
-      console.log(a.thoi_diem_bat_dau, " ", dateA);
-      console.log(b.thoi_diem_bat_dau, " ", dateB);
-      console.log("----------------------------------");
       return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
     }
     return 0;
   });
 
+  console.log("Sorted results:", sortedResults);
+
   // Hàm xử lý khi nhấn vào một dòng trong danh sách
   const handleRowClick = (appointmentId: string) => {
-    navigate(`/resultDetail/${appointmentId}`);
+    navigate(`/patientResult/${appointmentId}`);
   };
 
   // Xử lý phân trang
@@ -113,6 +114,7 @@ const ResultList: React.FC = () => {
     indexOfFirstAppointment,
     indexOfLastAppointment
   );
+  console.log("Current appointments:", currentAppointments);
 
   // Xử lý filter modal
   const handleFilterModalToggle = () => {
@@ -136,44 +138,57 @@ const ResultList: React.FC = () => {
 
   return (
     <div className="p-2 h-full bg-gray-50">
-      <div className="flex items-center w-full pb-4 p-3 mb-4 justify-between bg-white shadow-md">
-        <div className="font-semibold flex items-center text-lg">
-          <div
-            className={`mr-5 cursor-pointer ${
-              status === "pending" ? "text-blueTitle" : ""
-            }`}
-            onClick={() => navigate("/resultList/pending")}
+      <div className="flex items-center p-2 mb-2 bg-white rounded-lg shadow-md mr-auto">
+        <div className="p-3 cursor-pointer" onClick={() => navigate(-1)}>
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
           >
-            <p
-              className={`font-semibold mb-1 ml-1 ${
-                status === "pending" ? "text-blueTitle" : ""
-              }`}
-            >
-              Chờ xử lý
-            </p>
-
-            {status === "pending" && (
-              <hr className="border-t-2 border-blueTitle ml-1" />
-            )}
-          </div>
-          <div
-            className={`mr-5 cursor-pointer`}
-            onClick={() => navigate("/resultList/success")}
-          >
-            <p
-              className={`font-semibold mb-1 ${
-                status === "success" ? "text-blueTitle" : ""
-              }`}
-            >
-              Đã xử lý
-            </p>
-            {status === "success" && (
-              <hr className="border-t-2 border-blueTitle ml-1" />
-            )}
-          </div>
+            <path
+              d="M9.57 5.92969L3.5 11.9997L9.57 18.0697"
+              stroke="#292D32"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M20.5 12H3.67001"
+              stroke="#292D32"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </div>
+        <div
+          className="mr-4 cursor-pointer"
+          onClick={() => navigate(`/patientInfoDoctor/${ptID}`)}
+        >
+          <p className="font-semibold mb-1 ml-1">Thông tin bệnh nhân</p>
+        </div>
+        <div
+          className="mr-4 cursor-pointer text-blueTitle "
+          onClick={() => navigate(`/resultHistory/${ptID}`)}
+        >
+          <p className="font-semibold mb-1">Kết quả khám bệnh</p>
+          <hr className="border-t-2 border-blueTitle ml-1" />
+        </div>
+        <div
+          className="cursor-pointer"
+          onClick={() => navigate(`/patientDetailHistory/${ptID}`)}
+        >
+          <p className="font-semibold mb-1">Lịch sử khám bệnh</p>
+        </div>
+      </div>
 
-        <div className="flex items-center gap-2 text-sm">
+      <div className="flex items-center w-full pb-4 p-3 mb-4 justify-between bg-white shadow-md">
+        <div className="font-semibold text">
+          <p>Tổng kết quả ({sortedResults.length})</p>
+        </div>
+        <div className="flex items-center gap-2 text-sm ml-auto">
           <div className="flex items-center border rounded-lg px-3 py-2 bg-white shadow-sm">
             <select
               className="outline-none"
@@ -225,27 +240,46 @@ const ResultList: React.FC = () => {
       <table className="table-auto w-full text-center border border-gray-300 rounded-lg shadow-lg">
         <thead className="text-gray-600 text-base bg-gray-100">
           <tr>
-            <th className="px-4 py-2">STT</th>
             <th className="px-4 py-2">Mã đơn hẹn</th>
-            <th className="px-4 py-2">Tên bệnh nhân</th>
-            <th className="px-4 py-2">Mã bệnh nhân</th>
+            <th className="px-4 py-2">Bác sĩ</th>
+            <th className="px-4 py-2">Tên bác sĩ</th>
+            <th className="px-4 py-2">Mã bác sĩ</th>
             <th className="px-4 py-2">Hẹn lúc</th>
             <th className="px-4 py-2">Hình thức</th>
+            <th className="px-4 py-2"></th>
           </tr>
         </thead>
         <tbody>
           {currentAppointments.map((result, index) => (
             <tr
-              key={result.id}
-              onClick={() => handleRowClick(result.id)}
+              key={result.id_cuoc_hen}
+              onClick={() => handleRowClick(result.id_cuoc_hen)}
               className="bg-white hover:bg-gray-100 cursor-pointer"
             >
-              <td className="px-4 py-3">{index + 1}</td>
-              <td className="px-4 py-3">{`#${result.id}`}</td>
-              <td className="px-4 py-3 truncate max-w-xs">
-                {result.ten_benh_nhan}
+              <td className="px-4 py-3">{`#${result.id_cuoc_hen}`}</td>
+              <td className="px-4 py-3">
+                <div className="flex justify-center items-center">
+                  <img
+                    src={result.avt_url_bac_si ?? defaultAvatar}
+                    alt="avatar"
+                    className="w-10 h-10 rounded-full m-auto"
+                  />
+                </div>
               </td>
-              <td className="px-4 py-3">{result.ma_benh_nhan}</td>
+              <td className="px-4 py-3 truncate max-w-xs">
+                {localStorage.getItem("id") === result.ma_bac_si ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="">Chính tôi</span>
+                    <span title="Bạn là người khám">
+                      <BsCheckCircle className="text-green-500" size={12} />
+                    </span>
+                  </div>
+                ) : (
+                  <span>{result.ho_va_ten_bac_si}</span>
+                )}
+              </td>
+
+              <td className="px-4 py-3">{result.ma_bac_si}</td>
               <td className="px-4 py-3">
                 {new Date(result.thoi_diem_bat_dau).toLocaleString("vi-VN", {
                   year: "numeric",
@@ -255,9 +289,9 @@ const ResultList: React.FC = () => {
                   minute: "2-digit",
                 })}
               </td>
-              <td className="px-4 py-3 flex justify-center items-center">
+              <td className="px-4 py-3">
                 <span
-                  className={`px-3 py-1 rounded-full text-sm font-medium block w-10/12 ${
+                  className={`px-3 py-1 rounded-full text-sm font-medium block w-10/12 mx-auto ${
                     result.lam_viec_onl
                       ? "bg-rose-200 text-rose-600"
                       : "bg-blue-200 text-blue-700"
@@ -265,6 +299,16 @@ const ResultList: React.FC = () => {
                 >
                   {result.lam_viec_onl ? "Trực tuyến" : "Trực tiếp"}
                 </span>
+              </td>
+              <td className="px-4 py-3">
+                <div className="flex items-center justify-center">
+                  {result.duoc_chia_se ||
+                  localStorage.getItem("id") === result.ma_bac_si ? (
+                    <BsUnlock size={20} color="green" />
+                  ) : (
+                    <BsLock size={20} color="red" />
+                  )}
+                </div>
               </td>
             </tr>
           ))}
@@ -379,4 +423,4 @@ const ResultList: React.FC = () => {
   );
 };
 
-export default ResultList;
+export default ResultHistory;

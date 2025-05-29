@@ -182,13 +182,19 @@ const PatientDetailHistory: React.FC = () => {
           </svg>
         </div>
         <div
-          className="mr-5 cursor-pointer"
+          className="mr-4 cursor-pointer"
           onClick={() => navigate(`/patientInfoDoctor/${patientId}`)}
         >
           <p className="font-semibold mb-1 ml-1">Thông tin bệnh nhân</p>
         </div>
         <div
-          className="ml-5 cursor-pointer text-blueTitle "
+          className="mr-4 cursor-pointer"
+          onClick={() => navigate(`/resultHistory/${patientId}`)}
+        >
+          <p className="font-semibold mb-1">Kết quả khám bệnh</p>
+        </div>
+        <div
+          className="cursor-pointer text-blueTitle "
           onClick={() => navigate(`/patientDetailHistory/${patientId}`)}
         >
           <p className="font-semibold mb-1">Lịch sử khám bệnh</p>

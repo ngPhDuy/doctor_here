@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   TextInput,
   SelectInput,
   TextAreaInput,
 } from "../Input/InputComponents";
+import Swal from "sweetalert2";
 
 interface Doctor {
   id: number;
@@ -59,6 +60,7 @@ const ChangeDoctorInforModal: React.FC<ChangeDoctorInforModalProps> = ({
     gender: string;
     description: string;
   }) => {
+    console.log("Dữ liệu gửi lên:", doctorData);
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/api/doctor/changeInfo`,
@@ -83,56 +85,69 @@ const ChangeDoctorInforModal: React.FC<ChangeDoctorInforModalProps> = ({
       throw error;
     }
   };
+
+  console.log(doctor);
+
   const handleUpdateDoctor = async () => {
+    // Hiển thị hộp thoại xác nhận trước
+    const confirmResult = await Swal.fire({
+      title: "Xác nhận cập nhật",
+      text: "Bạn có chắc chắn muốn cập nhật thông tin bác sĩ?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Cập nhật",
+      cancelButtonText: "Hủy",
+    });
+
+    if (!confirmResult.isConfirmed) {
+      return;
+    }
+
     try {
-      //valid email
       if (doctor.nguoi_dung_email === "") {
-        alert("Email không được để trống");
+        Swal.fire("Lỗi", "Email không được để trống", "error");
         return;
       }
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
       if (!emailRegex.test(doctor.nguoi_dung_email)) {
-        alert("Email không hợp lệ");
+        Swal.fire("Lỗi", "Email không hợp lệ", "error");
         return;
       }
-      //valid phone number
       if (doctor.nguoi_dung_sdt === "") {
-        alert("Số điện thoại không được để trống");
+        Swal.fire("Lỗi", "Số điện thoại không được để trống", "error");
         return;
       }
-      //phone k chứa chữ, có 10 số
       const phoneRegex = /^[0-9]{10}$/;
       if (!phoneRegex.test(doctor.nguoi_dung_sdt)) {
-        alert("Số điện thoại không hợp lệ");
+        Swal.fire("Lỗi", "Số điện thoại không hợp lệ", "error");
         return;
       }
-      //valid birthday
       if (doctor.nguoi_dung_ngay_sinh === "") {
-        alert("Ngày sinh không được để trống");
+        Swal.fire("Lỗi", "Ngày sinh không được để trống", "error");
         return;
       }
       if (doctor.nguoi_dung_gioi_tinh === "") {
-        alert("Giới tính không được để trống");
+        Swal.fire("Lỗi", "Giới tính không được để trống", "error");
         return;
       }
       if (doctor.mo_ta === "") {
-        alert("Mô tả không được để trống");
+        Swal.fire("Lỗi", "Mô tả không được để trống", "error");
         return;
       }
       if (doctor.ngay_vao_nghe === "") {
-        alert("Ngày vào nghề không được để trống");
+        Swal.fire("Lỗi", "Ngày vào nghề không được để trống", "error");
         return;
       }
       if (doctor.chuyen_khoa === "") {
-        alert("Chuyên khoa không được để trống");
+        Swal.fire("Lỗi", "Chuyên khoa không được để trống", "error");
         return;
       }
       if (doctor.trinh_do_hoc_van === "") {
-        alert("Trình độ học vấn không được để trống");
+        Swal.fire("Lỗi", "Trình độ học vấn không được để trống", "error");
         return;
       }
       if (doctor.dia_chi_pk === "") {
-        alert("Địa chỉ phòng khám không được để trống");
+        Swal.fire("Lỗi", "Địa chỉ phòng khám không được để trống", "error");
         return;
       }
 
@@ -148,12 +163,48 @@ const ChangeDoctorInforModal: React.FC<ChangeDoctorInforModalProps> = ({
 
       const result = await updateDoctorInfo(updatedData);
       console.log("Kết quả cập nhật:", result);
-      alert("Cập nhật thành công!");
+
+      await Swal.fire({
+        title: "Thành công",
+        text: "Cập nhật thành công!",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+
+      window.location.reload(); // Reload lại trang
     } catch (error) {
-      alert("Cập nhật thất bại, vui lòng thử lại!");
+      Swal.fire("Lỗi", "Cập nhật thất bại, vui lòng thử lại!", "error");
     }
-    window.location.reload();
   };
+
+  const [specialtyOptions, setSpecialtyOptions] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchSpecialization = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/doctor/specialization`
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch specialization");
+        }
+        const data = await response.json();
+        let specialization = data.map((item: any) => {
+          return {
+            value: item.ten_chuyen_khoa,
+            label: item.ten_chuyen_khoa,
+          };
+        });
+
+        specialization.unshift({ value: "", label: "Chuyên khoa" });
+        setSpecialtyOptions(specialization);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchSpecialization();
+  }, []);
 
   if (!isOpen) return null;
 
@@ -213,7 +264,6 @@ const ChangeDoctorInforModal: React.FC<ChangeDoctorInforModalProps> = ({
             label="Họ và tên"
             id="nguoi_dung_ho_va_ten"
             value={doctor.nguoi_dung_ho_va_ten}
-            disabled={true}
             onChange={handleChange("nguoi_dung_ho_va_ten")}
           />
           <TextInput
@@ -229,9 +279,8 @@ const ChangeDoctorInforModal: React.FC<ChangeDoctorInforModalProps> = ({
             value={doctor.nguoi_dung_gioi_tinh}
             onChange={handleChange("nguoi_dung_gioi_tinh")}
             options={[
-              { value: "Male", label: "Nam" },
-              { value: "Female", label: "Nữ" },
-              { value: "None", label: "Khác" },
+              { value: "Nam", label: "Nam" },
+              { value: "Nữ", label: "Nữ" },
             ]}
           />
           <TextInput
@@ -241,17 +290,21 @@ const ChangeDoctorInforModal: React.FC<ChangeDoctorInforModalProps> = ({
             value={doctor.ngay_vao_nghe}
             onChange={handleChange("ngay_vao_nghe")}
           />
-          <TextInput
+          <SelectInput
             label="Chuyên khoa"
             id="chuyen_khoa"
             value={doctor.chuyen_khoa}
             onChange={handleChange("chuyen_khoa")}
+            required={true}
+            options={specialtyOptions}
+            disabled
           />
           <TextInput
             label="Học vấn"
             id="trinh_do_hoc_van"
             value={doctor.trinh_do_hoc_van}
             onChange={handleChange("trinh_do_hoc_van")}
+            disabled
           />
         </div>
         <div className="grid gap-4 mb-4">
@@ -260,6 +313,7 @@ const ChangeDoctorInforModal: React.FC<ChangeDoctorInforModalProps> = ({
             id="dia_chi_pk"
             value={doctor.dia_chi_pk}
             onChange={handleChange("dia_chi_pk")}
+            disabled
           />
           <TextAreaInput
             label="Mô tả"

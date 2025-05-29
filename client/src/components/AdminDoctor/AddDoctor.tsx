@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   TextInput,
   SelectInput,
   TextAreaInput,
   PasswordInput,
 } from "../Input/InputComponents";
+import Swal from "sweetalert2";
 
 type AddDoctorModalProps = {
   isOpen: boolean;
@@ -13,7 +14,6 @@ type AddDoctorModalProps = {
 
 interface Doctor {
   tenDangNhap: string;
-  matKhau: string;
   email: string;
   sdt: string;
   ngaySinh: string;
@@ -32,11 +32,10 @@ const AddDoctorModal: React.FC<AddDoctorModalProps> = ({
 }) => {
   const [doctor, setDoctor] = useState<Doctor>({
     tenDangNhap: "",
-    matKhau: "",
     email: "",
     sdt: "",
     ngaySinh: "",
-    gioiTinh: "",
+    gioiTinh: "nam",
     hoVaTen: "",
     thoiDiemVaoNghe: "",
     trinhDoHocVan: "",
@@ -44,10 +43,12 @@ const AddDoctorModal: React.FC<AddDoctorModalProps> = ({
     diaChiPhongKham: "",
     chuyenKhoa: "",
   });
+  const [specialtyOptions, setSpecialtyOptions] = useState<any[]>([]);
 
   const handleSubmit = async (e: React.FormEvent, doctor: Doctor) => {
     e.preventDefault();
     try {
+      console.log(doctor);
       const response = await fetch(
         `${import.meta.env.VITE_API_BASE_URL}/api/doctor/addDoctor`,
         {
@@ -61,12 +62,34 @@ const AddDoctorModal: React.FC<AddDoctorModalProps> = ({
 
       if (!response.ok) throw new Error("Không thể thêm bác sĩ.");
 
-      alert("Thêm bác sĩ thành công!");
+      // alert("Thêm bác sĩ thành công!");
+      Swal.fire({
+        title: "Thành công!",
+        text: "Thêm bác sĩ thành công",
+        icon: "success",
+      });
+
+      setDoctor({
+        tenDangNhap: "",
+        email: "",
+        sdt: "",
+        ngaySinh: "",
+        gioiTinh: "nam",
+        hoVaTen: "",
+        thoiDiemVaoNghe: "",
+        trinhDoHocVan: "",
+        moTa: "",
+        diaChiPhongKham: "",
+        chuyenKhoa: "",
+      });
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
       console.error(error);
-      alert("Thêm bác sĩ thất bại!");
+      Swal.fire("Lỗi", "Có lỗi khi thêm bác sĩ mới vào hệ thống", "error");
     }
-    window.location.reload();
   };
 
   const handleChange =
@@ -82,12 +105,39 @@ const AddDoctorModal: React.FC<AddDoctorModalProps> = ({
       }));
     };
 
+  useEffect(() => {
+    const fetchSpecialization = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/doctor/specialization`
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch specialization");
+        }
+        const data = await response.json();
+        let specialization = data.map((item: any) => {
+          return {
+            value: item.ten_chuyen_khoa,
+            label: item.ten_chuyen_khoa,
+          };
+        });
+
+        specialization.unshift({ value: "", label: "Chuyên khoa" });
+        setSpecialtyOptions(specialization);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchSpecialization();
+  }, []);
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 pt-14 flex items-center justify-center w-full min-h-screen overflow-y-auto bg-gray-800 bg-opacity-75">
       <div className="w-full mt-auto mb-10 max-w-4xl p-4 bg-white rounded-lg shadow">
-        <form onSubmit={(e) => handleSubmit(e, doctor)}>
+        <form>
           <div className="flex items-center justify-between pb-4 mb-4 border-b rounded-t sm:mb-5">
             <h3 className="text-lg font-semibold">Thêm bác sĩ</h3>
             <button
@@ -117,13 +167,6 @@ const AddDoctorModal: React.FC<AddDoctorModalProps> = ({
               id="email"
               value={doctor.email}
               onChange={handleChange("email")}
-              required={true}
-            />
-            <PasswordInput
-              label="Mật khẩu"
-              id="password"
-              value={doctor.matKhau}
-              onChange={handleChange("matKhau")}
               required={true}
             />
             <TextInput
@@ -162,9 +205,8 @@ const AddDoctorModal: React.FC<AddDoctorModalProps> = ({
               onChange={handleChange("gioiTinh")}
               required={true}
               options={[
-                { value: "Male", label: "Nam" },
-                { value: "Female", label: "Nữ" },
-                { value: "None", label: "Khác" },
+                { value: "Nam", label: "Nam" },
+                { value: "Nữ", label: "Nữ" },
               ]}
             />
             <TextInput
@@ -181,28 +223,7 @@ const AddDoctorModal: React.FC<AddDoctorModalProps> = ({
               value={doctor.chuyenKhoa}
               onChange={handleChange("chuyenKhoa")}
               required={true}
-              options={[
-                { value: "Nội tổng quát", label: "Nội tổng quát" },
-                { value: "Nội tim mạch", label: "Nội tim mạch" },
-                { value: "Nội tiêu hóa", label: "Nội tiêu hóa" },
-                { value: "Nội thần kinh", label: "Nội thần kinh" },
-                {
-                  value: "Nội tiết - đái tháo đường",
-                  label: "Nội tiết - đái tháo đường",
-                },
-                { value: "Ngoại tổng quát", label: "Ngoại tổng quát" },
-                { value: "Ngoại thần kinh", label: "Ngoại thần kinh" },
-                { value: "Ngoại tim mạch", label: "Ngoại tim mạch" },
-                { value: "Sản phụ khoa", label: "Sản phụ khoa" },
-                { value: "Nhi khoa", label: "Nhi khoa" },
-                { value: "Mắt (Nhãn khoa)", label: "Mắt (Nhãn khoa)" },
-                { value: "Tai mũi họng", label: "Tai mũi họng" },
-                { value: "Răng hàm mặt", label: "Răng hàm mặt" },
-                { value: "Da liễu", label: "Da liễu" },
-                { value: "Ung bướu", label: "Ung bướu" },
-                { value: "Tâm thần", label: "Tâm thần" },
-                { value: "Phục hồi chức năng", label: "Phục hồi chức năng" },
-              ]}
+              options={specialtyOptions}
             />
 
             <TextInput
@@ -233,6 +254,7 @@ const AddDoctorModal: React.FC<AddDoctorModalProps> = ({
             <button
               type="submit"
               className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-800 rounded-lg"
+              onClick={(e) => handleSubmit(e, doctor)}
             >
               Thêm
             </button>

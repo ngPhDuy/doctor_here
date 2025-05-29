@@ -202,33 +202,35 @@ const PatientListAdminComponent: React.FC = () => {
       </table>
 
       {/* Phân trang */}
-      <div className="flex justify-end mt-5 space-x-4 text-sm">
-        <button
-          onClick={goToPrevPage}
-          disabled={currentPage === 1}
-          className={`px-4 py-2 rounded-lg ${
-            currentPage === 1
-              ? "bg-gray-300 cursor-not-allowed"
-              : "bg-blueButton hover:bg-blueButtonHover text-white"
-          }`}
-        >
-          Trước
-        </button>
-        <span className="px-4 py-2 border rounded-lg">
-          {currentPage} / {totalPages}
-        </span>
-        <button
-          onClick={goToNextPage}
-          disabled={currentPage === totalPages}
-          className={`px-4 py-2 rounded-lg ${
-            currentPage === totalPages
-              ? "bg-gray-300 cursor-not-allowed"
-              : "bg-blueButton hover:bg-blueButtonHover text-white"
-          }`}
-        >
-          Sau
-        </button>
-      </div>
+      {totalPages > 1 && (
+        <div className="flex justify-end mt-5 space-x-4 text-sm">
+          <button
+            onClick={goToPrevPage}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 rounded-lg ${
+              currentPage === 1
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-blueButton hover:bg-blueButtonHover text-white"
+            }`}
+          >
+            Trước
+          </button>
+          <span className="px-4 py-2 border rounded-lg">
+            {currentPage} / {totalPages}
+          </span>
+          <button
+            onClick={goToNextPage}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 rounded-lg ${
+              currentPage === totalPages
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-blueButton hover:bg-blueButtonHover text-white"
+            }`}
+          >
+            Sau
+          </button>
+        </div>
+      )}
     </div>
   );
 };

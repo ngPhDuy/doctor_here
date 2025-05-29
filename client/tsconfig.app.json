@@ -20,7 +20,9 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+    "composite": true,
+    "esModuleInterop": true
   },
-  "include": ["src"]
+  "include": ["src", "socket.ts", "stringeeConfig.ts"]
 }

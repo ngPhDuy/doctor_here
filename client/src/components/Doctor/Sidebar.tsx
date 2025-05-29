@@ -4,7 +4,7 @@ import socket, {
   registerUser,
   sendMessage,
   onMessageReceived,
-} from "../../socket";
+} from "../../../socket";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -19,6 +19,8 @@ const Sidebar = () => {
     "/patientListDoctor",
     "/patientInfoDoctor",
     "/patientDetailHistory",
+    "/resultHistory",
+    "/patientResult",
   ];
   const mailActive = ["/conversations"];
   const uploadActive = ["/resultList", "/resultDetail"];
@@ -27,6 +29,7 @@ const Sidebar = () => {
     "/doctorRequest",
     "/doctorSchedule",
     "/doctorRating",
+    "/resultAccessSetting",
   ];
 
   useEffect(() => {
@@ -56,12 +59,12 @@ const Sidebar = () => {
 
   return (
     <div
-      className="h-full border-r border-gray-300 shadow-md"
-      style={{
-        width: "30%",
-        // maxWidth: "180px",
-        maxWidth: "10rem",
-      }}
+      className="h-full border-r border-gray-300 shadow-md w-2/12"
+      // style={{
+      //   width: "30%",
+      //   // maxWidth: "180px",
+      //   maxWidth: "10rem",
+      // }}
     >
       <nav className="">
         <ul

@@ -23,12 +23,9 @@ const Sidebar = () => {
     "/newRequestDetail",
     "/pendingRequests",
   ];
-  const medicinePages = [
-    "/medicineList",
-    "/medicineDetail",
-    "/addMedicine",
-    "/updateMedicine",
-  ];
+
+  // /medicine/*
+  const medicinePages = ["/medicine"];
 
   // Hàm kiểm tra đường dẫn có nằm trong danh sách không
   const isActive = (paths: string[]) => {
@@ -37,10 +34,6 @@ const Sidebar = () => {
       (path) => location.pathname.startsWith(path) && path !== "/"
     );
   };
-
-  // Màu mặc định và màu khi active
-  const defaultColor = "text-gray-700";
-  const activeColor = "text-blueTitle";
 
   return (
     <div
@@ -109,7 +102,7 @@ const Sidebar = () => {
           </li>
           <li
             className={`psi py-3 text-sm font-semibold flex hover:bg-gray-200 cursor-pointer rounded-lg`}
-            onClick={() => navigate(`/medicineList`)}
+            onClick={() => navigate(`/medicine`)}
           >
             <RiMedicineBottleFill
               size={25}

@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from "react";
 import TooltipButton from "./TooltipButton";
 import LoginComponent from "./Auth";
+import defaultAvatar from "../assets/images/avt.png";
 const Header = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  let avtUrl =
-    !localStorage.getItem("avtUrl") || localStorage.getItem("avtUrl") === "null"
-      ? "./images/avt.png"
-      : localStorage.getItem("avtUrl");
+  let avtUrl: string = localStorage.getItem("avtUrl") || "";
 
   useEffect(() => {
     if (token) {
@@ -97,7 +95,7 @@ const Header = () => {
             </svg>
           </button>
           <img
-            src={avtUrl || "./images/avt.png"}
+            src={avtUrl === "" ? defaultAvatar : avtUrl}
             alt="User Avatar"
             className="w-10 h-10 block items-center justify-center rounded-full"
           />

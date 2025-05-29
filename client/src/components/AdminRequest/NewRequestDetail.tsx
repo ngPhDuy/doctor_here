@@ -33,6 +33,7 @@ const RequestDetail = {
       gioi_tinh: "",
       phan_loai: "",
       ho_va_ten: "",
+      avt_url: "",
     },
   },
   Anh_minh_chung: [
@@ -115,6 +116,11 @@ const NewRequestDetail: React.FC = () => {
     });
   };
 
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const handleImageClick = (url: string) => {
+    setSelectedImage(url); // Lưu url của ảnh vào state
+  };
+
   useEffect(() => {
     if (!requestId) return;
     const fetchRequestDetail = async () => {
@@ -134,6 +140,7 @@ const NewRequestDetail: React.FC = () => {
         }
 
         const data = await response.json();
+        console.log(data);
         setRequestDetail(data);
       } catch (error) {
         console.error("Lỗi khi lấy chi tiết yêu cầu:", error);
@@ -245,15 +252,19 @@ const NewRequestDetail: React.FC = () => {
         confirmButtonText: "OK",
       });
 
-      const data = await response.json();
-      alert(data.message); // Hiển thị thông báo từ server
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+
+      // const data = await response.json();
+      // alert(data.message); // Hiển thị thông báo từ server
 
       // Cập nhật trạng thái sau khi xử lý
-      setRequestDetail((prev) =>
-        prev
-          ? { ...prev, trang_thai: approved ? "Chấp thuận" : "Bị từ chối" }
-          : prev
-      );
+      // setRequestDetail((prev) =>
+      //   prev
+      //     ? { ...prev, trang_thai: approved ? "Chấp thuận" : "Từ chối" }
+      //     : prev
+      // );
     } catch (error) {
       console.error("Lỗi khi xử lý yêu cầu:", error);
       Swal.fire({
@@ -263,7 +274,7 @@ const NewRequestDetail: React.FC = () => {
         confirmButtonText: "OK",
       });
     }
-    window.location.reload();
+    // window.location.reload();
   };
   return (
     <div className="h-full bg-gray-50 p-2">
@@ -366,32 +377,53 @@ const NewRequestDetail: React.FC = () => {
             <div className="mb-2 text-sm font-medium text-blueText">
               Minh chứng
             </div>
-            <div className="w-full p-2.5 text-sm text-blueText border border-gray-300 rounded-lg bg-gray-200">
-              {requestDetail.Anh_minh_chung[0]?.url ? (
-                <a
-                  href={requestDetail.Anh_minh_chung[0]?.url}
-                  download
-                  target="_blank"
-                  className="text-blue-500"
-                >
-                  {requestDetail.Anh_minh_chung[0]?.url.split("/").pop()}
-                </a>
+            <div className="w-full p-2.5 text-sm text-blueText border border-gray-300 rounded-lg bg-gray-200 flex flex-col gap-2">
+              {requestDetail.Anh_minh_chung &&
+              requestDetail.Anh_minh_chung.length > 0 ? (
+                requestDetail.Anh_minh_chung.map((image, index) => (
+                  <div key={index} className="=">
+                    {/* <a
+                      href={image.url}
+                      download
+                      target="_blank"
+                      className="text-blue-500"
+                      onClick={() => setSelectedImage(image.url)}
+                    >
+                      {image.url.split("/").pop()}
+                    </a> */}
+                    <p
+                      className="text-blue-500 cursor-pointer"
+                      onClick={() => setSelectedImage(image.url)}
+                    >
+                      {image.url.split("/").pop()}
+                    </p>
+                  </div>
+                ))
               ) : (
-                <span>Không có ảnh minh chứng</span>
+                // <a
+                //   href={requestDetail.Anh_minh_chung[0]?.url}
+                //   download
+                //   target="_blank"
+                //   className="text-blue-500"
+                //   onClick={() => selectedImage(requestDetail.Anh_minh_chung[0]?.url)}
+                // >
+                //   {requestDetail.Anh_minh_chung[0]?.url.split("/").pop()}
+                // </a>
+                <p>Không có ảnh minh chứng</p>
               )}
             </div>
           </div>
 
-          {/* {requestDetail.trang_thai === "Từ chối" ? (
+          {requestDetail.trang_thai === "Từ chối" ? (
             <div className="mb-4">
               <div className="mb-2 text-sm font-medium text-blueText">
                 Lý do từ chối
               </div>
               <div className="w-full p-2.5 text-sm text-blueText border border-gray-300 rounded-lg bg-gray-200">
-                {requestDetail.Duyet_yeu_cau_cap_nhat.ly_do}
+                {requestDetail.Duyet_yeu_cau_cap_nhat.ly_do ?? "Không có lý do"}
               </div>
             </div>
-          ) : null} */}
+          ) : null}
 
           <div className="flex justify-end my-3">
             {requestDetail.trang_thai === "Chờ duyệt" ? (
@@ -412,7 +444,7 @@ const NewRequestDetail: React.FC = () => {
             ) : (
               <div className="flex flex-col items-center my-3">
                 <div
-                  className={`border rounded-lg px-5 py-3 ${
+                  className={`border rounded-lg px-5 py-3 font-medium text-sm ${
                     requestDetail.trang_thai === "Đã duyệt"
                       ? "text-green-700 bg-green-200"
                       : "text-red-700 bg-red-200"
@@ -436,9 +468,9 @@ const NewRequestDetail: React.FC = () => {
         <div className="w-6/12 bg-white p-3 rounded-lg shadow-md">
           <div className="flex flex-col items-center text-base">
             <img
-              src="/images/avt.png"
+              src={requestDetail.Bac_si.Nguoi_dung.avt_url ?? "/images/avt.png"}
               alt="Doctor Avatar"
-              className="w-30 h-30 rounded-full"
+              className="w-20 h-20 rounded-full mb-4"
             />
             <p className="text-base font-semibold">
               {requestDetail.Bac_si.Nguoi_dung.ho_va_ten}
@@ -530,11 +562,11 @@ const NewRequestDetail: React.FC = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded-lg w-1/3">
-            <h2 className="text-xl mb-4">Nhập lý do từ chối</h2>
+            <h2 className="text-xl mb-4">Lý do từ chối</h2>
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)} // Cập nhật lý do khi người dùng nhập
-              className="w-full p-2 border rounded mb-4"
+              className="w-full p-2 border rounded mb-4 text-sm"
               placeholder="Nhập lý do..."
             />
             <div className="flex justify-end">
@@ -551,6 +583,24 @@ const NewRequestDetail: React.FC = () => {
                 Xác nhận
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {selectedImage && (
+        <div
+          className="fixed top-0 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div
+            className="bg-white p-4 rounded-lg"
+            onClick={(e) => e.stopPropagation()} // Ngừng propagation để tránh đóng modal khi click vào ảnh
+          >
+            <img
+              src={selectedImage}
+              alt="large image"
+              className="max-w-full max-h-[90vh] object-contain"
+            />
           </div>
         </div>
       )}

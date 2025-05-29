@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import NavBar from "./NavBar";
 import Swal from "sweetalert2";
+import { IoIosStar, IoIosStarHalf, IoIosStarOutline } from "react-icons/io";
 
 interface RatingInfo {
   id: number;
@@ -46,6 +47,7 @@ const DoctorRating: React.FC = () => {
           throw new Error("Failed to fetch ratings");
         }
         const data = await response.json();
+        console.log(data);
 
         let formattedData: RatingInfo[] = data.ratings.map((item: any) => ({
           id: item.id,
@@ -247,42 +249,87 @@ const DoctorRating: React.FC = () => {
                   </div>
                   <div className="flex-col justify-start items-center flex-grow w-10/12">
                     <div className="flex items-center gap-2">
+                      <span
+                        className="text-blue-500 text-sm cursor-pointer hover:underline"
+                        onClick={() => {
+                          navigate(`/historyDetail/${rating.id_cuoc_hen}`);
+                        }}
+                      >
+                        Cuộc hẹn #{rating.id_cuoc_hen}
+                      </span>
+
                       <span className="flex items-start gap-1">
                         {Array.from({
-                          length: Math.round(rating.diem_danh_gia),
+                          length: Math.floor(rating.diem_danh_gia), // Đếm số ngôi sao đầy đủ
                         }).map((_, index) => (
-                          <svg
+                          // <svg
+                          //   key={index}
+                          //   xmlns="http://www.w3.org/2000/svg"
+                          //   width="15"
+                          //   height="15"
+                          //   viewBox="0 0 24 24"
+                          //   fill="none"
+                          // >
+                          //   <path
+                          //     d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z"
+                          //     fill="#FFC107"
+                          //   />
+                          // </svg>
+                          <IoIosStar
                             key={index}
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="15"
-                            height="15"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                          >
-                            <path
-                              d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z"
-                              fill="#FFC107"
-                            />
-                          </svg>
+                            size={15}
+                            color="#FFC107"
+                            className="text-yellow-500"
+                          />
                         ))}
+
+                        {/* Kiểm tra xem có nửa ngôi sao không */}
+                        {rating.diem_danh_gia % 1 == 0.5 && (
+                          // <svg
+                          //   xmlns="http://www.w3.org/2000/svg"
+                          //   width="15"
+                          //   height="15"
+                          //   viewBox="0 0 24 24"
+                          //   fill="none"
+                          // >
+                          //   <path
+                          //     d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z"
+                          //     fill="#FFC107"
+                          //   />
+                          // </svg>
+                          <IoIosStarHalf
+                            size={15}
+                            color="#FFC107"
+                            className="text-yellow-500"
+                          />
+                        )}
+
+                        {/* Ngôi sao trống */}
                         {Array.from({
-                          length: 5 - Math.round(rating.diem_danh_gia),
+                          length: 5 - Math.ceil(rating.diem_danh_gia), // Đếm ngôi sao trống
                         }).map((_, index) => (
-                          <svg
+                          // <svg
+                          //   key={index}
+                          //   xmlns="http://www.w3.org/2000/svg"
+                          //   width="15"
+                          //   height="15"
+                          //   viewBox="0 0 24 24"
+                          //   fill="none"
+                          // >
+                          //   <path
+                          //     d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z"
+                          //     fill="#E0E0E0"
+                          //   />
+                          // </svg>
+                          <IoIosStarOutline
                             key={index}
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="15"
-                            height="15"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                          >
-                            <path
-                              d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27Z"
-                              fill="#E0E0E0"
-                            />
-                          </svg>
+                            size={15}
+                            color="#FFC107"
+                            className="text-gray-300"
+                          />
                         ))}
                       </span>
+
                       <span className="text-gray-500 text-sm">
                         {new Date(rating.thoi_gian).toLocaleString("vi-VN")}
                       </span>

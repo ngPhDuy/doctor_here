@@ -106,9 +106,30 @@ const DoctorListComponent: React.FC = () => {
   );
 
   // Các chuyên khoa duy nhất để lọc
-  const specialties = Array.from(
-    new Set(doctors.map((doctor) => doctor.chuyen_khoa))
-  );
+  // const specialties = Array.from(
+  //   new Set(doctors.map((doctor) => doctor.chuyen_khoa))
+  // );
+  const [specialties, setSpecialties] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchSpecialization = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/doctor/specialization`
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch specialization");
+        }
+        const data = await response.json();
+        let specialization = data.map((item: any) => item.ten_chuyen_khoa);
+        setSpecialties(specialization);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchSpecialization();
+  }, []);
 
   if (loading) return <p>Đang tải dữ liệu...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
@@ -220,35 +241,37 @@ const DoctorListComponent: React.FC = () => {
       </table>
 
       {/* Phân trang */}
-      <div className="flex justify-end mt-5 space-x-4 text-sm">
-        <button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-          className={`px-4 py-2 rounded-lg ${
-            currentPage === 1
-              ? "bg-gray-300 cursor-not-allowed"
-              : "bg-blueButton hover:bg-blueButtonHover text-white"
-          }`}
-        >
-          Trước
-        </button>
-        <span className="px-4 py-2 border rounded-lg">
-          {currentPage} / {totalPages}
-        </span>
-        <button
-          onClick={() =>
-            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-          }
-          disabled={currentPage === totalPages}
-          className={`px-4 py-2 rounded-lg ${
-            currentPage === totalPages
-              ? "bg-gray-300 cursor-not-allowed"
-              : "bg-blueButton hover:bg-blueButtonHover text-white"
-          }`}
-        >
-          Sau
-        </button>
-      </div>
+      {totalPages > 1 && (
+        <div className="flex justify-end mt-5 space-x-4 text-sm">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 rounded-lg ${
+              currentPage === 1
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-blueButton hover:bg-blueButtonHover text-white"
+            }`}
+          >
+            Trước
+          </button>
+          <span className="px-4 py-2 border rounded-lg">
+            {currentPage} / {totalPages}
+          </span>
+          <button
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 rounded-lg ${
+              currentPage === totalPages
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-blueButton hover:bg-blueButtonHover text-white"
+            }`}
+          >
+            Sau
+          </button>
+        </div>
+      )}
 
       <AddDoctorModal isOpen={isAddDoctor} setIsOpen={toggleAddDoctor} />
     </div>

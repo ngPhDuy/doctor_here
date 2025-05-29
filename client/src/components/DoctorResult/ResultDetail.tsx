@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { MdDelete } from "react-icons/md";
+import { MdDelete, MdEdit } from "react-icons/md";
 import Swal from "sweetalert2";
+import AsyncSelect from "react-select/async";
+import { SingleValue } from "react-select";
+
+type OptionType = {
+  value: number;
+  label: string;
+};
 
 interface Appointment {
   id: number;
@@ -150,12 +157,11 @@ const ResultDetail: React.FC = () => {
     )[]
   >([]);
   const [deletedFiles, setDeletedFiles] = useState<string[]>([]);
-  const [resultDetail, setResultDetail] =
-    useState<ResultDetailProps>(defaultResultDetail);
   // Về thuốc và toa thuốc
   const [medicines, setMedicines] = useState<Medicine[]>([]); // Lưu trữ thông tin toa thuốc
   const [showModal, setShowModal] = useState<boolean>(false); // Trạng thái hiển thị modal
   const [newMedicine, setNewMedicine] = useState<Medicine>(defaultMedicine);
+  const [medicineIdx, setMedicineIdx] = useState<number>(-1); // Chỉ số thuốc đang được chỉnh sửa
   const [listMedicines, setListMedicines] = useState<MedicineItem[]>([]); // Danh sách thuốc có sẵn
   const [startDate, setStartDate] = useState<string>(""); // Ngày bắt đầu
   const [endDate, setEndDate] = useState<string>(""); // Ngày kết thúc
@@ -195,19 +201,61 @@ const ResultDetail: React.FC = () => {
         });
         return;
       }
+
+      // Kiểm tra trùng tên thuốc trong toa
+      const uniqueMedicines = new Set(medicines.map((med) => med.ten_thuoc));
+      if (uniqueMedicines.size !== medicines.length) {
+        Swal.fire({
+          icon: "error",
+          title: "Lỗi",
+          text: "Không được thêm trùng tên thuốc.",
+        });
+        return;
+      }
+
+      // Kiểm tra tổng số lượng thuốc có chia đều được hay không
+      const dayCount =
+        (new Date(endDate).getTime() - new Date(startDate).getTime()) /
+          (1000 * 3600 * 24) +
+        1;
+
+      for (const med of medicines) {
+        const dosePerDay = med.buoi_uong.length;
+        const totalDoses = dayCount * dosePerDay;
+
+        if (med.so_luong % totalDoses !== 0) {
+          const recommendedAmount =
+            Math.ceil(med.so_luong / totalDoses) * totalDoses;
+
+          Swal.fire({
+            icon: "error",
+            title: "Lỗi chia thuốc",
+            html: `Thuốc <b>${med.ten_thuoc}</b> hiện có <b>${med.so_luong}</b> viên, không chia đều cho <b>${totalDoses}</b> lần uống.<br/>
+    Có thể bạn cần <b>${recommendedAmount}</b> viên.`,
+          });
+
+          return;
+        }
+      }
     }
 
     let urls: string[] = [];
+    const newFileList: typeof files = []; // Lưu danh sách file mới sau xử lý
+
+    // Tách riêng file cũ và file mới
+    const oldFiles = files.filter((file) => !("file" in file) || !file.isNew);
+    const newFilesToUpload = files.filter(
+      (file) => "file" in file && file.isNew
+    );
     //upload file mới lên server
-    if (files.length > 0) {
+    if (newFilesToUpload.length > 0) {
       let formData = new FormData();
-      files.forEach((file) => {
+      newFilesToUpload.forEach((file) => {
         if ("file" in file && file.isNew) {
           formData.append("files", file.file);
         }
       });
       formData.append("folderName", "diagnosis");
-      setFiles([]); // Xóa file đã upload khỏi state
 
       await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cloud/upload`, {
         method: "POST",
@@ -224,9 +272,10 @@ const ResultDetail: React.FC = () => {
               url: url,
             };
           });
-          setFiles((prevFiles) => [...prevFiles, ...newFiles]);
+          newFileList.push(...newFiles);
         });
     }
+    setFiles([...oldFiles, ...newFileList]);
 
     console.log("Deleted files:", deletedFiles);
 
@@ -393,6 +442,22 @@ const ResultDetail: React.FC = () => {
       });
       return;
     }
+
+    if (medicineIdx !== -1) {
+      console.log("Đang chỉnh sửa thuốc:", medicineIdx);
+      // Nếu đang chỉnh sửa thuốc, cập nhật thông tin thuốc
+      setMedicines((prevMedicines) =>
+        prevMedicines.map((med, idx) =>
+          idx === medicineIdx ? newMedicine : med
+        )
+      );
+
+      setMedicineIdx(-1); // Đặt lại chỉ số thuốc đang chỉnh sửa
+      setNewMedicine(defaultMedicine); // Đặt lại thông tin thuốc mới
+      closeModal(); // Đóng modal
+      return;
+    }
+
     setMedicines([...medicines, newMedicine]);
     setNewMedicine(defaultMedicine);
     closeModal();
@@ -414,7 +479,7 @@ const ResultDetail: React.FC = () => {
     const fetchMedicines = async () => {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/api/diagnosis/medicine`
+          `${import.meta.env.VITE_API_BASE_URL}/api/diagnosis/medicine?page=1`
         );
         if (!response.ok) {
           throw new Error("Không thể tải danh sách thuốc.");
@@ -422,7 +487,7 @@ const ResultDetail: React.FC = () => {
         const data = await response.json();
 
         let medicines: MedicineItem[] = [];
-        medicines = data.map((item: MedicineItem) => {
+        medicines = data.medicines.map((item: MedicineItem) => {
           return {
             id: item.id,
             ten_thuoc: item.ten_thuoc,
@@ -445,6 +510,7 @@ const ResultDetail: React.FC = () => {
         throw new Error("Không thể tải danh sách lịch sử cuộc hẹn.");
       }
       const data = await response.json();
+      console.log("Data:", data);
 
       // Chuyển đổi dữ liệu từ nested object sang flat object
       const flatAppointment: Appointment = {
@@ -647,6 +713,25 @@ const ResultDetail: React.FC = () => {
     });
   };
 
+  const loadOptions = async (inputValue: string): Promise<OptionType[]> => {
+    try {
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_API_BASE_URL
+        }/api/diagnosis/medicine?search=${inputValue}&page=1`
+      );
+      const data = await response.json();
+
+      return data.medicines.map((item: any) => ({
+        value: item.id,
+        label: item.ten_thuoc,
+      }));
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  };
+
   return (
     <div className="h-full bg-gray-50 p-2">
       <div className="flex gap-4 h-full">
@@ -654,7 +739,7 @@ const ResultDetail: React.FC = () => {
         <div className="w-2/3 bg-white px-6 py-4 rounded-lg shadow-md text-sm">
           {/* Chi tiết cuộc hẹn và nơi nhập kết quả khám bệnh */}
           <h2 className="text-xl font-semibold mb-4 text-center">
-            Gửi kết quả khám bệnh
+            Kết quả khám bệnh
           </h2>
 
           <div className="grid grid-cols-2 gap-4">
@@ -768,32 +853,43 @@ const ResultDetail: React.FC = () => {
           <div className="mt-2">
             {/* Đính kèm file */}
             <label className="text-sm font-medium block mb-2">
-              Gửi kết quả (tối đa 5 hình ảnh)
+              Kết quả (tối đa 5 hình ảnh)
             </label>
-            <div
-              className="w-full h-32 border-2 border-dashed border-gray-300 p-4 rounded-lg flex justify-center items-center cursor-pointer hover:border-blue-500 transition-all duration-300"
-              onClick={() => document.getElementById("file-input")?.click()} // Mở chọn file khi click vào ô
-            >
-              <input
-                id="file-input"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                multiple
-                className="hidden"
-                disabled={appointment.trang_thai === "Hoàn thành"}
-              />
-              <div className="flex flex-col items-center">
-                <span className="text-gray-600 text-sm">
-                  Drop your file, or{" "}
-                </span>
-                <span className="text-blue-600 text-sm font-semibold">
-                  Browse
-                </span>
-                <div className="mt-2 text-gray-500 text-xs">Max size 10MB</div>
+            {appointment.trang_thai !== "Hoàn thành" && (
+              <div
+                className="w-full h-32 border-2 border-dashed border-gray-300 p-4 rounded-lg flex justify-center items-center cursor-pointer hover:border-blue-500 transition-all duration-300"
+                onClick={() => document.getElementById("file-input")?.click()} // Mở chọn file khi click vào ô
+              >
+                <input
+                  id="file-input"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  multiple
+                  className="hidden"
+                  disabled={appointment.trang_thai === "Hoàn thành"}
+                />
+                <div className="flex flex-col items-center">
+                  <span className="text-gray-600 text-sm">
+                    Drop your file, or{" "}
+                  </span>
+                  <span className="text-blue-600 text-sm font-semibold">
+                    Browse
+                  </span>
+                  <div className="mt-2 text-gray-500 text-xs">
+                    Max size 10MB
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
+          {files.length === 0 && appointment.trang_thai === "Hoàn thành" && (
+            <input
+              className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg"
+              value="Không có hình ảnh"
+              disabled
+            />
+          )}
           {files.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-4">
               {files.map((file, index) => (
@@ -818,12 +914,14 @@ const ResultDetail: React.FC = () => {
                     />
                   )}
                   {/* Nút xóa file */}
-                  <button
-                    onClick={() => handleDeleteFile(index)}
-                    className="absolute top-0 right-0 text-white bg-red-500 hover:bg-red-700 rounded-full p-1 w-6 h-6 flex items-center justify-center transition-all duration-300 transform hover:scale-110"
-                  >
-                    <span className="text-sm font-semibold">×</span>
-                  </button>
+                  {appointment.trang_thai !== "Hoàn thành" && (
+                    <button
+                      onClick={() => handleDeleteFile(index)}
+                      className="absolute top-0 right-0 text-white bg-red-500 hover:bg-red-700 rounded-full p-1 w-6 h-6 flex items-center justify-center transition-all duration-300 transform hover:scale-110"
+                    >
+                      <span className="text-sm font-semibold">×</span>
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
@@ -834,7 +932,10 @@ const ResultDetail: React.FC = () => {
               <div className="mt-4 flex justify-start">
                 <button
                   className="bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 font-semibold transition-all duration-300"
-                  onClick={openModal}
+                  onClick={() => {
+                    setNewMedicine(defaultMedicine);
+                    openModal();
+                  }}
                 >
                   Thêm thuốc
                 </button>
@@ -904,7 +1005,10 @@ const ResultDetail: React.FC = () => {
                     <th className="border px-4 py-2">Số lượng</th>
                     <th className="border px-4 py-2">Thời điểm dùng</th>
                     {appointment.trang_thai !== "Hoàn thành" && (
-                      <th className="border px-4 py-2"></th>
+                      <>
+                        <th className="border px-4 py-2"></th>
+                        <th className="border px-4 py-2"></th>
+                      </>
                     )}
                   </tr>
                 </thead>
@@ -918,6 +1022,18 @@ const ResultDetail: React.FC = () => {
                       </td>
                       {appointment.trang_thai !== "Hoàn thành" && (
                         <>
+                          <td>
+                            <button
+                              onClick={() => {
+                                setMedicineIdx(index);
+                                setNewMedicine(med);
+                                openModal();
+                              }}
+                              className="text-blue-500 hover:text-blue-700"
+                            >
+                              <MdEdit />
+                            </button>
+                          </td>
                           <td className="border px-4 py-2 text-center">
                             <button
                               onClick={() => {
@@ -956,7 +1072,20 @@ const ResultDetail: React.FC = () => {
                 <label className="text-sm font-medium block mb-2">
                   Tên thuốc
                 </label>
-                <select
+                <AsyncSelect
+                  cacheOptions
+                  defaultOptions
+                  loadOptions={loadOptions}
+                  onChange={(selectedOption: SingleValue<OptionType>) => {
+                    setNewMedicine({
+                      ...newMedicine,
+                      ten_thuoc: selectedOption?.label || "",
+                      id: selectedOption?.value || 0,
+                    });
+                  }}
+                  placeholder="Chọn thuốc..."
+                />
+                {/* <select
                   value={newMedicine.ten_thuoc}
                   onChange={(e) =>
                     setNewMedicine({
@@ -976,7 +1105,7 @@ const ResultDetail: React.FC = () => {
                       {med.ten_thuoc}
                     </option>
                   ))}
-                </select>
+                </select> */}
               </div>
               <div className="mt-2">
                 <label className="text-sm font-medium block mb-2">
@@ -1050,18 +1179,19 @@ const ResultDetail: React.FC = () => {
                   </label>
                 </div>
               </div>
-              <div className="mt-4 flex justify-center text-sm">
-                <button
-                  className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg  font-semibold transition-all duration-300 mr-2"
-                  onClick={closeModal}
-                >
-                  Hủy bỏ
-                </button>
+              <div className="mt-4 flex justify-center text-sm gap-2">
                 <button
                   className="bg-blue-800 hover:bg-blue-900 text-white py-2 px-4 rounded-lg font-semibold transition-all duration-300"
                   onClick={addMedicine}
                 >
-                  Thêm
+                  Xác nhận
+                </button>
+
+                <button
+                  className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg  font-semibold transition-all duration-300"
+                  onClick={closeModal}
+                >
+                  Hủy bỏ
                 </button>
               </div>
             </div>

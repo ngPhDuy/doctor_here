@@ -3,9 +3,13 @@ import { useNavigate } from "react-router-dom";
 
 interface LoginComponentProps {
   setRole: (role: string) => void; // Định nghĩa props nhận hàm setRole
+  setUserInfo: (info: { id: string | null; name: string | null }) => void;
 }
 
-const LoginComponent: React.FC<LoginComponentProps> = ({ setRole }) => {
+const LoginComponent: React.FC<LoginComponentProps> = ({
+  setRole,
+  setUserInfo,
+}) => {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -36,11 +40,16 @@ const LoginComponent: React.FC<LoginComponentProps> = ({ setRole }) => {
       if (response.ok) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("id", data.id);
-        localStorage.setItem("avtUrl", data.avtUrl);
+        localStorage.setItem("avtUrl", data.avtUrl ? data.avtUrl : "");
         localStorage.setItem("fullName", data.fullName);
         localStorage.setItem("role", data.role);
 
         setRole(data.role); // Cập nhật state role từ props
+
+        setUserInfo({
+          id: data.id,
+          name: data.fullName,
+        });
 
         if (data.token && data.role === "qtv") {
           navigate("/");

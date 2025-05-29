@@ -70,6 +70,20 @@ const WorkTimeModal: React.FC<WorkTimeModalProps> = ({
 
   const handleSave = () => {
     // console.log(newWorkTime);
+    // Kiểm tra giờ kết thúc phải lớn hơn giờ bắt đầu
+    if (
+      parseInt(newWorkTime.end.split(":")[0]) <=
+      parseInt(newWorkTime.start.split(":")[0])
+    ) {
+      Swal.fire({
+        icon: "error",
+        title: "Giờ kết thúc phải lớn hơn giờ bắt đầu",
+        showConfirmButton: false,
+        timer: 1000,
+      });
+
+      return;
+    }
     onSave(newWorkTime); // Lưu thay đổi và đóng modal
     onClose();
   };
@@ -198,6 +212,33 @@ const DoctorSchedule: React.FC = () => {
     null
   );
   const navigate = useNavigate();
+
+  const [haveWorking, setHaveWorking] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fetchHaveWorking = async () => {
+      try {
+        const response = await fetch(
+          `${
+            import.meta.env.VITE_API_BASE_URL
+          }/api/doctor/haveWorking/${localStorage.getItem("id")}`
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch results");
+        }
+
+        const data = await response.json();
+        console.log(data);
+        setHaveWorking(data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchHaveWorking();
+  }, []);
+
   const mergedCells: Set<string> = new Set();
   const hours = Array.from({ length: 24 }, (_, i) => {
     return (i < 10 ? "0" : "") + i + ":00"; // Đảm bảo có 2 chữ số cho giờ
@@ -215,15 +256,14 @@ const DoctorSchedule: React.FC = () => {
 
   useEffect(() => {
     // Lấy dữ liệu từ server ${import.meta.env.VITE_API_BASE_URL}/api/drSchedule/doctor/${id || "BS0000001"}
-    const id = localStorage.getItem("id");
     fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/api/drSchedule/doctor/${
-        id || "BS0000001"
-      }`
+      `${
+        import.meta.env.VITE_API_BASE_URL
+      }/api/drSchedule/doctor/${localStorage.getItem("id")}`
     )
       .then((res) => res.json())
       .then((data) => {
-        // console.log(data);
+        console.log(data);
         const clientData = convertToClientFormat(data);
         setSchedule(clientData);
       })
@@ -302,6 +342,16 @@ const DoctorSchedule: React.FC = () => {
       return;
     }
 
+    if (newEnd <= newStart) {
+      Swal.fire({
+        icon: "error",
+        title: "Giờ kết thúc phải lớn hơn giờ bắt đầu!",
+        showConfirmButton: false,
+        timer: 1000,
+      });
+      return;
+    }
+
     // call API để cập nhật lịch làm việc
     fetch(`${import.meta.env.VITE_API_BASE_URL}/api/drSchedule`, {
       method: "PUT",
@@ -337,21 +387,6 @@ const DoctorSchedule: React.FC = () => {
       .catch((error) => {
         console.error("Error:", error);
       });
-
-    // const updatedSchedule = schedule.map((item: WorkTime) => {
-    //   if (item.id === updatedWorkTime.id) {
-    //     return updatedWorkTime;
-    //   }
-    //   return item;
-    // });
-    // console.log(updatedSchedule);
-    // setSchedule(updatedSchedule);
-    // Swal.fire({
-    //   icon: "success",
-    //   title: "Cập nhật khung giờ thành công!",
-    //   showConfirmButton: false,
-    //   timer: 1000,
-    // });
   };
 
   const handleDelete = (id: number) => {
@@ -430,6 +465,17 @@ const DoctorSchedule: React.FC = () => {
         return;
       }
 
+      // Kiểm tra giờ kết thúc phải lớn hơn giờ bắt đầu
+      if (newEnd <= newStart) {
+        Swal.fire({
+          icon: "error",
+          title: "Giờ kết thúc phải lớn hơn giờ bắt đầu!",
+          showConfirmButton: false,
+          timer: 1000,
+        });
+        return;
+      }
+
       //gọi api để thêm khung giờ làm việc
       fetch(`${import.meta.env.VITE_API_BASE_URL}/api/drSchedule`, {
         method: "POST",
@@ -437,9 +483,7 @@ const DoctorSchedule: React.FC = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ma_bac_si: localStorage.getItem("id")
-            ? localStorage.getItem("id")
-            : "BS0000001",
+          ma_bac_si: localStorage.getItem("id"),
           thu: newWorkTime.day,
           gio_bat_dau: newWorkTime.start,
           gio_ket_thuc: newWorkTime.end,
@@ -462,26 +506,6 @@ const DoctorSchedule: React.FC = () => {
         .catch((error) => {
           console.error("Error:", error);
         });
-
-      // const newWorkTimeData = {
-      //   id: newId,
-      //   day: newWorkTime.day,
-      //   start: newWorkTime.start,
-      //   end: newWorkTime.end,
-      //   status: newWorkTime.status,
-      // };
-
-      // const updatedSchedule = [...schedule, newWorkTimeData];
-      // console.log(updatedSchedule);
-      // setSchedule(updatedSchedule);
-      // // Đóng modal
-      // setShowAddForm(false);
-      // Swal.fire({
-      //   icon: "success",
-      //   title: "Thêm khung giờ thành công!",
-      //   showConfirmButton: false,
-      //   timer: 1000,
-      // });
     };
 
     return (
@@ -570,6 +594,55 @@ const DoctorSchedule: React.FC = () => {
       </div>
     );
   };
+
+  const handleGenerateTimeslot = async () => {
+    const result = await Swal.fire({
+      title: "Xác nhận tạo lịch hẹn?",
+      text: "Bạn có chắc chắn muốn tạo lịch hẹn?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Xác nhận",
+      cancelButtonText: "Hủy",
+      width: "350px",
+      customClass: {
+        title: "text-base",
+        popup: "rounded-lg",
+        confirmButton: "px-3 py-2 text-sm",
+        cancelButton: "px-3 py-2 text-sm",
+      },
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await fetch(
+          `${
+            import.meta.env.VITE_API_BASE_URL
+          }/api/doctor/genTimeslot/${localStorage.getItem("id")}`
+        );
+
+        if (response.ok) {
+          Swal.fire({
+            icon: "success",
+            title: "Tạo lịch hẹn thành công!",
+            showConfirmButton: false,
+            timer: 1000,
+          });
+        } else {
+          throw new Error("Failed to generate timeslot");
+        }
+      } catch (error) {
+        console.error(error);
+        Swal.fire({
+          icon: "error",
+          title: "Tạo lịch hẹn không thành công!",
+          showConfirmButton: false,
+          timer: 1000,
+        });
+      }
+    }
+  };
   //Return DoctorSchedule
   return (
     <div className="h-full bg-gray-100 p-2">
@@ -584,26 +657,38 @@ const DoctorSchedule: React.FC = () => {
           </h2>
         </div>
         {/* Nút thêm */}
-        <div className="w-full">
+        <div className="w-full flex justify-start gap-2">
           <button
             className="p-1.5 bg-blue-600 text-white font-semibold rounded mb-1 text-sm"
             onClick={() => setShowAddForm(!isShowAddForm)}
           >
             Thêm khung giờ
           </button>
+          {!haveWorking && (
+            <button
+              className="p-1.5 bg-green-600 text-white font-semibold rounded mb-1 text-sm"
+              onClick={handleGenerateTimeslot}
+            >
+              Tạo lịch hẹn
+            </button>
+          )}
         </div>
         {/* Bảng thời gian làm việc */}
         <table className="table-auto w-full border-collapse">
           <thead>
             <tr>
               <th
-                className="p-2 border-b text-center"
+                className="p-2 border-b text-center w-"
                 style={{ width: "12.5%" }}
               >
                 Giờ
               </th>
               {days.map((day, index) => (
-                <th key={index} className="p-2 border-b text-center">
+                <th
+                  key={index}
+                  className="p-2 border-b text-center"
+                  style={{ width: "12.5%" }}
+                >
                   {day}
                 </th>
               ))}

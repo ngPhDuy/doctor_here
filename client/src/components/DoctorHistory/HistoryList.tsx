@@ -18,6 +18,7 @@ interface Appointment {
   id_gio_hen: number;
   Gio_hen: {
     id: number;
+    thoi_diem_bat_dau: string;
     Ca_lam_viec_trong_tuan: {
       lam_viec_onl: boolean;
     };
@@ -57,13 +58,19 @@ const HistoryListComponent: React.FC = () => {
   // Modal state
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
+  // State cho sắp xếp
+  const [sortField, setSortField] = useState("thoi_diem_bat_dau"); // "id" or "thoi_diem_bat_dau"
+  const [sortOrder, setSortOrder] = useState("asc"); // "asc" or "desc"
+
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
         const response = await fetch(
           `${
             import.meta.env.VITE_API_BASE_URL
-          }/api/appointment/getAllByDoctorID?doctorID=BS0000001`
+          }/api/appointment/getAllByDoctorID?doctorID=${localStorage.getItem(
+            "id"
+          )}`
         );
         if (!response.ok) {
           throw new Error("Không thể tải danh sách lịch hẹn.");
@@ -125,13 +132,27 @@ const HistoryListComponent: React.FC = () => {
     );
   });
 
+  // Sắp xếp theo trường đã chọn
+  const sortedAppointments = [...filteredAppointments].sort((a, b) => {
+    if (sortField === "id") {
+      return sortOrder === "asc" ? a.id - b.id : b.id - a.id;
+    }
+    if (sortField === "thoi_diem_bat_dau") {
+      const dateA = new Date(a.Gio_hen.thoi_diem_bat_dau).getTime();
+      const dateB = new Date(b.Gio_hen.thoi_diem_bat_dau).getTime();
+      console.log(a.Gio_hen.thoi_diem_bat_dau, " ", dateA);
+      console.log(b.Gio_hen.thoi_diem_bat_dau, " ", dateB);
+      console.log("----------------------------------");
+      return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+    }
+    return 0;
+  });
+
   // Xử lý phân trang
-  const totalPages = Math.ceil(
-    filteredAppointments.length / appointmentsPerPage
-  );
+  const totalPages = Math.ceil(sortedAppointments.length / appointmentsPerPage);
   const indexOfLastAppointment = currentPage * appointmentsPerPage;
   const indexOfFirstAppointment = indexOfLastAppointment - appointmentsPerPage;
-  const currentAppointments = filteredAppointments.slice(
+  const currentAppointments = sortedAppointments.slice(
     indexOfFirstAppointment,
     indexOfLastAppointment
   );
@@ -163,10 +184,36 @@ const HistoryListComponent: React.FC = () => {
     <div className="p-2 h-full bg-gray-50">
       <div className="flex items-center w-full pb-4 p-3 mb-4 justify-between bg-white shadow-md">
         <div className="font-semibold text-lg">
-          <p>Tổng cuộc hẹn ({filteredAppointments.length})</p>
+          <p>Tổng cuộc hẹn ({sortedAppointments.length})</p>
         </div>
 
         <div className="flex items-center gap-2 text-sm">
+          {/* Sắp xếp */}
+          <div className="flex items-center border rounded-lg px-3 py-2 bg-white shadow-sm">
+            <select
+              className="outline-none"
+              onChange={(e) => {
+                setSortField(e.target.value);
+                setCurrentPage(1);
+              }}
+              value={sortField}
+            >
+              <option value="id">SX: Mã đơn hẹn</option>
+              <option value="thoi_diem_bat_dau">SX: Thời điểm hẹn</option>
+            </select>
+            <select
+              className="outline-none ml-2"
+              onChange={(e) => {
+                setSortOrder(e.target.value);
+                setCurrentPage(1);
+              }}
+              value={sortOrder}
+            >
+              <option value="asc">Tăng dần</option>
+              <option value="desc">Giảm dần</option>
+            </select>
+          </div>
+
           <div className="flex items-center border rounded-lg px-3 py-2 bg-white shadow-sm focus-within:ring-2 focus-within:ring-blue-500">
             <input
               type="text"
@@ -193,10 +240,9 @@ const HistoryListComponent: React.FC = () => {
       <table className="table-auto w-full text-center border border-gray-300 rounded-lg shadow-lg">
         <thead className="text-gray-600 text-base bg-gray-100">
           <tr>
-            <th className="px-4 py-2">STT</th>
             <th className="px-4 py-2">Mã đơn hẹn</th>
             <th className="px-4 py-2">Tên bệnh nhân</th>
-            <th className="px-4 py-2">Tạo lúc</th>
+            <th className="px-4 py-2">Hẹn lúc</th>
             <th className="px-4 py-2">Hình thức</th>
             <th className="px-4 py-2">Trạng thái</th>
           </tr>
@@ -208,15 +254,14 @@ const HistoryListComponent: React.FC = () => {
               className="bg-white hover:bg-gray-100 cursor-pointer"
               onClick={() => navigate(`/historyDetail/${appointment.id}`)}
             >
-              <td className="px-4 py-3">
-                {index + 1 + indexOfFirstAppointment}
-              </td>
               <td className="px-4 py-3">{`#${appointment.id}`}</td>
               <td className="px-4 py-3 truncate max-w-xs">
                 {appointment.Benh_nhan.Nguoi_dung.ho_va_ten}
               </td>
               <td className="px-4 py-3">
-                {new Date(appointment.thoi_diem_tao).toLocaleString("vi-VN")}
+                {new Date(appointment.Gio_hen.thoi_diem_bat_dau).toLocaleString(
+                  "vi-VN"
+                )}
               </td>
               <td className="px-4 py-3 flex justify-center items-center">
                 <span

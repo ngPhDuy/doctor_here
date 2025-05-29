@@ -112,6 +112,7 @@ const DoctorInfor: React.FC = () => {
         HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
       >
     ) => {
+      console.log("field", field, "value", e.target.value);
       setDoctor((prevData) => ({
         ...prevData,
         [field]: e.target.value,

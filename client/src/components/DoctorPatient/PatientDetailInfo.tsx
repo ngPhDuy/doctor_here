@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import defaultAvatar from "../../assets/images/avt.png";
 
 interface PatientInfo {
   id: number;
@@ -20,6 +21,7 @@ interface PatientInfo {
     gioi_tinh: string;
     phan_loai: string;
     ho_va_ten: string;
+    avt_url: string;
     Tai_khoan: {
       ten_dang_nhap: string;
       active: boolean;
@@ -50,6 +52,7 @@ const PatientDetailInfo: React.FC = () => {
           throw new Error("Không thể tải thông tin bệnh nhân.");
         }
         const data = await response.json();
+        console.log("data", data);
         setPatient(data);
       } catch (err) {
         setError("Lỗi khi tải thông tin bệnh nhân.");
@@ -98,14 +101,20 @@ const PatientDetailInfo: React.FC = () => {
           </svg>
         </div>
         <div
-          className="mr-5 text-blueTitle cursor-pointer"
+          className="mr-4 text-blueTitle cursor-pointer"
           onClick={() => navigate(`/patientInfoDoctor/${id}`)}
         >
           <p className="font-semibold mb-1 ml-1">Thông tin bệnh nhân</p>
           <hr className="border-t-2 border-blueTitle ml-1" />
         </div>
         <div
-          className="ml-5 cursor-pointer"
+          className="mr-4 cursor-pointer"
+          onClick={() => navigate(`/resultHistory/${id}`)}
+        >
+          <p className="font-semibold mb-1">Kết quả khám bệnh</p>
+        </div>
+        <div
+          className=" cursor-pointer"
           onClick={() => navigate(`/patientDetailHistory/${id}`)}
         >
           <p className="font-semibold mb-1">Lịch sử khám bệnh</p>
@@ -117,6 +126,27 @@ const PatientDetailInfo: React.FC = () => {
         {/* Thông tin cá nhân */}
         <div className="bg-white px-6 py-4 rounded-lg shadow-md border">
           <h3 className="text-lg font-semibold mb-4">Thông tin cá nhân</h3>
+          <div className="flex items-center mb-4">
+            {/* Avatar */}
+            <img
+              src={patient?.Nguoi_dung.avt_url || defaultAvatar} // Sử dụng ảnh mặc định nếu không có avt_url
+              alt="Avatar"
+              className="w-16 h-16 rounded-full mr-4"
+            />
+            {/* Thông tin bệnh nhân */}
+            <div>
+              <h4 className="text-xl font-semibold">
+                {patient?.Nguoi_dung.ho_va_ten ?? "Chưa có"}
+              </h4>
+              <button
+                onClick={() => navigate(`/conversations/${id}`)}
+                className="mt-2 text-blue-500 hover:underline"
+              >
+                Nhắn tin
+              </button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-x-4 gap-y-2">
             {[
               {
@@ -130,7 +160,7 @@ const PatientDetailInfo: React.FC = () => {
               { label: "SĐT", value: patient?.Nguoi_dung.sdt ?? "Chưa có" },
               {
                 label: "Mã bệnh nhân",
-                value: patient?.Nguoi_dung.sdt ?? "Chưa có",
+                value: patient?.ma_benh_nhan ?? "Chưa có",
               },
               {
                 label: "Địa chỉ",

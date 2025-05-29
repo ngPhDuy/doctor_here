@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { FaPhone } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 
@@ -200,6 +201,7 @@ const HistoryDetailComponent: React.FC = () => {
         throw new Error("Không thể tải danh sách lịch sử cuộc hẹn.");
       }
       const data = await response.json();
+      console.log("Dữ liệu cuộc hẹn:", data);
 
       // Chuyển đổi dữ liệu từ nested object sang flat object
       const flatAppointment: Appointment = {
@@ -382,6 +384,30 @@ const HistoryDetailComponent: React.FC = () => {
             >
               {appointment.trang_thai}
             </span>
+            {appointment.ca_lam_viec_lam_viec_onl &&
+              appointment.trang_thai === "Đang chờ" &&
+              (() => {
+                let startTime = new Date(appointment.gio_hen_thoi_diem_bat_dau);
+                const now = new Date();
+                startTime = new Date(startTime.getTime() - 5 * 60 * 1000);
+                let endTime = new Date(appointment.gio_hen_thoi_diem_ket_thuc);
+
+                if (now >= startTime && now <= endTime) {
+                  return (
+                    <button
+                      className="p-2 rounded-full"
+                      onClick={() => {
+                        navigate(
+                          `/video_call/${appointment.ma_benh_nhan_dat_hen}/${appointment.id}`
+                        );
+                      }}
+                    >
+                      <FaPhone className="text-green-500 hover:text-green-700  ml-2 text-xl transition-all duration-300 transform hover:scale-110" />
+                    </button>
+                  );
+                }
+                return null;
+              })()}
           </div>
           <div className="grid grid-cols-2 gap-x-4 gap-y-2">
             <div>
@@ -457,7 +483,7 @@ const HistoryDetailComponent: React.FC = () => {
             <label className="text-sm font-medium block mb-2">
               Hình ảnh bổ sung
             </label>
-            <div className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-sm">
+            <div className="w-full px-3 py-2 border rounded-lg bg-gray-100 text-sm flex gap-2">
               {appointment.hinh_anh_bo_sung &&
               appointment.hinh_anh_bo_sung.length > 0 ? (
                 appointment.hinh_anh_bo_sung.map(
@@ -466,8 +492,8 @@ const HistoryDetailComponent: React.FC = () => {
                     const isImage = /\.(jpeg|jpg|png|gif)$/i.test(file);
 
                     return (
-                      <div key={index}>
-                        <a
+                      <div key={index} className="relative w-20 h-20">
+                        {/* <a
                           href={file}
                           className="text-blue-500 underline block"
                           target={isImage ? "_blank" : ""}
@@ -478,7 +504,12 @@ const HistoryDetailComponent: React.FC = () => {
                             //Tách tên file từ URL
                             file.split("/").pop()
                           }
-                        </a>
+                        </a> */}
+                        <img
+                          src={file}
+                          alt="Uploaded"
+                          className="w-full h-full object-cover rounded-md"
+                        />
                       </div>
                     );
                   }

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import ChangePasswordModal from "./ChangePassword";
 import Swal from "sweetalert2";
 import NavBar from "./NavBar";
+import { MdEdit } from "react-icons/md";
 
 interface DoctorInfo {
   id: number;
@@ -31,7 +32,7 @@ interface DoctorInfo {
 
 const DoctorSettingInfo: React.FC = () => {
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
+  const id = localStorage.getItem("id");
   const [doctor, setDoctor] = useState<DoctorInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -60,7 +61,7 @@ const DoctorSettingInfo: React.FC = () => {
     const fetchDoctorDetail = async () => {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/api/doctor/${id || "BS0000001"}`
+          `${import.meta.env.VITE_API_BASE_URL}/api/doctor/${id}`
         );
         if (!response.ok) {
           throw new Error("Không thể tải thông tin bác sĩ.");
@@ -303,16 +304,25 @@ const DoctorSettingInfo: React.FC = () => {
       {/* Nội dung chính */}
       <div className="bg-white px-8 py-4 rounded-lg shadow-md">
         {/* Ảnh đại diện */}
-        <div className="flex flex-col items-center mb-4">
-          <img
-            src={
-              avatarPreview || doctor?.Nguoi_dung.avt_url || "./images/avt.png"
-            }
-            alt="Avatar"
-            className="w-24 h-24 rounded-full cursor-pointer"
-            onClick={() => document.getElementById("avatar-input")?.click()} // Khi click vào ảnh, mở file input
-          />
-          {/* Input file ẩn */}
+        <div className="text-center mb-6">
+          <div className="relative inline-block group">
+            <img
+              src={
+                avatarPreview ||
+                doctor?.Nguoi_dung.avt_url ||
+                "./images/avt.png"
+              }
+              alt="Avatar"
+              className="w-24 h-24 rounded-full cursor-pointer"
+            />
+            <div
+              className="absolute rounded-full inset-0 bg-black bg-opacity-25 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10"
+              onClick={() => document.getElementById("avatar-input")?.click()}
+            >
+              <MdEdit className="text-white text-3xl" />
+            </div>
+            {/* Input file ẩn */}
+          </div>
           <input
             id="avatar-input"
             type="file"
