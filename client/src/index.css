@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*padding for sidebar items*/
+.psi {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.w2r-h2r {
+  width: 2rem;
+  height: 2rem;
+}
+
+/* Màu sắc khi mục không active */
+.default-color {
+  background-color: white;
+  color: #828282; /* Màu chữ khi không active */
+}
+
+/* Màu sắc khi mục active */
+.active-color {
+  background-color: #787878; /* Màu nền khi active */
+  color: white; /* Màu chữ khi active */
+}
+
+.sidebar-item img {
+  width: 24px; /* Kích thước của icon */
+  height: 24px;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-10px);
+  }
+  50% {
+    transform: translateX(10px);
+  }
+  75% {
+    transform: translateX(-10px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
