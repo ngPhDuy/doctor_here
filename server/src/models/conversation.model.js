@@ -23,7 +23,7 @@ module.exports = (sequelize) => {
       },
       ma_bac_si: {
         type: DataTypes.STRING(9),
-        allowNull: false,
+        allowNull: true,
         references: {
           model: "Bac_si",
           key: "ma_bac_si",
@@ -34,7 +34,7 @@ module.exports = (sequelize) => {
       },
       ma_benh_nhan: {
         type: DataTypes.STRING(9),
-        allowNull: false,
+        allowNull: true,
         references: {
           model: "Benh_nhan",
           key: "ma_benh_nhan",
@@ -48,6 +48,11 @@ module.exports = (sequelize) => {
         allowNull: true,
         defaultValue: null,
       },
+      is_ai_agent: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      }
     },
     {
       tableName: "Cuoc_hoi_thoai",

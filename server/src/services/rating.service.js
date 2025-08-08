@@ -6,7 +6,7 @@ const {
   User,
   Comment,
 } = require("../models");
-
+const { Op, where } = require("sequelize");
 exports.getAllRatingsByDoctorID = async (doctorID) => {
   try {
     // Sử dụng Promise.all để chạy song song cả hai truy vấn
@@ -142,4 +142,61 @@ exports.createComment = async (props) => {
   });
 
   return comment;
+};
+
+exports.getReviewByPatientName = async (patientName) => {
+  try {
+    const reviews = await Rating.findAll({
+      include: [
+        {
+          model: Patient,
+          as: "Benh_nhan",
+          required: true,
+          include: [
+            {
+              model: User,
+              as: "Nguoi_dung",
+              where: {
+                ho_va_ten: {
+                  [Op.iLike]: `%${patientName}%`, // tìm tên gần đúng
+                },
+              },
+              attributes: ["ho_va_ten", "gioi_tinh"],
+            },
+          ],
+          attributes: ["ma_benh_nhan"],
+        },
+      ],
+      order: [["thoi_diem", "DESC"]],
+    });
+
+    return reviews;
+  } catch (error) {
+    console.error("❌ Lỗi khi lấy đánh giá theo tên bệnh nhân:", error);
+    throw new Error("Không thể lấy danh sách đánh giá.");
+  }
+};
+
+exports.getReviewStatisticsByDoctorID = async (doctorID) => {
+  try {
+    const result = await Rating.findOne({
+      where: {
+        ma_bac_si: doctorID,
+      },
+      attributes: [
+        [Sequelize.fn("AVG", Sequelize.col("diem_danh_gia")), "diem_trung_binh"],
+        [Sequelize.fn("COUNT", Sequelize.col("id")), "tong_danh_gia"],
+      ],
+      raw: true,
+    });
+
+    return {
+      ma_bac_si: doctorID,
+      diem_trung_binh: parseFloat(result.diem_trung_binh || 0).toFixed(2),
+      tong_danh_gia: parseInt(result.tong_danh_gia || 0),
+    };
+  } catch (error) {
+    console.error("❌ Lỗi khi tính điểm trung bình đánh giá:", error);
+    throw new Error("Không thể lấy thống kê đánh giá.");
+  }
 };

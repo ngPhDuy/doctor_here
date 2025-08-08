@@ -810,6 +810,28 @@ exports.getDiagnosisFromOther = async (ptID) => {
   return result;
 };
 
+exports.getDiagnosisByPatientName = async (name) => {
+  const result = await sequelize.query(
+    `SELECT * FROM lay_ket_qua_theo_ten_benh_nhan(?)`,
+    {
+      replacements: [name],
+      type: sequelize.QueryTypes.SELECT,
+    }
+  );
+  return result;
+};
+
+exports.getDiagnosisByDoctorID = async (doctorID) => {
+  const result = await sequelize.query(
+    `SELECT * FROM lay_ket_qua_cua_bac_si(?)`,
+    {
+      replacements: [doctorID],
+      type: sequelize.QueryTypes.SELECT,
+    }
+  );
+  return result;
+};
+
 exports.getIsShared = async (appID) => {
   const query = `
     SELECT
@@ -895,6 +917,42 @@ exports.updateHiddenState = async (drID, ptID, newState) => {
   );
 
   return result;
+};
+
+exports.updateHiddenStateByName = async (doctorID, patientName, newState) => {
+
+  const patient = await Patient.findOne({
+    include: {
+      model: User,
+      as: "Nguoi_dung",
+      where: {
+        ho_va_ten: {
+          [Op.iLike]: `%${patientName}%`,
+        },
+      },
+      attributes: [],
+    },
+  });
+
+  if (!patient) throw new Error("Không tìm thấy bệnh nhân với tên tương ứng");
+
+  // ✅ Cập nhật trạng thái ẩn kết quả
+  const result = await ConfidentialDoctor.update(
+    { an_kq: newState },
+    {
+      where: {
+        ma_bac_si: doctorID,
+        ma_benh_nhan: patient.ma_benh_nhan,
+      },
+    }
+  );
+  const message = newState
+  ? "Cập nhật trạng thái ẩn chia sẻ kết quả thành công"
+  : "Cập nhật trạng thái mở chia sẻ kết quả thành công";
+  return {
+    message,
+    affectedRows: result[0],
+  };
 };
 
 exports.updateShareAllForDoctor = async (drID, newState) => {

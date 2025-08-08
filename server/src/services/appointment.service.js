@@ -11,6 +11,7 @@ const {
   Diagnosis,
 } = require("../models");
 const { Op, or } = require("sequelize");
+const { DateTime } = require("luxon");
 
 exports.getdrIDandptID = async (appointmentID) => {
   const appointment = await Appointment.findOne({
@@ -106,6 +107,80 @@ exports.getAppointmentByID = async (appointmentID) => {
   });
   return appointment;
 };
+
+exports.getAppointmentByPatientNameAndTime = async (ma_bac_si, patient_name, start_time) => {
+  // ✅ Mở rộng 1 giây để tránh sai lệch mili giây
+  const end_time = new Date(start_time.getTime() + 999);
+
+  const appointment = await Appointment.findOne({
+    where: { ma_bac_si },
+    attributes: { exclude: ["id_gio_hen"] },
+    include: [
+      {
+        model: Timeslot,
+        as: "Gio_hen",
+        required: true,
+        where: {
+          thoi_diem_bat_dau: {
+            [Op.between]: [start_time, end_time],
+          },
+        },
+        attributes: { exclude: ["id", "available"] },
+        include: [
+          {
+            model: WeeklyWork,
+            as: "Ca_lam_viec_trong_tuan",
+            attributes: ["lam_viec_onl"],
+          },
+        ],
+      },
+      {
+        model: Patient,
+        as: "Benh_nhan",
+        required: true,
+        attributes: { exclude: ["id", "ma_benh_nhan"] },
+        include: [
+          {
+            model: User,
+            as: "Nguoi_dung",
+            required: true,
+            attributes: { exclude: ["id", "ten_dang_nhap", "phan_loai"] },
+            where: {
+              ho_va_ten: {
+                [Op.iLike]: `%${patient_name}%`,
+              },
+            },
+          },
+        ],
+      },
+      {
+        model: Doctor,
+        as: "Bac_si",
+        attributes: { exclude: ["id"] },
+        include: [
+          {
+            model: User,
+            as: "Nguoi_dung",
+            attributes: { exclude: ["id", "ten_dang_nhap", "phan_loai"] },
+          },
+        ],
+      },
+      {
+        model: ImageAppointment,
+        as: "Hinh_anh_bo_sung_cuoc_hen",
+        attributes: ["url"],
+      },
+      {
+        model: Rating,
+        as: "Danh_gia",
+        attributes: ["diem_danh_gia", "noi_dung", "thoi_diem"],
+      },
+    ],
+  });
+
+  return appointment;
+};
+
 
 exports.countAppointmentByMethod = async (onlMethod, doctorID) => {
   console.log("Service hit: countAppointmentByStatus");
@@ -249,6 +324,94 @@ exports.getAllByDoctorID = async (doctorID) => {
   return appointments;
 };
 
+exports.getTop5ByDoctorID = async (doctorID) => {
+  const appointments = await Appointment.findAll({
+    where: {
+      ma_bac_si: doctorID,
+    },
+    include: [
+      {
+        model: Timeslot,
+        as: "Gio_hen",
+        attributes: {
+          exclude: ["id"],
+        },
+        include: [
+          {
+            model: WeeklyWork,
+            as: "Ca_lam_viec_trong_tuan",
+            attributes: ["lam_viec_onl"],
+          },
+        ],
+      },
+      {
+        model: Patient,
+        as: "Benh_nhan",
+        attributes: ["ma_benh_nhan"],
+        include: [
+          {
+            model: User,
+            as: "Nguoi_dung",
+            attributes: ["ho_va_ten", "gioi_tinh"],
+          },
+        ],
+      },
+    ],
+    order: [["Gio_hen", "thoi_diem_bat_dau", "DESC"]],
+    // limit: 5, // ✅ Giới hạn 5 bản ghi
+  });
+
+  return appointments;
+};
+
+exports.getUpcomingAppointmentsByDoctorID = async (doctorID) => {
+  const now = new Date(); // thời điểm hiện tại
+
+  const appointments = await Appointment.findAll({
+    where: {
+      ma_bac_si: doctorID,
+    },
+    include: [
+      {
+        model: Timeslot,
+        as: "Gio_hen",
+        where: {
+          thoi_diem_bat_dau: {
+            [Op.gte]: now, // chỉ lấy các cuộc hẹn >= hiện tại
+          },
+        },
+        attributes: {
+          exclude: ["id"],
+        },
+        include: [
+          {
+            model: WeeklyWork,
+            as: "Ca_lam_viec_trong_tuan",
+            attributes: ["lam_viec_onl"],
+          },
+        ],
+      },
+      {
+        model: Patient,
+        as: "Benh_nhan",
+        attributes: ["ma_benh_nhan"],
+        include: [
+          {
+            model: User,
+            as: "Nguoi_dung",
+            attributes: ["ho_va_ten", "gioi_tinh"],
+          },
+        ],
+      },
+    ],
+    order: [["Gio_hen", "thoi_diem_bat_dau", "ASC"]],
+  });
+
+  return appointments;
+};
+
+
+
 exports.updateAppointmentStatus = async (appointmentID, newStatus) => {
   console.log("Service hit: updateAppointmentStatus");
   console.log("Received parameters:", appointmentID, newStatus);
@@ -290,6 +453,55 @@ exports.getAllByPatientAndDoctor = async (patientID, doctorID) => {
     order: [["ma_benh_nhan_dat_hen", "ASC"]],
   });
   return appointments;
+};
+
+exports.getAllByPatientNameAndDoctorID = async (patientName, doctorID) => {
+  const appointments = await Appointment.findAll({
+    where: {
+      ma_bac_si: doctorID,
+    },
+    include: [
+      {
+        model: Timeslot,
+        as: "Gio_hen",
+        attributes: {
+          exclude: ["id"],
+        },
+        include: [
+          {
+            model: WeeklyWork,
+            as: "Ca_lam_viec_trong_tuan",
+            attributes: ["lam_viec_onl"],
+          },
+        ],
+      },
+      {
+        model: Patient,
+        as: "Benh_nhan",
+        required: true,
+        include: [
+          {
+            model: User,
+            as: "Nguoi_dung",
+            required: true,
+            where: {
+              ho_va_ten: {
+                [Op.iLike]: `%${patientName}%`,
+              },
+            },
+            attributes: ["ho_va_ten", "gioi_tinh"],
+          },
+        ],
+        attributes: ["ma_benh_nhan"],
+      },
+    ],
+    order: [["Gio_hen", "thoi_diem_bat_dau", "DESC"]],
+  });
+
+  return {
+    count: appointments.length,
+    data: appointments,
+  };
 };
 
 exports.getAllByStatusAndPtID = async (status, ptID) => {
@@ -556,3 +768,196 @@ exports.updatePushState = async (appointmentIds, newState) => {
   );
   return updatedRows;
 };
+
+exports.getAppointmentsByTimeRange = async (doctorID, timeRangeString) => {
+  try {
+    // Parse "start/end" thành Date object
+    const [startStr, endStr] = timeRangeString.split("/");
+    const start = DateTime.fromISO(startStr, { zone: "Asia/Ho_Chi_Minh" }).toJSDate();
+    const end = DateTime.fromISO(endStr, { zone: "Asia/Ho_Chi_Minh" }).toJSDate();
+
+    const appointments = await Appointment.findAll({
+      include: [
+        {
+          model: Timeslot,
+          as: "Gio_hen",
+          where: {
+            thoi_diem_bat_dau: {
+              [Op.gte]: start,
+              [Op.lte]: end,
+            },
+          },
+          attributes: {
+            exclude: ["id"],
+          },
+          include: [
+            {
+              model: WeeklyWork,
+              as: "Ca_lam_viec_trong_tuan",
+              where: {
+                ma_bac_si: doctorID, // ✅ Lọc bác sĩ tại đây
+              },
+              attributes: ["lam_viec_onl"],
+            },
+          ],
+        },
+        {
+          model: Patient,
+          as: "Benh_nhan",
+          attributes: ["ma_benh_nhan"],
+          include: [
+            {
+              model: User,
+              as: "Nguoi_dung",
+              attributes: ["ho_va_ten", "gioi_tinh"],
+            },
+          ],
+        },
+      ],
+      order: [["Gio_hen", "thoi_diem_bat_dau", "ASC"]],
+    });
+
+    return appointments;
+  } catch (error) {
+    console.error("❌ Lỗi getAppointmentsByTimeRange:", error);
+    throw new Error("Lỗi khi lấy danh sách cuộc hẹn theo khoảng thời gian.");
+  }
+};
+
+exports.getCanceledAppointmentsByDoctorID = async (doctorID) => {
+  try {
+    const appointments = await Appointment.findAll({
+      where: {
+        ma_bac_si: doctorID,
+        trang_thai: "Đã hủy",
+      },
+      include: [
+        {
+          model: Timeslot,
+          as: "Gio_hen",
+          attributes: {
+            exclude: ["id"],
+          },
+          include: [
+            {
+              model: WeeklyWork,
+              as: "Ca_lam_viec_trong_tuan",
+              attributes: ["lam_viec_onl"],
+            },
+          ],
+        },
+        {
+          model: Patient,
+          as: "Benh_nhan",
+          attributes: ["ma_benh_nhan"],
+          include: [
+            {
+              model: User,
+              as: "Nguoi_dung",
+              attributes: ["ho_va_ten", "gioi_tinh"],
+            },
+          ],
+        },
+      ],
+      order: [["Gio_hen", "thoi_diem_bat_dau", "DESC"]],
+    });
+
+    return appointments;
+  } catch (error) {
+    console.error("❌ Lỗi getCanceledAppointmentsByDoctorID:", error);
+    throw new Error("Lỗi khi lấy danh sách cuộc hẹn đã huỷ.");
+  }
+};
+
+exports.getDoneAppointmentsByDoctorID = async (doctorID) => {
+  try {
+    const appointments = await Appointment.findAll({
+      where: {
+        ma_bac_si: doctorID,
+        trang_thai: "Hoàn thành",
+      },
+      include: [
+        {
+          model: Timeslot,
+          as: "Gio_hen",
+          attributes: {
+            exclude: ["id"],
+          },
+          include: [
+            {
+              model: WeeklyWork,
+              as: "Ca_lam_viec_trong_tuan",
+              attributes: ["lam_viec_onl"],
+            },
+          ],
+        },
+        {
+          model: Patient,
+          as: "Benh_nhan",
+          attributes: ["ma_benh_nhan"],
+          include: [
+            {
+              model: User,
+              as: "Nguoi_dung",
+              attributes: ["ho_va_ten", "gioi_tinh"],
+            },
+          ],
+        },
+      ],
+      order: [["Gio_hen", "thoi_diem_bat_dau", "DESC"]],
+    });
+
+    return appointments;
+  } catch (error) {
+    console.error("❌ Lỗi getDoneAppointmentsByDoctorID:", error);
+    throw new Error("Lỗi khi lấy danh sách cuộc hẹn đã hoàn thành.");
+  }
+};
+
+exports.getUndoneAppointmentsByDoctorID = async (doctorID) => {
+  try {
+    const appointments = await Appointment.findAll({
+      where: {
+        ma_bac_si: doctorID,
+        trang_thai: "Đang chờ",
+      },
+      include: [
+        {
+          model: Timeslot,
+          as: "Gio_hen",
+          attributes: {
+            exclude: ["id"],
+          },
+          include: [
+            {
+              model: WeeklyWork,
+              as: "Ca_lam_viec_trong_tuan",
+              attributes: ["lam_viec_onl"],
+            },
+          ],
+        },
+        {
+          model: Patient,
+          as: "Benh_nhan",
+          attributes: ["ma_benh_nhan"],
+          include: [
+            {
+              model: User,
+              as: "Nguoi_dung",
+              attributes: ["ho_va_ten", "gioi_tinh"],
+            },
+          ],
+        },
+      ],
+      order: [["Gio_hen", "thoi_diem_bat_dau", "ASC"]],
+    });
+
+    return appointments;
+  } catch (error) {
+    console.error("❌ Lỗi getUndoneAppointmentsByDoctorID:", error);
+    throw new Error("Lỗi khi lấy danh sách cuộc hẹn đang chờ.");
+  }
+};
+
+
+

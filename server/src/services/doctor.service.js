@@ -131,6 +131,37 @@ exports.getDoctorInfo = async (doctorID) => {
 
   return doctor;
 };
+
+
+exports.getDoctorInfoByName = async (doctorName) => {
+  // Tìm người dùng có họ và tên trùng với tên bác sĩ và phân loại là 'bs'
+  const user = await User.findOne({
+    where: {
+      ho_va_ten: doctorName,
+      phan_loai: "bs",
+    },
+    attributes: ["id"],
+  });
+
+  if (!user) {
+    throw new Error(`Không tìm thấy bác sĩ tên "${doctorName}"`);
+  }
+
+  // Tìm doctor tương ứng với id người dùng
+  const doctor = await Doctor.findOne({
+    where: {
+      id: user.id,
+    },
+    attributes: ["ma_bac_si"],
+  });
+
+  if (!doctor) {
+    throw new Error(`Không tìm thấy mã bác sĩ ứng với người dùng "${doctorName}"`);
+  }
+
+  return await exports.getDoctorInfo(doctor.ma_bac_si);
+};
+
 /*
 props:
 doctorID:

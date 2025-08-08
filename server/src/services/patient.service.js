@@ -8,6 +8,7 @@ const {
   Insurance,
 } = require("../models");
 const jwt = require("jsonwebtoken");
+const { Op } = require("sequelize");
 const secrectKey = process.env.SECRET_KEY;
 
 exports.getAllPatient = async () => {
@@ -60,6 +61,41 @@ exports.getPatientInfo = async (patientID) => {
       },
     ],
   });
+  return patient;
+};
+
+exports.getPatientInfoByName = async (patientName) => {
+  const patient = await Patient.findOne({
+    include: [
+      {
+        model: User,
+        as: "Nguoi_dung",
+        where: {
+          ho_va_ten: {
+            [Op.iLike]: `%${patientName}%`,
+          },
+        },
+        attributes: {
+          exclude: ["id"],
+        },
+        include: {
+          model: Account,
+          as: "Tai_khoan",
+          attributes: {
+            exclude: ["mat_khau"],
+          },
+        },
+      },
+      {
+        model: Insurance,
+        as: "Bao_hiem_y_te",
+        attributes: {
+          exclude: ["ma_benh_nhan"],
+        },
+      },
+    ],
+  });
+
   return patient;
 };
 

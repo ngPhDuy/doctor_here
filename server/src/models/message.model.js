@@ -25,7 +25,7 @@ module.exports = (sequelize) => {
         defaultValue: "text",
       },
       noi_dung_van_ban: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.TEXT,
         allowNull: true,
       },
       media_url: {

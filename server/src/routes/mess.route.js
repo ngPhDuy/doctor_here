@@ -68,11 +68,15 @@ const upload = multer();
  */
 router.post("/conversation", controller.createConversation);
 
+router.post("/conversation/ai", controller.createConversationWithAI);
+
 router.get("/conversation/user/:userID", controller.getConversations);
 
 router.get("/message/conversation/:conversationID", controller.getMessages);
 
 router.post("/message/text", controller.sendTextMessage);
+
+router.post("/message/text/ai", controller.sendTextMessageAI);
 
 // router.post(
 //   "/message/media",

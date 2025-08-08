@@ -29,6 +29,7 @@ const diagnosisRoute = require("./routes/diagnosis.route");
 const trackerRoute = require("./routes/tracker.route");
 const getTokenRoute = require("./routes/token.route");
 const predictRoute = require("./routes/predict.route");
+const llmRoute = require("./routes/llm.route");
 // Cronjob
 const {
   medicineScheduleReminder,
@@ -99,6 +100,7 @@ app.use("/api/diagnosis", diagnosisRoute);
 app.use("/api/tracker", trackerRoute);
 app.use("/api/token", getTokenRoute);
 app.use("/api/predict", predictRoute);
+app.use("/api/ai", llmRoute);
 // Test kết nối CSDL
 (async () => {
   try {

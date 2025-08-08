@@ -13,6 +13,19 @@ exports.createConversation = async (req, res) => {
   }
 };
 
+exports.createConversationWithAI = async (req, res) => {
+    try {
+    const { drID } = req.body;
+
+    // Tạo cuộc trò chuyện với AI Agent
+    const conversation = await service.createAIConversation(drID);
+
+    res.status(200).json(conversation);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+}
+
 exports.getConversations = async (req, res) => {
   try {
     const { userID } = req.params;
@@ -48,6 +61,43 @@ exports.sendTextMessage = async (req, res) => {
     res.status(200).json(message);
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+exports.sendTextMessageAI = async (req, res) => {
+  try {
+    const {
+      cuoc_hoi_thoai,
+      ben_gui_di,
+      kieu_noi_dung,
+      noi_dung_van_ban,
+      media_url,
+      thoi_diem_gui,
+    } = req.body;
+
+    // Kiểm tra đầu vào bắt buộc
+    if (!cuoc_hoi_thoai || !ben_gui_di || !kieu_noi_dung || !thoi_diem_gui) {
+      return res.status(400).json({
+        message: "Thiếu dữ liệu: cuoc_hoi_thoai, ben_gui_di, kieu_noi_dung, thoi_diem_gui là bắt buộc.",
+      });
+    }
+
+    const message = await service.createMessage({
+      conversationID: cuoc_hoi_thoai,
+      senderSide: ben_gui_di,
+      messageType: kieu_noi_dung,
+      messageContent: noi_dung_van_ban || "",
+      mediaURL: media_url,
+      sendTime: new Date(thoi_diem_gui),
+    });
+
+    return res.status(200).json(message);
+  } catch (error) {
+    console.error("Lỗi khi lưu tin nhắn AI:", error);
+    return res.status(500).json({
+      message: "Đã xảy ra lỗi khi lưu tin nhắn AI.",
+      error: error.message,
+    });
   }
 };
 

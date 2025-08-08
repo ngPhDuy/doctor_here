@@ -10,7 +10,6 @@ services:
       - DB_HOST=${DB_HOST}
       - DB_USERNAME=${DB_USERNAME}
       - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME}
       - DB_PORT=${DB_PORT}
       - DB_TIMEZONE=${DB_TIMEZONE}
       - SECRET_KEY=${SECRET_KEY}
@@ -33,7 +32,7 @@ services:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
     depends_on:
-      - backend # Ã?m b?o nginx kh?i d?ng sau server
+      - backend
 
   ai_service:
     build:

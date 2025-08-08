@@ -1,21 +1,21 @@
 import React, { ReactNode } from "react";
 
 interface TooltipButtonProps {
-  tooltipText: string;
+  text: string;
   children: ReactNode;
   className?: string;
 }
 
 const TooltipButton: React.FC<TooltipButtonProps> = ({
-  tooltipText,
+  text,
   children,
-  className,
+  className = "",
 }) => {
   return (
-    <div className="relative group">
-      <button className={`relative ${className || ""}`}>{children}</button>
-      <div className="absolute top-full left-full transform -translate-x-1/2 z-50 mb-2 hidden group-hover:block bg-gray-800 text-white text-sm rounded py-1 px-2">
-        {tooltipText}
+    <div className={`relative group inline-block ${className}`}>
+      {children}
+      <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 z-50 hidden group-hover:block bg-gray-800 text-white text-xs whitespace-nowrap rounded py-1 px-2 shadow-lg">
+        {text}
       </div>
     </div>
   );

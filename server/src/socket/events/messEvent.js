@@ -31,6 +31,10 @@ module.exports = (io, socket, activeUsers) => {
     console.log(`Tin nhắn từ ${sender} đến ${receiver}`);
 
     let conversation = await messService.getConversation(drID, ptID);
+    if (!conversation) {
+      console.error("Không tìm thấy cuộc trò chuyện!");
+      return;
+    }
 
     console.log(`ID cuộc trò chuyện: ${conversation.id}`);
     // Lưu tin nhắn vào CSDL

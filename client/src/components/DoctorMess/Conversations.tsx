@@ -9,6 +9,9 @@ import socket, {
 import Swal from "sweetalert2";
 import { FaPhone } from "react-icons/fa";
 import { MdAttachFile } from "react-icons/md";
+import { BsRobot } from "react-icons/bs";
+import DynamicAIReply from "./DynamicAIReply";
+import { getAIPreviewText } from "./DynamicAIReply";
 
 interface Patient {
   ma_benh_nhan: string;
@@ -24,7 +27,7 @@ interface Message {
   thoi_diem_gui: string;
   thoi_diem_da_xem: string | null;
   cuoc_hoi_thoai: number;
-  ben_gui_di: string;
+  ben_gui_di: "bs" | "bn" | "ai" | string;
 }
 
 interface Conversation {
@@ -34,6 +37,7 @@ interface Conversation {
     avt_url: string | null;
     ho_va_ten: string;
   };
+  is_ai_agent?: boolean;
   so_tin_moi: number;
   thoi_diem_tin_nhan_cuoi: string;
   tin_nhan: {
@@ -48,6 +52,7 @@ interface UpFileResponse {
 }
 
 const Conversations: React.FC = () => {
+  
   const [isVideoCallOpen, setIsVideoCallOpen] = useState(false);
   let drID = localStorage.getItem("id") || "";
   const [search, setSearch] = useState("");
@@ -64,6 +69,7 @@ const Conversations: React.FC = () => {
   );
   const [messages, setMessages] = useState<Message[]>([]);
   const [content, setContent] = useState("");
+  const [isAIChat, setIsAIChat] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
 
   const [tabConversation, setTabConversation] = useState(true);
@@ -202,62 +208,150 @@ const Conversations: React.FC = () => {
   }, [selectedConversation, conversations, drID]);
 
   //Lấy danh sách trò chuyện từ server qua API ${import.meta.env.VITE_API_BASE_URL}/api/conversation/user/:userID
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/conversation/user/${drID}`)
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Lấy danh sách trò chuyện", data);
-        setConversations(data);
-        setFilteredConversations(data);
+useEffect(() => {
+  const fetchConversations = async () => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/conversation/user/${drID}`
+      );
+      const data: Conversation[] = await res.json();
 
-        if (!selectedPatient) {
-          setSelectedConversation(data[0]);
+      // Kiểm tra có cuộc trò chuyện AI thật chưa
+      const hasRealAIConversation = data.some(
+        (conversation) => conversation.is_ai_agent && conversation.cuoc_hoi_thoai !== -999
+      );
 
-          return;
+      let updatedData: Conversation[] = [];
+
+      if (!hasRealAIConversation) {
+        // Tạo AI Agent giả nếu chưa từng chat
+        const aiAgentConversation: Conversation = {
+          cuoc_hoi_thoai: -999,
+          nguoi_dung: {
+            ma: "ai_agent",
+            avt_url: "./images/ai-avatar.png",
+            ho_va_ten: "AI Agent",
+          },
+          so_tin_moi: 0,
+          thoi_diem_tin_nhan_cuoi: new Date().toISOString(),
+          tin_nhan: {
+            noi_dung_van_ban: "Chào bạn, tôi là AI. Tôi giúp gì được cho bạn?",
+            media_url: null,
+          },
+        };
+
+        // Thêm giả + các cuộc trò chuyện khác (loại bỏ AI thật nếu có)
+        updatedData = [aiAgentConversation, ...data.filter((c) => !c.is_ai_agent)];
+      } else {
+        updatedData = data;
+      }
+
+      setConversations(updatedData);
+      setFilteredConversations(updatedData);
+
+      // Nếu đang xem AI Agent
+      if (selectedPatient === "ai_agent") {
+        const realAI = updatedData.find(
+          (c) => c.is_ai_agent && c.cuoc_hoi_thoai !== -999
+        );
+
+        if (realAI) {
+          setSelectedConversation(realAI);
+          const res = await fetch(
+            `${import.meta.env.VITE_API_BASE_URL}/api/message/conversation/${realAI.cuoc_hoi_thoai}`
+          );
+          const messages = await res.json();
+          setMessages(messages);
+        } else {
+          const fakeMsg: Message = {
+            id: -1,
+            cuoc_hoi_thoai: -999,
+            kieu_noi_dung: "text",
+            noi_dung_van_ban: "Chào bạn, tôi là AI. Tôi giúp gì được cho bạn?",
+            media_url: null,
+            thoi_diem_gui: new Date().toISOString(),
+            thoi_diem_da_xem: null,
+            ben_gui_di: "ai",
+          };
+          const fakeConv = updatedData.find((c) => c.cuoc_hoi_thoai === -999);
+          if (fakeConv) {
+            setSelectedConversation(fakeConv);
+            setMessages([fakeMsg]);
+          }
         }
-        // Nếu có selectedPatient thì tìm cuộc trò chuyện tương ứng: có 2 TH:
-        // 1. Có cuộc trò chuyện với bệnh nhân đó => chọn cuộc trò chuyện đó
-        // 2. Không có cuộc trò chuyện với bệnh nhân đó => chỉ tạo khi người dùng gửi tin nhắn đầu tiên
-        const existingConversation = data.find(
-          (conversation: Conversation) =>
-            conversation.nguoi_dung.ma === selectedPatient
+
+        return;
+      }
+
+      // Nếu là bệnh nhân
+      if (selectedPatient) {
+        const existingConversation = updatedData.find(
+          (c) => c.nguoi_dung.ma === selectedPatient
         );
 
         if (existingConversation) {
           setSelectedConversation(existingConversation);
         } else {
           setMessages([]);
-          fetch(
-            `${
-              import.meta.env.VITE_API_BASE_URL
-            }/api/patient/detail/${selectedPatient}`
-          )
-            .then((res) => res.json())
-            .then((data) => {
-              console.log("Lấy thông tin bệnh nhân", data);
-              const newConver: Conversation = {
-                cuoc_hoi_thoai: -1,
-                nguoi_dung: {
-                  ma: selectedPatient,
-                  avt_url: data.Nguoi_dung.avt_url || null,
-                  ho_va_ten: data.Nguoi_dung.ho_va_ten,
-                },
-                so_tin_moi: 0,
-                thoi_diem_tin_nhan_cuoi: "",
-                tin_nhan: {
-                  noi_dung_van_ban: "",
-                  media_url: null,
-                },
-              };
-              setNewConversation(newConver);
-              setSelectedConversation(newConver);
-            });
+
+          const res = await fetch(
+            `${import.meta.env.VITE_API_BASE_URL}/api/patient/detail/${selectedPatient}`
+          );
+          const data = await res.json();
+
+          const newConver: Conversation = {
+            cuoc_hoi_thoai: -1,
+            nguoi_dung: {
+              ma: selectedPatient,
+              avt_url: data.Nguoi_dung.avt_url || null,
+              ho_va_ten: data.Nguoi_dung.ho_va_ten,
+            },
+            so_tin_moi: 0,
+            thoi_diem_tin_nhan_cuoi: "",
+            tin_nhan: {
+              noi_dung_van_ban: "",
+              media_url: null,
+            },
+          };
+
+          setNewConversation(newConver);
+          setSelectedConversation(newConver);
         }
-      });
+      }
+    } catch (err) {
+      console.error("Lỗi khi lấy danh sách trò chuyện:", err);
+    }
+  };
 
-    return () => {};
-  }, [drID]);
+  fetchConversations();
+}, [drID, selectedPatient]);
 
+  // Tự động chọn cuộc trò chuyện đầu tiên nếu chưa có cuộc trò chuyện nào được chọn
+  useEffect(() => {
+    if (!selectedConversation && filteredConversations.length > 0) {
+      const first = filteredConversations[0];
+
+      if (first.nguoi_dung.ma === "ai_agent") {
+        setSelectedPatient("ai_agent");
+        setSelectedConversation(first);
+        setMessages([
+          {
+            id: -1,
+            cuoc_hoi_thoai: -999,
+            kieu_noi_dung: "text",
+            noi_dung_van_ban: "Chào bạn, tôi là AI. Tôi giúp gì được cho bạn?",
+            media_url: null,
+            thoi_diem_gui: new Date().toISOString(),
+            thoi_diem_da_xem: null,
+            ben_gui_di: "ai",
+          },
+        ]);
+      } else {
+        setSelectedPatient(first.nguoi_dung.ma);
+        setSelectedConversation(first);
+      }
+    }
+  }, [filteredConversations, selectedConversation]);
   //Lấy tin nhắn từ server qua API ${import.meta.env.VITE_API_BASE_URL}/api/message/conversation/:conversationID
   useEffect(() => {
     if (selectedConversation && selectedConversation.cuoc_hoi_thoai > 0) {
@@ -353,210 +447,939 @@ const Conversations: React.FC = () => {
     fetchPatients();
   }, []);
 
+  // const handleSendMessage = async (content: string) => {
+  //   // Nếu chưa có cuộc trò chuyện nào được chọn thì phải đợi tạo
+  //   if (!selectedConversation) {
+  //     return;
+  //   }
+  //   if (selectedConversation?.cuoc_hoi_thoai < 0) {
+  //     await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/conversation`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         ptID: selectedPatient,
+  //         drID: drID,
+  //       }),
+  //     })
+  //       .then((res) => {
+  //         if (res.ok) {
+  //           return res.json();
+  //         } else {
+  //           Swal.fire({
+  //             icon: "error",
+  //             title: "Lỗi",
+  //             text: "Có lỗi xảy ra, vui lòng thử lại.",
+  //           });
+  //         }
+  //       })
+  //       .then((data) => {
+  //         console.log("Tạo cuộc trò chuyện mới", data);
+  //         if (newConversation?.nguoi_dung) {
+  //           setSelectedConversation({
+  //             cuoc_hoi_thoai: data.cuoc_hoi_thoai,
+  //             nguoi_dung: newConversation.nguoi_dung,
+  //             so_tin_moi: newConversation.so_tin_moi || 0,
+  //             thoi_diem_tin_nhan_cuoi: new Date().toISOString(),
+  //             tin_nhan: {
+  //               noi_dung_van_ban: "",
+  //               media_url: null,
+  //             },
+  //           });
+  //           setNewConversation(null);
+  //           setConversations((prevConversations) => [
+  //             {
+  //               cuoc_hoi_thoai: data.cuoc_hoi_thoai,
+  //               nguoi_dung: newConversation.nguoi_dung,
+  //               so_tin_moi: newConversation.so_tin_moi || 0,
+  //               thoi_diem_tin_nhan_cuoi: new Date().toISOString(),
+  //               tin_nhan: {
+  //                 noi_dung_van_ban: "",
+  //                 media_url: null,
+  //               },
+  //             },
+  //             ...prevConversations,
+  //           ]);
+
+  //           setFilteredConversations((prevConversations) => [
+  //             {
+  //               cuoc_hoi_thoai: data.cuoc_hoi_thoai,
+  //               nguoi_dung: newConversation.nguoi_dung,
+  //               so_tin_moi: newConversation.so_tin_moi || 0,
+  //               thoi_diem_tin_nhan_cuoi: new Date().toISOString(),
+  //               tin_nhan: {
+  //                 noi_dung_van_ban: "",
+  //                 media_url: null,
+  //               },
+  //             },
+  //             ...prevConversations,
+  //           ]);
+  //         }
+  //       });
+  //   }
+
+  //   console.log(
+  //     "Tin nhắn từ ",
+  //     drID,
+  //     " đến ",
+  //     selectedConversation?.nguoi_dung?.ma
+  //   );
+  //   // Gửi tin nhắn đến server
+  //   let time = new Date().toISOString();
+  //   console.log(time);
+
+  //   // Cập nhật lại thời điểm tin nhắn cuối cùng trong cuộc trò chuyện
+  //   const updatedConversations = conversations.map((conversation) => {
+  //     if (conversation.cuoc_hoi_thoai === selectedConversation.cuoc_hoi_thoai) {
+  //       console.log("Cập nhật time", time, "cuộc hội thoại", conversation);
+  //       return {
+  //         ...conversation,
+  //         thoi_diem_tin_nhan_cuoi: time,
+  //         tin_nhan: {
+  //           noi_dung_van_ban: content,
+  //           media_url: files.length > 0 ? "Đã gửi tệp" : "",
+  //         },
+  //       };
+  //     }
+  //     return conversation;
+  //   });
+  //   // Sắp xếp lại các cuộc trò chuyện theo thời điểm tin nhắn cuối cùng
+  //   let sortedConversations = updatedConversations.sort(
+  //     (a, b) =>
+  //       new Date(b.thoi_diem_tin_nhan_cuoi).getTime() -
+  //       new Date(a.thoi_diem_tin_nhan_cuoi).getTime()
+  //   );
+  //   console.log(sortedConversations);
+  //   setConversations(sortedConversations);
+  //   setFilteredConversations(sortedConversations);
+
+  //   // Kiểm tra xem tin nhắn có phải là file không
+  //   if (files.length > 0) {
+  //     let tempID = Date.now();
+
+  //     let message = {
+  //       id: tempID, // Sử dụng timestamp để làm ID cho tin nhắn tạm thời
+  //       kieu_noi_dung: "text",
+  //       noi_dung_van_ban: "",
+  //       media_url: null, // Không có media url ngay lập tức
+  //       thoi_diem_gui: time,
+  //       thoi_diem_da_xem: null,
+  //       cuoc_hoi_thoai: selectedConversation?.cuoc_hoi_thoai || 0,
+  //       ben_gui_di: "bs",
+  //     };
+
+  //     setMessages((prevMessages) => [...prevMessages, message]);
+
+  //     let formData = new FormData();
+  //     files.forEach((file) => {
+  //       formData.append("files", file);
+  //     });
+  //     formData.append("folderName", "message_media");
+  //     setFiles([]);
+
+  //     fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cloud/upload`, {
+  //       method: "POST",
+  //       body: formData,
+  //     })
+  //       .then((res) => res.json())
+  //       .then((data) => {
+  //         data.forEach((file: UpFileResponse) => {
+  //           console.log("Gửi file thành công", file);
+  //           sendMessage(
+  //             drID,
+  //             selectedConversation?.nguoi_dung?.ma || "",
+  //             content,
+  //             time,
+  //             file.type,
+  //             file.url
+  //           );
+
+  //           // Cập nhật lại tin nhắn tạm thời thành tin nhắn thực
+  //           setMessages((prevMessages) =>
+  //             prevMessages.map((msg) => {
+  //               if (msg.id === tempID) {
+  //                 return {
+  //                   ...msg,
+  //                   kieu_noi_dung: file.type,
+  //                   media_url: file.url,
+  //                 };
+  //               }
+  //               return msg;
+  //             })
+  //           );
+  //         });
+  //       });
+  //   } else {
+  //     sendMessage(
+  //       drID,
+  //       selectedConversation?.nguoi_dung?.ma || "",
+  //       content,
+  //       time,
+  //       "text",
+  //       ""
+  //     );
+  //     setMessages((prevMessages) => [
+  //       ...prevMessages,
+  //       {
+  //         id: prevMessages.length + 1,
+  //         kieu_noi_dung: "text",
+  //         noi_dung_van_ban: content,
+  //         media_url: null,
+  //         thoi_diem_gui: time,
+  //         thoi_diem_da_xem: null,
+  //         cuoc_hoi_thoai: selectedConversation?.cuoc_hoi_thoai || 0,
+  //         ben_gui_di: "bs",
+  //       },
+  //     ]);
+  //   }
+  // };
+
+  // const handleSendMessage = async (content: string) => {
+  // if (!selectedConversation) return;
+  // const time = new Date().toISOString();
+
+  // // === Trường hợp là cuộc hội thoại với AI Agent (cuoc_hoi_thoai = -999) ===
+  // if (selectedConversation.cuoc_hoi_thoai === -999) {
+  //   const tempUserMsg: Message = {
+  //     id: Date.now(),
+  //     kieu_noi_dung: "text",
+  //     noi_dung_van_ban: content,
+  //     media_url: null,
+  //     thoi_diem_gui: time,
+  //     thoi_diem_da_xem: null,
+  //     cuoc_hoi_thoai: -999,
+  //     ben_gui_di: "bs",
+  //   };
+  //   setMessages((prev) => [...prev, tempUserMsg]);
+
+  //   try {
+  //     // 1. Tạo hoặc lấy cuộc hội thoại AI thật
+  //     let realConversationId: number;
+  //     const existingAIConversation = conversations.find(
+  //       (c) => c.is_ai_agent && c.cuoc_hoi_thoai !== -999
+  //     );
+
+  //     if (existingAIConversation) {
+  //       realConversationId = existingAIConversation.cuoc_hoi_thoai;
+  //     } else {
+  //       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/conversation/ai`, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ drID }),
+  //       });
+  //       const newConv = await res.json();
+  //       realConversationId = newConv.id;
+          
+  //       // ✅ Cập nhật danh sách hội thoại để không bị lỗi lần gửi sau
+  //       const updatedAIConv: Conversation = {
+  //         cuoc_hoi_thoai: newConv.cuoc_hoi_thoai,
+  //         is_ai_agent: true,
+  //         nguoi_dung: {
+  //           ma: "ai_agent",
+  //           ho_va_ten: "AI Agent",
+  //           avt_url: "./images/ai-avatar.png",
+  //         },
+  //         so_tin_moi: 0,
+  //         thoi_diem_tin_nhan_cuoi: time,
+  //         tin_nhan: { noi_dung_van_ban: content, media_url: null },
+  //       };
+  //       setConversations((prev) => {
+  //         const filtered = prev.filter((c) => c.cuoc_hoi_thoai !== -999);
+  //         return [updatedAIConv, ...filtered];
+  //       });
+
+  //       setFilteredConversations((prev) => {
+  //         const filtered = prev.filter((c) => c.cuoc_hoi_thoai !== -999);
+  //         return [updatedAIConv, ...filtered];
+  //       });
+  //       setSelectedConversation(updatedAIConv);
+  //     }
+
+  //     // 2. Lưu tin nhắn bác sĩ vào DB
+  //     await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/message/text/ai`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         cuoc_hoi_thoai: realConversationId,
+  //         ben_gui_di: "bs",
+  //         kieu_noi_dung: "text",
+  //         noi_dung_van_ban: content,
+  //         media_url: "",
+  //         thoi_diem_gui: time,
+  //       }),
+  //     });
+
+  //     // 3. Gọi AI Agent
+  //     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/ai/chat`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ message: content, drID, conversationID: realConversationId }),
+  //     });
+
+  //     if (!response.ok) throw new Error("API lỗi!");
+  //     const data = await response.json();
+  //     const aiReplyTime = new Date().toISOString();
+
+  //     // 4. Lưu phản hồi AI vào DB
+  //     await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/message/text/ai`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         cuoc_hoi_thoai: realConversationId,
+  //         ben_gui_di: "ai",
+  //         kieu_noi_dung: "text",
+  //         noi_dung_van_ban: data.reply,
+  //         media_url: "",
+  //         thoi_diem_gui: aiReplyTime,
+  //       }),
+  //     });
+
+  //     // 5. Hiển thị tin nhắn AI trên giao diện
+  //     const aiReply: Message = {
+  //       id: Date.now() + 1,
+  //       kieu_noi_dung: "text",
+  //       noi_dung_van_ban: data.reply,
+  //       media_url: null,
+  //       thoi_diem_gui: aiReplyTime,
+  //       thoi_diem_da_xem: null,
+  //       cuoc_hoi_thoai: realConversationId,
+  //       ben_gui_di: "ai",
+  //     };
+  //     setMessages((prev) => [...prev, aiReply]);
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+
+  //   return;
+  // }
+
+  // // === Trường hợp gửi tin nhắn với bệnh nhân ===
+  // if (selectedConversation.cuoc_hoi_thoai < 0) {
+  //   await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/conversation`, {
+  //     method: "POST",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify({ ptID: selectedPatient, drID }),
+  //   })
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       if (newConversation?.nguoi_dung) {
+  //         const newConv = {
+  //           cuoc_hoi_thoai: data.cuoc_hoi_thoai,
+  //           nguoi_dung: newConversation.nguoi_dung,
+  //           so_tin_moi: 0,
+  //           thoi_diem_tin_nhan_cuoi: time,
+  //           tin_nhan: { noi_dung_van_ban: "", media_url: null },
+  //         };
+  //         setSelectedConversation(newConv);
+  //         setNewConversation(null);
+  //         setConversations((prev) => [newConv, ...prev]);
+  //         setFilteredConversations((prev) => [newConv, ...prev]);
+  //       }
+  //     });
+  // }
+
+  // // === Cập nhật giao diện danh sách hội thoại ===
+  // const updatedConversations = conversations.map((conversation) => {
+  //   if (conversation.cuoc_hoi_thoai === selectedConversation.cuoc_hoi_thoai) {
+  //     return {
+  //       ...conversation,
+  //       thoi_diem_tin_nhan_cuoi: time,
+  //       tin_nhan: {
+  //         noi_dung_van_ban: content,
+  //         media_url: files.length > 0 ? "Đã gửi tệp" : "",
+  //       },
+  //     };
+  //   }
+  //   return conversation;
+  // });
+
+  // const sortedConversations = updatedConversations.sort(
+  //   (a, b) =>
+  //     new Date(b.thoi_diem_tin_nhan_cuoi).getTime() -
+  //     new Date(a.thoi_diem_tin_nhan_cuoi).getTime()
+  // );
+
+  // setConversations(sortedConversations);
+  // setFilteredConversations(sortedConversations);
+
+  // // === Gửi file nếu có ===
+  // if (files.length > 0) {
+  //   const tempID = Date.now();
+  //   const message = {
+  //     id: tempID,
+  //     kieu_noi_dung: "text",
+  //     noi_dung_van_ban: "",
+  //     media_url: null,
+  //     thoi_diem_gui: time,
+  //     thoi_diem_da_xem: null,
+  //     cuoc_hoi_thoai: selectedConversation?.cuoc_hoi_thoai || 0,
+  //     ben_gui_di: "bs",
+  //   };
+
+  //   setMessages((prevMessages) => [...prevMessages, message]);
+
+  //   const formData = new FormData();
+  //   files.forEach((file) => formData.append("files", file));
+  //   formData.append("folderName", "message_media");
+  //   setFiles([]);
+
+  //   fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cloud/upload`, {
+  //     method: "POST",
+  //     body: formData,
+  //   })
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       data.forEach((file: UpFileResponse) => {
+  //         sendMessage(
+  //           drID,
+  //           selectedConversation?.nguoi_dung?.ma || "",
+  //           content,
+  //           time,
+  //           file.type,
+  //           file.url
+  //         );
+
+  //         setMessages((prevMessages) =>
+  //           prevMessages.map((msg) =>
+  //             msg.id === tempID
+  //               ? { ...msg, kieu_noi_dung: file.type, media_url: file.url }
+  //               : msg
+  //           )
+  //         );
+  //       });
+  //     });
+  // } else {
+  //   sendMessage(
+  //     drID,
+  //     selectedConversation?.nguoi_dung?.ma || "",
+  //     content,
+  //     time,
+  //     "text",
+  //     ""
+  //   );
+  //   setMessages((prevMessages) => [
+  //     ...prevMessages,
+  //     {
+  //       id: prevMessages.length + 1,
+  //       kieu_noi_dung: "text",
+  //       noi_dung_van_ban: content,
+  //       media_url: null,
+  //       thoi_diem_gui: time,
+  //       thoi_diem_da_xem: null,
+  //       cuoc_hoi_thoai: selectedConversation?.cuoc_hoi_thoai || 0,
+  //       ben_gui_di: "bs",
+  //     },
+  //   ]);
+  // }
+  // };
+
+  // const handleSendMessage = async (content: string) => {
+  // if (!selectedConversation) return;
+  // const time = new Date().toISOString();
+
+  // // === Trường hợp là cuộc hội thoại với AI Agent ===
+  // if (selectedConversation.nguoi_dung.ma === "ai_agent") {
+  //   const tempUserMsg: Message = {
+  //     id: Date.now(),
+  //     kieu_noi_dung: "text",
+  //     noi_dung_van_ban: content,
+  //     media_url: null,
+  //     thoi_diem_gui: time,
+  //     thoi_diem_da_xem: null,
+  //     cuoc_hoi_thoai: selectedConversation.cuoc_hoi_thoai,
+  //     ben_gui_di: "bs",
+  //   };
+  //   setMessages((prev) => [...prev, tempUserMsg]);
+
+  //   try {
+  //     // 1. Tạo hoặc lấy conversation thật
+  //     let realConversationId: number;
+  //     const existingAIConversation = conversations.find(
+  //       (c) => c.is_ai_agent && c.cuoc_hoi_thoai !== -999
+  //     );
+
+  //     if (existingAIConversation) {
+  //       realConversationId = existingAIConversation.cuoc_hoi_thoai;
+  //     } else {
+  //       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/conversation/ai`, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ drID }),
+  //       });
+  //       const newConv = await res.json();
+  //       realConversationId = newConv.id;
+  //       console.log(realConversationId," realConversationId");
+  //       const newAIConv: Conversation = {
+  //         cuoc_hoi_thoai: realConversationId,
+  //         is_ai_agent: true,
+  //         nguoi_dung: {
+  //           ma: "ai_agent",
+  //           ho_va_ten: "AI Agent",
+  //           avt_url: "./images/ai-avatar.png",
+  //         },
+  //         so_tin_moi: 0,
+  //         thoi_diem_tin_nhan_cuoi: time,
+  //         tin_nhan: { noi_dung_van_ban: content, media_url: null },
+  //       };
+
+  //       setConversations((prev) => {
+  //         const filtered = prev.filter((c) => c.cuoc_hoi_thoai !== -999);
+  //         return [newAIConv, ...filtered];
+  //       });
+  //       setFilteredConversations((prev) => {
+  //         const filtered = prev.filter((c) => c.cuoc_hoi_thoai !== -999);
+  //         return [newAIConv, ...filtered];
+  //       });
+  //       setSelectedConversation(newAIConv);
+  //     }
+
+  //     // 2. Lưu tin nhắn bác sĩ vào DB
+  //     await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/message/text/ai`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         cuoc_hoi_thoai: realConversationId,
+  //         ben_gui_di: "bs",
+  //         kieu_noi_dung: "text",
+  //         noi_dung_van_ban: content,
+  //         media_url: "",
+  //         thoi_diem_gui: time,
+  //       }),
+  //     });
+
+  //     // 3. Gọi AI Agent
+  //     const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/ai/chat`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         message: content,
+  //         drID,
+  //         conversationID: realConversationId,
+  //       }),
+  //     });
+
+  //     if (!res.ok) throw new Error("API lỗi!");
+  //     const data = await res.json();
+  //     const aiReplyTime = new Date().toISOString();
+
+  //     // 4. Lưu phản hồi AI vào DB
+  //     await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/message/text/ai`, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         cuoc_hoi_thoai: realConversationId,
+  //         ben_gui_di: "ai",
+  //         kieu_noi_dung: "text",
+  //         noi_dung_van_ban: data.reply,
+  //         media_url: "",
+  //         thoi_diem_gui: aiReplyTime,
+  //       }),
+  //     });
+
+  //     // 5. Hiển thị phản hồi AI
+  //     const aiReply: Message = {
+  //       id: Date.now() + 1,
+  //       kieu_noi_dung: "text",
+  //       noi_dung_van_ban: data.reply,
+  //       media_url: null,
+  //       thoi_diem_gui: aiReplyTime,
+  //       thoi_diem_da_xem: null,
+  //       cuoc_hoi_thoai: realConversationId,
+  //       ben_gui_di: "ai",
+  //     };
+  //     setMessages((prev) => [...prev, aiReply]);
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+
+  //   return;
+  // }
+
+  // // === Trường hợp gửi với bệnh nhân ===
+  // if (selectedConversation.cuoc_hoi_thoai < 0) {
+  //   const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/conversation`, {
+  //     method: "POST",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify({ ptID: selectedPatient, drID }),
+  //   });
+  //   const data = await res.json();
+  //   if (newConversation?.nguoi_dung) {
+  //     const newConv = {
+  //       cuoc_hoi_thoai: data.cuoc_hoi_thoai,
+  //       nguoi_dung: newConversation.nguoi_dung,
+  //       so_tin_moi: 0,
+  //       thoi_diem_tin_nhan_cuoi: time,
+  //       tin_nhan: { noi_dung_van_ban: "", media_url: null },
+  //     };
+  //     setSelectedConversation(newConv);
+  //     setNewConversation(null);
+  //     setConversations((prev) => [newConv, ...prev]);
+  //     setFilteredConversations((prev) => [newConv, ...prev]);
+  //   }
+  // }
+
+  // // === Cập nhật UI danh sách hội thoại ===
+  // const updatedConversations = conversations.map((conversation) => {
+  //   if (conversation.cuoc_hoi_thoai === selectedConversation.cuoc_hoi_thoai) {
+  //     return {
+  //       ...conversation,
+  //       thoi_diem_tin_nhan_cuoi: time,
+  //       tin_nhan: {
+  //         noi_dung_van_ban: content,
+  //         media_url: files.length > 0 ? "Đã gửi tệp" : "",
+  //       },
+  //     };
+  //   }
+  //   return conversation;
+  // });
+
+  // const sortedConversations = updatedConversations.sort(
+  //   (a, b) =>
+  //     new Date(b.thoi_diem_tin_nhan_cuoi).getTime() -
+  //     new Date(a.thoi_diem_tin_nhan_cuoi).getTime()
+  // );
+  // setConversations(sortedConversations);
+  // setFilteredConversations(sortedConversations);
+
+  // // === Gửi file hoặc text qua WebSocket ===
+  // if (files.length > 0) {
+  //   const tempID = Date.now();
+  //   const message = {
+  //     id: tempID,
+  //     kieu_noi_dung: "text",
+  //     noi_dung_van_ban: "",
+  //     media_url: null,
+  //     thoi_diem_gui: time,
+  //     thoi_diem_da_xem: null,
+  //     cuoc_hoi_thoai: selectedConversation?.cuoc_hoi_thoai || 0,
+  //     ben_gui_di: "bs",
+  //   };
+  //   setMessages((prev) => [...prev, message]);
+
+  //   const formData = new FormData();
+  //   files.forEach((file) => formData.append("files", file));
+  //   formData.append("folderName", "message_media");
+  //   setFiles([]);
+
+  //   const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cloud/upload`, {
+  //     method: "POST",
+  //     body: formData,
+  //   });
+  //   const fileData = await res.json();
+
+  //   fileData.forEach((file: UpFileResponse) => {
+  //     sendMessage(
+  //       drID,
+  //       selectedConversation?.nguoi_dung?.ma || "",
+  //       content,
+  //       time,
+  //       file.type,
+  //       file.url
+  //     );
+  //     setMessages((prev) =>
+  //       prev.map((msg) =>
+  //         msg.id === tempID
+  //           ? { ...msg, kieu_noi_dung: file.type, media_url: file.url }
+  //           : msg
+  //       )
+  //     );
+  //   });
+  // } else {
+  //   sendMessage(
+  //     drID,
+  //     selectedConversation?.nguoi_dung?.ma || "",
+  //     content,
+  //     time,
+  //     "text",
+  //     ""
+  //   );
+  //   setMessages((prev) => [
+  //     ...prev,
+  //     {
+  //       id: Date.now(),
+  //       kieu_noi_dung: "text",
+  //       noi_dung_van_ban: content,
+  //       media_url: null,
+  //       thoi_diem_gui: time,
+  //       thoi_diem_da_xem: null,
+  //       cuoc_hoi_thoai: selectedConversation?.cuoc_hoi_thoai || 0,
+  //       ben_gui_di: "bs",
+  //     },
+  //   ]);
+  // }
+  // };
   const handleSendMessage = async (content: string) => {
-    // Nếu chưa có cuộc trò chuyện nào được chọn thì phải đợi tạo
-    if (!selectedConversation) {
-      return;
-    }
+  if (!selectedConversation) return;
+  const time = new Date().toISOString();
 
-    if (selectedConversation?.cuoc_hoi_thoai < 0) {
-      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/conversation`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ptID: selectedPatient,
-          drID: drID,
-        }),
-      })
-        .then((res) => {
-          if (res.ok) {
-            return res.json();
-          } else {
-            Swal.fire({
-              icon: "error",
-              title: "Lỗi",
-              text: "Có lỗi xảy ra, vui lòng thử lại.",
-            });
-          }
-        })
-        .then((data) => {
-          console.log("Tạo cuộc trò chuyện mới", data);
-          if (newConversation?.nguoi_dung) {
-            setSelectedConversation({
-              cuoc_hoi_thoai: data.cuoc_hoi_thoai,
-              nguoi_dung: newConversation.nguoi_dung,
-              so_tin_moi: newConversation.so_tin_moi || 0,
-              thoi_diem_tin_nhan_cuoi: new Date().toISOString(),
-              tin_nhan: {
-                noi_dung_van_ban: "",
-                media_url: null,
-              },
-            });
-            setNewConversation(null);
-            setConversations((prevConversations) => [
-              {
-                cuoc_hoi_thoai: data.cuoc_hoi_thoai,
-                nguoi_dung: newConversation.nguoi_dung,
-                so_tin_moi: newConversation.so_tin_moi || 0,
-                thoi_diem_tin_nhan_cuoi: new Date().toISOString(),
-                tin_nhan: {
-                  noi_dung_van_ban: "",
-                  media_url: null,
-                },
-              },
-              ...prevConversations,
-            ]);
+  // === Trường hợp là cuộc hội thoại với AI Agent ===
+  if (selectedConversation.nguoi_dung.ma === "ai_agent") {
+    try {
+      // 1. Tạo hoặc lấy conversation thật
+      let realConversationId: number;
+      let selectedConv: Conversation;
 
-            setFilteredConversations((prevConversations) => [
-              {
-                cuoc_hoi_thoai: data.cuoc_hoi_thoai,
-                nguoi_dung: newConversation.nguoi_dung,
-                so_tin_moi: newConversation.so_tin_moi || 0,
-                thoi_diem_tin_nhan_cuoi: new Date().toISOString(),
-                tin_nhan: {
-                  noi_dung_van_ban: "",
-                  media_url: null,
-                },
-              },
-              ...prevConversations,
-            ]);
-          }
+      const existingAIConversation = conversations.find(
+        (c) => c.is_ai_agent && c.cuoc_hoi_thoai !== -999
+      );
+
+      if (existingAIConversation) {
+        realConversationId = existingAIConversation.cuoc_hoi_thoai;
+        selectedConv = existingAIConversation;
+      } else {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/conversation/ai`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ drID }),
         });
-    }
+        const newConv = await res.json();
+        realConversationId = newConv.id;
 
-    console.log(
-      "Tin nhắn từ ",
-      drID,
-      " đến ",
-      selectedConversation?.nguoi_dung?.ma
-    );
-    // Gửi tin nhắn đến server
-    let time = new Date().toISOString();
-    console.log(time);
+        // ✅ Lưu tin nhắn chào hỏi vào DB
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/message/text/ai`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            cuoc_hoi_thoai: realConversationId,
+            ben_gui_di: "ai",
+            kieu_noi_dung: "text",
+            noi_dung_van_ban: "Chào bạn, tôi là AI. Tôi giúp gì được cho bạn?",
+            media_url: "",
+            thoi_diem_gui: time,
+          }),
+        });
 
-    // Cập nhật lại thời điểm tin nhắn cuối cùng trong cuộc trò chuyện
-    const updatedConversations = conversations.map((conversation) => {
-      if (conversation.cuoc_hoi_thoai === selectedConversation.cuoc_hoi_thoai) {
-        console.log("Cập nhật time", time, "cuộc hội thoại", conversation);
-        return {
-          ...conversation,
-          thoi_diem_tin_nhan_cuoi: time,
-          tin_nhan: {
-            noi_dung_van_ban: content,
-            media_url: files.length > 0 ? "Đã gửi tệp" : "",
+        selectedConv = {
+          cuoc_hoi_thoai: realConversationId,
+          is_ai_agent: true,
+          nguoi_dung: {
+            ma: "ai_agent",
+            ho_va_ten: "AI Agent",
+            avt_url: "./images/ai-avatar.png",
           },
+          so_tin_moi: 0,
+          thoi_diem_tin_nhan_cuoi: time,
+          tin_nhan: { noi_dung_van_ban: content, media_url: null },
         };
+
+        setConversations((prev) => {
+          const filtered = prev.filter((c) => c.cuoc_hoi_thoai !== -999);
+          return [selectedConv, ...filtered];
+        });
+        setFilteredConversations((prev) => {
+          const filtered = prev.filter((c) => c.cuoc_hoi_thoai !== -999);
+          return [selectedConv, ...filtered];
+        });
+        setSelectedConversation(selectedConv);
       }
-      return conversation;
-    });
-    // Sắp xếp lại các cuộc trò chuyện theo thời điểm tin nhắn cuối cùng
-    let sortedConversations = updatedConversations.sort(
-      (a, b) =>
-        new Date(b.thoi_diem_tin_nhan_cuoi).getTime() -
-        new Date(a.thoi_diem_tin_nhan_cuoi).getTime()
-    );
-    console.log(sortedConversations);
-    setConversations(sortedConversations);
-    setFilteredConversations(sortedConversations);
 
-    // Kiểm tra xem tin nhắn có phải là file không
-    if (files.length > 0) {
-      let tempID = Date.now();
-
-      let message = {
-        id: tempID, // Sử dụng timestamp để làm ID cho tin nhắn tạm thời
+      // 2. Lưu và hiển thị tin nhắn bác sĩ
+      const tempUserMsg: Message = {
+        id: Date.now(),
         kieu_noi_dung: "text",
-        noi_dung_van_ban: "",
-        media_url: null, // Không có media url ngay lập tức
+        noi_dung_van_ban: content,
+        media_url: null,
         thoi_diem_gui: time,
         thoi_diem_da_xem: null,
-        cuoc_hoi_thoai: selectedConversation?.cuoc_hoi_thoai || 0,
+        cuoc_hoi_thoai: realConversationId,
         ben_gui_di: "bs",
       };
+      setMessages((prev) => [...prev, tempUserMsg]);
 
-      setMessages((prevMessages) => [...prevMessages, message]);
-
-      let formData = new FormData();
-      files.forEach((file) => {
-        formData.append("files", file);
-      });
-      formData.append("folderName", "message_media");
-      setFiles([]);
-
-      fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cloud/upload`, {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/message/text/ai`, {
         method: "POST",
-        body: formData,
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          data.forEach((file: UpFileResponse) => {
-            console.log("Gửi file thành công", file);
-            sendMessage(
-              drID,
-              selectedConversation?.nguoi_dung?.ma || "",
-              content,
-              time,
-              file.type,
-              file.url
-            );
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cuoc_hoi_thoai: realConversationId,
+          ben_gui_di: "bs",
+          kieu_noi_dung: "text",
+          noi_dung_van_ban: content,
+          media_url: "",
+          thoi_diem_gui: time,
+        }),
+      });
 
-            // Cập nhật lại tin nhắn tạm thời thành tin nhắn thực
-            setMessages((prevMessages) =>
-              prevMessages.map((msg) => {
-                if (msg.id === tempID) {
-                  return {
-                    ...msg,
-                    kieu_noi_dung: file.type,
-                    media_url: file.url,
-                  };
-                }
-                return msg;
-              })
-            );
-          });
-        });
-    } else {
+      // 3. Gọi AI Agent
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/ai/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: content,
+          role: localStorage.getItem("role"),
+          ma_user: localStorage.getItem("id"),
+        }),
+      });
+
+      if (!res.ok) throw new Error("API lỗi!");
+      const data = await res.json();
+      const aiReplyTime = new Date().toISOString();
+
+      if (typeof data.reply !== 'string') {
+        // Nếu `reply` không phải là string, chuyển nó thành chuỗi
+        data.reply = JSON.stringify(data.reply);
+      }
+
+      // 4. Lưu phản hồi AI
+      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/message/text/ai`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cuoc_hoi_thoai: realConversationId,
+          ben_gui_di: "ai",
+          kieu_noi_dung: "text",
+          noi_dung_van_ban: data.reply,
+          media_url: "",
+          thoi_diem_gui: aiReplyTime,
+        }),
+      });
+
+      // 5. Hiển thị phản hồi AI trên UI
+      const aiReply: Message = {
+        id: Date.now() + 1,
+        kieu_noi_dung: "text",
+        noi_dung_van_ban: data.reply,
+        media_url: null,
+        thoi_diem_gui: aiReplyTime,
+        thoi_diem_da_xem: null,
+        cuoc_hoi_thoai: realConversationId,
+        ben_gui_di: "ai",
+      };
+      setMessages((prev) => [...prev, aiReply]);
+    } catch (err) {
+      console.error(err);
+    }
+
+    return;
+  }
+
+  // === Trường hợp gửi với bệnh nhân ===
+  if (selectedConversation.cuoc_hoi_thoai < 0) {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/conversation`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ptID: selectedPatient, drID }),
+    });
+    const data = await res.json();
+    if (newConversation?.nguoi_dung) {
+      const newConv = {
+        cuoc_hoi_thoai: data.cuoc_hoi_thoai,
+        nguoi_dung: newConversation.nguoi_dung,
+        so_tin_moi: 0,
+        thoi_diem_tin_nhan_cuoi: time,
+        tin_nhan: { noi_dung_van_ban: "", media_url: null },
+      };
+      setSelectedConversation(newConv);
+      setNewConversation(null);
+      setConversations((prev) => [newConv, ...prev]);
+      setFilteredConversations((prev) => [newConv, ...prev]);
+    }
+  }
+
+  // === Cập nhật UI danh sách hội thoại ===
+  const updatedConversations = conversations.map((conversation) => {
+    if (conversation.cuoc_hoi_thoai === selectedConversation.cuoc_hoi_thoai) {
+      return {
+        ...conversation,
+        thoi_diem_tin_nhan_cuoi: time,
+        tin_nhan: {
+          noi_dung_van_ban: content,
+          media_url: files.length > 0 ? "Đã gửi tệp" : "",
+        },
+      };
+    }
+    return conversation;
+  });
+
+  const sortedConversations = updatedConversations.sort(
+    (a, b) =>
+      new Date(b.thoi_diem_tin_nhan_cuoi).getTime() -
+      new Date(a.thoi_diem_tin_nhan_cuoi).getTime()
+  );
+  setConversations(sortedConversations);
+  setFilteredConversations(sortedConversations);
+
+  // === Gửi file hoặc text qua WebSocket ===
+  if (files.length > 0) {
+    const tempID = Date.now();
+    const message = {
+      id: tempID,
+      kieu_noi_dung: "text",
+      noi_dung_van_ban: "",
+      media_url: null,
+      thoi_diem_gui: time,
+      thoi_diem_da_xem: null,
+      cuoc_hoi_thoai: selectedConversation?.cuoc_hoi_thoai || 0,
+      ben_gui_di: "bs",
+    };
+    setMessages((prev) => [...prev, message]);
+
+    const formData = new FormData();
+    files.forEach((file) => formData.append("files", file));
+    formData.append("folderName", "message_media");
+    setFiles([]);
+
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/cloud/upload`, {
+      method: "POST",
+      body: formData,
+    });
+    const fileData = await res.json();
+
+    fileData.forEach((file: UpFileResponse) => {
       sendMessage(
         drID,
         selectedConversation?.nguoi_dung?.ma || "",
         content,
         time,
-        "text",
-        ""
+        file.type,
+        file.url
       );
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          id: prevMessages.length + 1,
-          kieu_noi_dung: "text",
-          noi_dung_van_ban: content,
-          media_url: null,
-          thoi_diem_gui: time,
-          thoi_diem_da_xem: null,
-          cuoc_hoi_thoai: selectedConversation?.cuoc_hoi_thoai || 0,
-          ben_gui_di: "bs",
-        },
-      ]);
-    }
-  };
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === tempID
+            ? { ...msg, kieu_noi_dung: file.type, media_url: file.url }
+            : msg
+        )
+      );
+    });
+  } else {
+    sendMessage(
+      drID,
+      selectedConversation?.nguoi_dung?.ma || "",
+      content,
+      time,
+      "text",
+      ""
+    );
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        kieu_noi_dung: "text",
+        noi_dung_van_ban: content,
+        media_url: null,
+        thoi_diem_gui: time,
+        thoi_diem_da_xem: null,
+        cuoc_hoi_thoai: selectedConversation?.cuoc_hoi_thoai || 0,
+        ben_gui_di: "bs",
+      },
+    ]);
+  }
+};
+
 
   const handleContentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setContent(e.target.value);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.nativeEvent.isComposing) return; // fix lỗi với IME như tiếng Việt
     if (e.key === "Enter") {
-      // Ngừng hành động mặc định của Enter (ví dụ, ngừng submit form)
       e.preventDefault();
-
       if (content.trim()) {
-        // Gửi tin nhắn ở đây
-        handleSendMessage(content);
-
-        // Sau khi gửi tin nhắn, bạn có thể làm gì đó như xóa nội dung
-        setContent("");
+        const msg = content;
+        setContent(""); // reset trước
+        handleSendMessage(msg); // gọi hàm sau khi đã clear
       }
     }
   };
@@ -636,25 +1459,81 @@ const Conversations: React.FC = () => {
               <div
                 key={index}
                 className="flex items-center justify-between p-2 hover:bg-gray-300 cursor-pointer w-full"
-                onClick={() => {
-                  console.log("Click vào cuộc trò chuyện", conversation);
-                  setSelectedConversation(conversation);
+                onClick={async () => {
+                  if (conversation.nguoi_dung.ma === "ai_agent") {
+                    // setSelectedPatient("ai_agent");
+                    // setSelectedConversation(conversation);
+                    // setMessages([
+                    //   {
+                    //     id: -1,
+                    //     cuoc_hoi_thoai: -999,
+                    //     kieu_noi_dung: "text",
+                    //     noi_dung_van_ban: "Chào bạn, tôi là AI. Tôi giúp gì được cho bạn?",
+                    //     media_url: null,
+                    //     thoi_diem_gui: new Date().toISOString(),
+                    //     thoi_diem_da_xem: null,
+                    //     ben_gui_di: "ai",
+                    //   },
+                    // ]);
+                    setSelectedPatient("ai_agent");
+
+                    const realAIConversation = conversations.find(
+                      (c) => c.is_ai_agent && c.cuoc_hoi_thoai !== -999
+                    );
+
+                    if (realAIConversation) {
+                      setSelectedConversation(realAIConversation);
+
+                      const res = await fetch(
+                        `${import.meta.env.VITE_API_BASE_URL}/api/message/conversation/${realAIConversation.cuoc_hoi_thoai}`
+                      );
+                      const data = await res.json();
+                      setMessages(data);
+                    } else {
+                      const fakeMessage: Message = {
+                        id: -1,
+                        cuoc_hoi_thoai: -999,
+                        kieu_noi_dung: "text",
+                        noi_dung_van_ban: "Chào bạn, tôi là AI. Tôi giúp gì được cho bạn?",
+                        media_url: null,
+                        thoi_diem_gui: new Date().toISOString(),
+                        thoi_diem_da_xem: null,
+                        ben_gui_di: "ai",
+                      };
+
+                      setSelectedConversation(conversation);
+                      setMessages([fakeMessage]);
+                    }
+                  } else {
+                    setSelectedPatient(conversation.nguoi_dung.ma);
+                    setSelectedConversation(conversation);
+                  }
                 }}
               >
                 <div className="flex justify-evenly items-center gap-2">
-                  <img
+                  {/* <img
                     src={conversation.nguoi_dung.avt_url || "./images/avt.png"}
                     alt="avatar"
                     className="w-10 h-10 rounded-full"
-                  />
-
+                  /> */}
+                  {conversation.nguoi_dung.ma === "ai_agent" ? (
+                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-xl text-gray-600">
+                      <BsRobot />
+                    </div>
+                  ) : (
+                    <img
+                      src={conversation.nguoi_dung.avt_url || "./images/avt.png"}
+                      alt="avatar"
+                      className="w-10 h-10 rounded-full"
+                    />
+                  )}
                   <div>
                     <span>{conversation.nguoi_dung.ho_va_ten}</span>
                     <p className="text-sm text-gray-500">
                       {conversation.tin_nhan.media_url &&
                       conversation.tin_nhan.media_url !== ""
                         ? "Tệp đính kèm"
-                        : conversation.tin_nhan.noi_dung_van_ban}
+                        : getAIPreviewText(conversation.tin_nhan.noi_dung_van_ban)}
                     </p>
                   </div>
                 </div>
@@ -682,13 +1561,32 @@ const Conversations: React.FC = () => {
           {/* Header chứa ảnh và tên ở bên trái, nút gọi video ở bên phải */}
           <div className="flex items-center justify-between p-2 bg-gray-200 rounded-lg">
             <div className="flex items-center gap-2">
-              <img
+              {/* <img
                 src={
                   selectedConversation?.nguoi_dung.avt_url || "./images/avt.png"
                 }
                 alt=""
                 className="w-10 h-10 rounded-full"
               />
+              <span className="font-semibold">
+                {selectedConversation?.nguoi_dung.ho_va_ten}
+              </span> */}
+              {selectedConversation?.nguoi_dung.ma === "ai_agent" ? (
+                <div
+                  title="AI Agent"
+                  className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 text-[22px]"
+                >
+                  <BsRobot />
+                </div>
+              ) : (
+                <img
+                  src={
+                    selectedConversation?.nguoi_dung.avt_url || "./images/avt.png"
+                  }
+                  alt=""
+                  className="w-10 h-10 rounded-full"
+                />
+              )}
               <span className="font-semibold">
                 {selectedConversation?.nguoi_dung.ho_va_ten}
               </span>
@@ -726,14 +1624,14 @@ const Conversations: React.FC = () => {
                   )}
 
                   {/* Render tin nhắn kiểu text*/}
-                  {message.kieu_noi_dung === "text" && (
-                    <div
-                      className={`${
-                        message.ben_gui_di === "bn"
-                          ? "mr-auto bg-white"
-                          : "ml-auto bg-blue-500 text-white"
-                      } p-2 shadow-md rounded-lg my-2 max-w-xs w-fit relative group`}
-                    >
+                  {/* {message.kieu_noi_dung === "text" && (
+                  <div
+                    className={`${
+                      ["bn", "ai"].includes(message.ben_gui_di)
+                        ? "mr-auto bg-white min-h-[40px] max-h-[200px] overflow-auto"
+                        : "ml-auto bg-blue-500 text-white min-h-[40px] max-h-[200px] overflow-auto"
+                    } p-2 shadow-md rounded-lg my-2 max-w-xs w-fit relative group`}
+                  >
                       {message.ben_gui_di === "bs" && (
                         <button
                           onClick={() =>
@@ -753,7 +1651,7 @@ const Conversations: React.FC = () => {
                       <p className="w-fit">{message.noi_dung_van_ban}</p>
                       <span
                         className={`text-xs ${
-                          message.ben_gui_di === "bn"
+                          ["bn", "ai"].includes(message.ben_gui_di)
                             ? "text-gray-500"
                             : "text-gray-200"
                         }`}
@@ -770,9 +1668,73 @@ const Conversations: React.FC = () => {
                         }
                       </span>
                     </div>
-                  )}
+                  )} */}
+                  {message.kieu_noi_dung === "text" && (
+                    <>
+                      {message.ben_gui_di === "ai" ? (
+                        <div className="mr-auto bg-white min-h-[60px] max-h-[500px] overflow-auto p-3 shadow-md rounded-lg my-2 max-w-2xl w-full relative group">
+                          {(() => {
+                            try {
+                              const parsed = JSON.parse(message.noi_dung_van_ban);
+                              if (typeof parsed === "object" && parsed.message) {
+                                return <DynamicAIReply reply={parsed} />;
+                              }
+                              return <p className="w-fit">{message.noi_dung_van_ban}</p>;
+                            } catch {
+                              return <p className="w-fit">{message.noi_dung_van_ban}</p>;
+                            }
+                          })()}
 
-                  {/* Render tin nhắn kiểu image */}
+                          <span className="text-xs text-gray-500 block mt-1">
+                            {new Date(message.thoi_diem_gui).toLocaleString("vi-VN", {
+                              hour: "numeric",
+                              minute: "numeric",
+                            })}
+                          </span>
+                        </div>
+                      ) : (
+                        // Các tin nhắn từ bn hoặc bs
+                        <div
+                          className={`${
+                            message.ben_gui_di === "bn"
+                              ? "mr-auto bg-white"
+                              : "ml-auto bg-blue-500 text-white"
+                          } min-h-[40px] max-h-[300px] overflow-auto p-2 shadow-md rounded-lg my-2 max-w-md w-fit relative group`}
+                        >
+                          {/* Chỉ bác sĩ mới có quyền recall */}
+                          {message.ben_gui_di === "bs" && (
+                            <button
+                              onClick={() =>
+                                handleRecallMessage(
+                                  message.noi_dung_van_ban,
+                                  message.thoi_diem_gui,
+                                  message.kieu_noi_dung,
+                                  message.media_url || ""
+                                )
+                              }
+                              className="absolute top-0 right-0 text-white hidden group-hover:block text-sm bg-gray-600 px-1 rounded hover:bg-red-500"
+                              title="Thu hồi tin nhắn"
+                            >
+                              ⟳
+                            </button>
+                          )}
+
+                          <p className="w-fit">{message.noi_dung_van_ban}</p>
+                          <span
+                            className={`text-xs ${
+                              message.ben_gui_di === "bn" ? "text-gray-500" : "text-gray-200"
+                            } block mt-1`}
+                          >
+                            {new Date(message.thoi_diem_gui).toLocaleString("vi-VN", {
+                              hour: "numeric",
+                              minute: "numeric",
+                            })}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                 {/* Render tin nhắn kiểu image */}
                   {message.kieu_noi_dung === "image" && (
                     <div
                       className={`${
@@ -889,10 +1851,13 @@ const Conversations: React.FC = () => {
               onKeyDown={handleKeyDown}
             />
             <button
+              type="button"
               className="p-2 bg-blue-500 hover:bg-blue-700 text-white rounded-lg"
               onClick={() => {
-                handleSendMessage(content);
-                setContent("");
+                if (content.trim()) {
+                  handleSendMessage(content);
+                  setContent("");
+                }
               }}
             >
               Gửi

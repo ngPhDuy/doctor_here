@@ -29,6 +29,49 @@ exports.createConversation = async (ptID, drID) => {
   return conversation;
 };
 
+exports.createAIConversation = async (userID) => {
+  if (!userID) {
+    throw new Error("Thiếu userID khi tạo cuộc trò chuyện với AI");
+  }
+
+  let ptID, drID;
+  const userIDStr = String(userID);
+
+  if (userIDStr.startsWith("BN")) {
+    ptID = userIDStr;
+    drID = null;
+  } else {
+    drID = userIDStr;
+    ptID = null;
+  }
+
+  if (!ptID && !drID) {
+    throw new Error("Không xác định được mã bệnh nhân hoặc bác sĩ");
+  }
+
+  const existingConversation = await Conversation.findOne({
+    where: {
+      [Op.or]: [
+        { ma_benh_nhan: ptID, ma_bac_si: drID },
+        { ma_benh_nhan: drID, ma_bac_si: ptID },
+      ],
+    },
+  });
+
+  if (existingConversation) {
+    throw new Error("Cuộc trò chuyện với AI đã tồn tại");
+  }
+
+  const newConversation = await Conversation.create({
+    ma_benh_nhan: ptID ?? null,
+    ma_bac_si: drID ?? null,
+    thoi_diem_tao: new Date(),
+    is_ai_agent: true,
+  });
+
+  return newConversation;
+};
+
 exports.getMessages = async (conversationID) => {
   //Tìm tất cả tin nhắn trong cuộc trò chuyện, săp xếp theo thoi_diem_gui từ cũ đến mới
   const messages = await Message.findAll({
@@ -64,14 +107,15 @@ exports.createMessage = async (props) => {
 };
 
 exports.getConversations = async (userID) => {
-  // Tìm tất cả cuộc trò chuyện mà user tham gia: ma_benh_nhan hoặc ma_bac_si = userID
   const conversations = await Conversation.findAll({
     where: {
       [Op.or]: [{ ma_benh_nhan: userID }, { ma_bac_si: userID }],
+      // ✅ Không filter is_ai_agent nữa
     },
     attributes: [
       [sequelize.fn("DISTINCT", sequelize.col("Conversation.id")), "id"],
       "thoi_diem_tin_nhan_cuoi",
+      "is_ai_agent", // ✅ Thêm thuộc tính này để trả về client
 
       [
         sequelize.literal(
@@ -79,24 +123,24 @@ exports.getConversations = async (userID) => {
             userID.startsWith("BN") ? "bs" : "bn"
           }' AND tn.thoi_diem_da_xem IS NULL)`
         ),
-        "so_tin_moi", // Đếm số tin nhắn chưa đọc
+        "so_tin_moi",
       ],
       [
         sequelize.literal(
           `(SELECT "noi_dung_van_ban" FROM "Tin_nhan" AS tn WHERE tn.cuoc_hoi_thoai = "Conversation"."id" ORDER BY tn.thoi_diem_gui DESC LIMIT 1)`
         ),
-        "noi_dung_tin_nhan", // Nội dung tin nhắn mới nhất
+        "noi_dung_tin_nhan",
       ],
       [
         sequelize.literal(
           `(SELECT "media_url" FROM "Tin_nhan" AS tn WHERE tn.cuoc_hoi_thoai = "Conversation"."id" ORDER BY tn.thoi_diem_gui DESC LIMIT 1)`
         ),
-        "media_url", // URL của tin nhắn mới nhất
+        "media_url",
       ],
     ],
     order: [
-      [sequelize.col("Conversation.thoi_diem_tin_nhan_cuoi"), "DESC"], // Sắp xếp theo thoi_diem_tin_nhan_cuoi
-      [sequelize.col("Conversation.id"), "DESC"], // Sắp xếp theo Conversation.id
+      [sequelize.col("Conversation.thoi_diem_tin_nhan_cuoi"), "DESC"],
+      [sequelize.col("Conversation.id"), "DESC"],
     ],
     include: [
       {
@@ -123,70 +167,47 @@ exports.getConversations = async (userID) => {
           },
         ],
       },
-      // {
-      //   // đếm số tin nhắn chưa đọc trong cuộc hội thoại do đối phương gửi
-      //   //Nếu userID = BN________ thì đếm số tin nhắn chưa đọc của ben_gui_di = "bs"
-      //   //Nếu userID = BS________ thì đếm số tin nhắn chưa đọc của ben_gui_di = "bn"
-      //   model: Message,
-      //   as: "Tin_nhan",
-      //   attributes: [
-      //     [
-      //       sequelize.fn("COUNT", sequelize.col("Tin_nhan.cuoc_hoi_thoai")),
-      //       "so_tin_moi",
-      //     ],
-      //   ],
-      //   where: {
-      //     ben_gui_di: userID.startsWith("BN") ? "bs" : "bn",
-      //     thoi_diem_da_xem: null,
-      //   },
-      //   required: false,
-      // },
     ],
-    // group: [
-    //   "Conversation.id",
-    //   "Tin_nhan.cuoc_hoi_thoai",
-    //   "Bac_si.id",
-    //   "Benh_nhan.id",
-    //   "Bac_si->Nguoi_dung.id",
-    //   "Benh_nhan->Nguoi_dung.id",
-    //   "Tin_nhan.id",
-    // ],
     raw: true,
   });
 
-  console.log(conversations);
-
-  // Kiểm tra nếu không có cuộc trò chuyện nào
   if (!conversations || conversations.length === 0) {
     return [];
   }
 
   const flatConversations = conversations
     .map((conv) => {
-      // Xác định người tham gia (bệnh nhân hoặc bác sĩ)
       let user = {};
       let userRole;
 
-      if (userID === conv["Benh_nhan.ma_benh_nhan"]) {
-        user.ma = conv["Bac_si.ma_bac_si"];
-        user.avt_url = conv["Bac_si.Nguoi_dung.avt_url"];
-        user.ho_va_ten = conv["Bac_si.Nguoi_dung.ho_va_ten"];
+      const isAiAgent = conv["is_ai_agent"];
+
+      if (isAiAgent) {
+        // ✅ Trường hợp AI Agent
+        user = {
+          ma: "ai_agent",
+          ho_va_ten: "AI Agent",
+          avt_url: "/images/ai-avatar.png", // hoặc lấy từ DB nếu có thật
+        };
+      } else if (userID === conv["Benh_nhan.ma_benh_nhan"]) {
+        user = {
+          ma: conv["Bac_si.ma_bac_si"],
+          ho_va_ten: conv["Bac_si.Nguoi_dung.ho_va_ten"],
+          avt_url: conv["Bac_si.Nguoi_dung.avt_url"],
+        };
         userRole = "bs";
       } else {
-        user.ma = conv["Benh_nhan.ma_benh_nhan"];
-        user.avt_url = conv["Benh_nhan.Nguoi_dung.avt_url"];
-        user.ho_va_ten = conv["Benh_nhan.Nguoi_dung.ho_va_ten"];
+        user = {
+          ma: conv["Benh_nhan.ma_benh_nhan"],
+          ho_va_ten: conv["Benh_nhan.Nguoi_dung.ho_va_ten"],
+          avt_url: conv["Benh_nhan.Nguoi_dung.avt_url"],
+        };
         userRole = "bn";
       }
 
-      if (!user) {
-        return null;
-      }
-
-      // Kiểm tra xem có tin nhắn chưa đọc không
-
       return {
         cuoc_hoi_thoai: conv.id,
+        is_ai_agent: !!isAiAgent, // ✅ Trả về thông tin AI
         nguoi_dung: {
           ma: user.ma,
           avt_url: user.avt_url,
@@ -200,9 +221,7 @@ exports.getConversations = async (userID) => {
         },
       };
     })
-    .filter((conv) => conv !== null); // Loại bỏ các giá trị null (nếu có)
-
-  // console.log(flatConversations);
+    .filter((conv) => conv !== null);
 
   return flatConversations;
 };
