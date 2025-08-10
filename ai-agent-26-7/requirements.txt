@@ -1,0 +1,28 @@
+# --- Core HTTP & utils ---
+requests==2.32.3
+python-dotenv==1.0.1
+
+# --- FastAPI app ---
+fastapi==0.111.0
+pydantic==2.8.2
+uvicorn[standard]==0.30.1
+
+# --- Numerical / ML backbones ---
+numpy==1.26.4
+torch>=2.3
+transformers==4.44.0
+huggingface-hub==0.24.6
+sentence-transformers==2.7.0
+
+# --- LangChain + vector stores / retrievers ---
+langchain==0.2.7
+langchain-community==0.2.7
+faiss-cpu==1.8.0
+rank-bm25==0.2.2
+
+# --- Docx support ---
+python-docx==1.1.2
+
+# --- TensorFlow stack (see note below) ---
+tensorflow==2.16.1
+# LƯU Ý: KHÔNG thêm 'keras' riêng nếu bạn dùng tf.keras (xem ghi chú bên dưới)
