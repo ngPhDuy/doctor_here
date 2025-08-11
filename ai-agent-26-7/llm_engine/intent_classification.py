@@ -9,8 +9,13 @@ from huggingface_hub import login
 import tensorflow as tf
 import os
 
-login(os.getenv("HUGGING_KEY"))  # Login to Hugging Face with your token
 
+token = os.getenv("HUGGING_KEY")
+if token:
+    login(token)
+else:
+    print("⚠ No HUGGING_KEY found; skipping Hugging Face login.")
+    
 def load_model_and_encoder(role: str = "user"):
     if role == "bs":
         model_path = "models/intent-classifier/intent-classifier-doctor"
