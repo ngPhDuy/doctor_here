@@ -1,7 +1,7 @@
 const axios = require("axios");
 
 // Local server
-const LLM_API_URL = "http://ai-agent/:8001/chat"; 
+const LLM_API_URL = "http://ai-agent:8001/chat"; 
 
 async function askLLM(message, role) {
   try {
