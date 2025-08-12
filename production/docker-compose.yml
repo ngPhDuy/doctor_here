@@ -58,4 +58,4 @@ services:
       - 8001
     restart: unless-stopped
 #docker compose -p doctor-here down
-#docker compose -p doctor-here up -d
+#docker compose -p doctor-here up -d --build

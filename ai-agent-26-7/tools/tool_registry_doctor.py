@@ -27,6 +27,7 @@ from tools.doctor_tool import (
     get_appointment_canceled,
     get_appointment_done,
     update_work_schedule,
+    get_patient_shared_info
 )
 
 TOOL_REGISTRY_DOCTOR = {
@@ -226,32 +227,37 @@ TOOL_REGISTRY_DOCTOR = {
     },
     "update_profile": {
         "name": "update_profile",
-        "description": "Cập nhật hồ sơ cá nhân của bác sĩ bao gồm ngày vào nghề, trình độ học vấn, mô tả, địa chỉ phòng khám, chuyên khoa, và lựa chọn chia sẻ kết quả khám",
+        "description": "Cập nhật hồ sơ cá nhân của bác sĩ bao gồm email, họ và tên, số điện thoại, giới tính, ngày sinh, ngày vào nghề, trình độ học vấn, mô tả, địa chỉ phòng khám, chuyên khoa",
         "parameters": {
             "type": "object",
             "properties": {
+                "email": {"type": "string", "description": "Email làm việc của bác sĩ"},
+                "full_name": {"type": "string", "description": "Họ và tên đầy đủ của bác sĩ"},
+                "phone_number": {"type": "string", "description": "Số điện thoại liên hệ"},
+                "gender": {"type": "string", "description": "Giới tính của bác sĩ (nam/nữ)"},
+                "date_of_birth": {"type": "string", "description": "Ngày sinh, định dạng dd/mm/yyyy"},
                 "start_date": {"type": "string", "description": "Ngày bắt đầu hành nghề, định dạng dd/mm/yyyy"},
                 "degree": {"type": "string", "description": "Trình độ học vấn (ví dụ: Tiến sĩ, Thạc sĩ, Bác sĩ chuyên khoa I...)"},
                 "description": {"type": "string", "description": "Mô tả về kinh nghiệm hoặc triết lý nghề nghiệp"},
                 "clinic_address": {"type": "string", "description": "Địa chỉ phòng khám hiện tại"},
                 "specialization": {"type": "string", "description": "Chuyên khoa mà bác sĩ đang hoạt động"},
-                "share_diagnosis_result": {
-                    "type": "boolean",
-                    "description": "Bác sĩ có muốn chia sẻ kết quả khám với tất cả người dùng hay không"
-                }
-            },
+            }
         },
         "function": update_profile,
-        "example": "Tôi muốn cập nhật hồ sơ, vào nghề từ ngày 01/01/2010, học vị Thạc sĩ, mô tả là 'tận tâm và trách nhiệm', chuyên khoa Nội, phòng khám tại 123 Lê Lợi, TP.HCM, có chia sẻ kết quả.",
+        "example": "Tôi muốn cập nhật hồ sơ: email dr.minh@clinic.vn, họ tên Nguyễn Văn Minh, số điện thoại 0987123456, giới tính nam, ngày sinh 11/07/1980, vào nghề từ ngày 01/01/2010, học vị Thạc sĩ, mô tả 'tận tâm và trách nhiệm', chuyên khoa Nội, phòng khám tại 123 Lê Lợi, TP.HCM.",
         "json": {
             "function": "update_profile",
             "args": {
+                "email": "dr.minh@clinic.vn",
+                "full_name": "Nguyễn Văn Minh",
+                "phone_number": "0987123456",
+                "gender": "nam",
+                "date_of_birth": "11/07/1980",
                 "start_date": "01/01/2010",
                 "degree": "Thạc sĩ",
                 "description": "Tận tâm và trách nhiệm",
                 "clinic_address": "123 Lê Lợi, TP.HCM",
                 "specialization": "Nội",
-                "share_diagnosis_result": True
             }
         }
     },
@@ -674,12 +680,27 @@ TOOL_REGISTRY_DOCTOR = {
                 "work_type": "Trực tuyến"
             }
         }
-    }
-
-
-
-
-
-    
+    },
+    "get_patient_shared_info": {
+        "name": "get_patient_shared_info",
+        "description": "Lấy danh sách tất cả bệnh nhân cho phép chia sẻ kết quả khám bệnh của mình cho tất cả mọi người xem",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "patient_name": {
+                    "type": "string",
+                    "description": "Họ và tên đầy đủ của bệnh nhân (tùy chọn, nếu muốn lọc theo tên)"
+                }
+            }
+        },
+        "function": get_patient_shared_info,
+        "example": "Cho tôi danh sách các bệnh nhân cho phép chia sẻ kết quả khám. Lọc theo bệnh nhân tên Nguyễn Văn Khánh.",
+        "json": {
+            "function": "get_patient_shared_info",
+            "args": {
+                "patient_name": "Nguyễn Văn Khánh"
+            }
+        }
+    },
 
 }
