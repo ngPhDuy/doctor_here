@@ -59,17 +59,12 @@ exports.resetPassword = async (req, res) => {
 exports.createOne = async (req, res) => {
   const { username, password, confirmPassword } = req.body;
   try {
-    let result = await accountService.createOne(
-      username,
-      password,
-      confirmPassword
-    );
-    if (result) {
-      res.status(200).json({ message: "Tạo tài khoản thành công!" });
-    } else {
-      res.status(400).json({ message: "Tạo tài khoản thất bại!" });
-    }
+    const userId = await accountService.createOne(username, password, confirmPassword);
+    res.status(200).json({
+      message: "Tạo tài khoản thành công!",
+      userId: userId
+    });
   } catch (e) {
-    res.status(400).json({ message: "Tạo tài khoản thất bại!" });
+    res.status(400).json({ message: e.message || "Tạo tài khoản thất bại!" });
   }
 };

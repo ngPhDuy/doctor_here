@@ -90,11 +90,12 @@ exports.createOne = async (username, password, confirmPassword) => {
 
   const hashedPassword = await bcryptjs.hash(password, 10);
 
-  await Account.create({
+  const newAccount = await Account.create({
     ten_dang_nhap: username,
     mat_khau: hashedPassword,
     active: true,
     thoi_diem_mo_tk: new Date(),
   });
-  return true;
+
+  return newAccount.id;
 };
