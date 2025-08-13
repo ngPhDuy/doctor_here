@@ -46,11 +46,11 @@ services:
       - ./certbot/www:/var/www/certbot
     command: certonly --webroot -w /var/www/certbot --force-renewal --email hieu.le0811@hcmut.edu.vn -d doctorhere.dev --agree-tos
 
-  ai-agent:
+  ai_agent:
     build:
-      context: ../ai-agent-26-7
+      context: ../ai_agent
       dockerfile: Dockerfile
-    container_name: ai-agent
+    container_name: ai_agent
     ports:
       - "8001:8001" 
     env_file: .env
