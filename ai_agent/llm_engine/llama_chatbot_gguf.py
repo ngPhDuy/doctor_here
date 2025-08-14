@@ -94,7 +94,7 @@ def ask_tllama(prompt: str, max_tokens: int = 512) -> str:
     }
 
     public_url = os.getenv("GEMMA_API_URL") 
-
+    
     response = requests.post(f"{public_url}/api/generate", json=payload)
     response.raise_for_status() 
 
