@@ -10,7 +10,7 @@ const {
   Rating,
   Diagnosis,
 } = require("../models");
-const { Op, or } = require("sequelize");
+const { Op, or, literal, Sequelize } = require("sequelize");
 const { DateTime } = require("luxon");
 
 exports.getdrIDandptID = async (appointmentID) => {
@@ -181,6 +181,44 @@ exports.getAppointmentByPatientNameAndTime = async (ma_bac_si, patient_name, sta
   return appointment;
 };
 
+exports.getAppointmentByDoctorNameAndTime = async (ma_benh_nhan_dat_hen, doctor_name, start_time) => {
+  const end_time = new Date(start_time.getTime() + 999);
+
+  return await Appointment.findOne({
+    where: { ma_benh_nhan_dat_hen },
+    attributes: { exclude: ["id_gio_hen"] },
+    include: [
+      {
+        model: Timeslot,
+        as: "Gio_hen",
+        required: true,
+        where: { thoi_diem_bat_dau: { [Op.between]: [start_time, end_time] } },
+        attributes: { exclude: ["id", "available"] },
+        include: [{ model: WeeklyWork, as: "Ca_lam_viec_trong_tuan", attributes: ["lam_viec_onl"] }],
+      },
+      {
+        model: Patient, as: "Benh_nhan", required: true,
+        attributes: { exclude: ["id", "ma_benh_nhan"] },
+        include: [{ model: User, as: "Nguoi_dung", required: true, attributes: { exclude: ["id","ten_dang_nhap","phan_loai"] } }],
+      },
+      {
+        model: Doctor, as: "Bac_si", required: true, attributes: { exclude: ["id"] },
+        include: [{
+          model: User, as: "Nguoi_dung", required: true,
+          attributes: { exclude: ["id","ten_dang_nhap","phan_loai"] },
+          where: { ho_va_ten: { [Op.iLike]: `%${doctor_name}%` } },
+        }],
+      },
+      { model: ImageAppointment, as: "Hinh_anh_bo_sung_cuoc_hen", attributes: ["url"] },
+      { model: Rating, as: "Danh_gia", attributes: ["diem_danh_gia", "noi_dung", "thoi_diem"] },
+    ],
+    order: [
+      [Sequelize.literal(`("Appointment"."trang_thai" = 'Đang chờ')::int`), "DESC"],
+      [{ model: Timeslot, as: "Gio_hen" }, "thoi_diem_bat_dau", "ASC"],
+    ],
+    subQuery: false,
+  });
+};
 
 exports.countAppointmentByMethod = async (onlMethod, doctorID) => {
   console.log("Service hit: countAppointmentByStatus");
@@ -321,6 +359,44 @@ exports.getAllByDoctorID = async (doctorID) => {
     //Sắp xếp theo Gio_hen.thoi_diem_bat_dau
     order: [["Gio_hen", "thoi_diem_bat_dau", "DESC"]],
   });
+  return appointments;
+};
+
+exports.getAllByPatientID = async (patientID) => {
+  const appointments = await Appointment.findAll({
+    where: {
+      ma_benh_nhan_dat_hen: patientID,
+    },
+    include: [
+      {
+        model: Timeslot,
+        as: "Gio_hen",
+        attributes: { exclude: ["id"] },
+        include: [
+          {
+            model: WeeklyWork,
+            as: "Ca_lam_viec_trong_tuan",
+            attributes: ["lam_viec_onl"],
+          },
+        ],
+      },
+      {
+        model: Patient,
+        as: "Benh_nhan",
+        attributes: ["ma_benh_nhan"],
+        include: [
+          {
+            model: User,
+            as: "Nguoi_dung",
+            attributes: ["ho_va_ten", "gioi_tinh"],
+          },
+        ],
+      },
+    ],
+    // Sắp xếp theo thời điểm bắt đầu của giờ hẹn (mới nhất trước)
+    order: [["Gio_hen", "thoi_diem_bat_dau", "DESC"]],
+  });
+
   return appointments;
 };
 
@@ -821,6 +897,69 @@ exports.getAppointmentsByTimeRange = async (doctorID, timeRangeString) => {
   } catch (error) {
     console.error("❌ Lỗi getAppointmentsByTimeRange:", error);
     throw new Error("Lỗi khi lấy danh sách cuộc hẹn theo khoảng thời gian.");
+  }
+};
+
+exports.getAppointmentsByTimeRangeForPatient = async (patientID, start_time, end_time) => {
+  try {
+    const start = DateTime.fromISO(start_time, { zone: "Asia/Ho_Chi_Minh" }).toJSDate();
+    const end = DateTime.fromISO(end_time,   { zone: "Asia/Ho_Chi_Minh" }).toJSDate();
+
+    const appointments = await Appointment.findAll({
+      where: {
+        ma_benh_nhan_dat_hen: patientID,
+      },
+      include: [
+        {
+          model: Timeslot,
+          as: "Gio_hen",
+          where: {
+            thoi_diem_bat_dau: {
+              [Op.gte]: start,
+              [Op.lte]: end,
+            },
+          },
+          attributes: { exclude: ["id"] },
+          include: [
+            {
+              model: WeeklyWork,
+              as: "Ca_lam_viec_trong_tuan",
+              attributes: ["lam_viec_onl", "ma_bac_si"], // tiện xem lịch online/offline + bác sĩ của ca
+            },
+          ],
+        },
+        {
+          model: Doctor,
+          as: "Bac_si",
+          attributes: ["ma_bac_si", "chuyen_khoa", "dia_chi_pk"],
+          include: [
+            {
+              model: User,
+              as: "Nguoi_dung",
+              attributes: ["ho_va_ten", "gioi_tinh", "avt_url"],
+            },
+          ],
+        },
+        {
+          model: Patient,
+          as: "Benh_nhan",
+          attributes: ["ma_benh_nhan"],
+          include: [
+            {
+              model: User,
+              as: "Nguoi_dung",
+              attributes: ["ho_va_ten", "gioi_tinh"],
+            },
+          ],
+        },
+      ],
+      order: [[{ model: Timeslot, as: "Gio_hen" }, "thoi_diem_bat_dau", "ASC"]],
+    });
+
+    return appointments;
+  } catch (error) {
+    console.error("❌ Lỗi getAppointmentsByTimeRangeForPatient:", error);
+    throw new Error("Lỗi khi lấy danh sách cuộc hẹn theo khoảng thời gian (bệnh nhân).");
   }
 };
 

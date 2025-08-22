@@ -11,7 +11,7 @@ exports.chatWithAI = async (req, res) => {
 
   try {
     const parsed = rawReply.response ?? rawReply; // phòng trường hợp lồng trong .response
-    const response = await handleLLMResponse(parsed, ma_user);
+    const response = await handleLLMResponse(parsed, ma_user, role);
     return res.json({ reply: response });
   } catch (err) {
     console.warn("❌ Xử lý LLM thất bại:", err.message);

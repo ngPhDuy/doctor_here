@@ -9,8 +9,9 @@ from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.retrievers import BM25Retriever
 from langchain.retrievers import EnsembleRetriever
 from langchain.schema import Document as LangChainDocument 
-from docx import Document as DocxDocument
+from docx import Document as DocxDocument   
 import requests
+from typing import Generator, Iterable, Optional
 
 # ========== LOGGING ==========
 logging.basicConfig(level=logging.INFO)
@@ -94,7 +95,7 @@ def ask_tllama(prompt: str, max_tokens: int = 512) -> str:
     }
 
     public_url = os.getenv("GEMMA_API_URL") 
-    
+
     response = requests.post(f"{public_url}/api/generate", json=payload)
     response.raise_for_status() 
 

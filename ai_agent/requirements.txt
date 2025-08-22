@@ -25,4 +25,5 @@ python-docx==1.1.2
 
 # --- TensorFlow stack (see note below) ---
 tensorflow==2.16.1
+
 # LƯU Ý: KHÔNG thêm 'keras' riêng nếu bạn dùng tf.keras (xem ghi chú bên dưới)

@@ -1,5 +1,4 @@
 import pickle
-import keras
 from keras.layers import TFSMLayer
 import numpy as np
 import torch
@@ -9,13 +8,8 @@ from huggingface_hub import login
 import tensorflow as tf
 import os
 
+login(os.getenv("HUGGING_KEY"))
 
-token = os.getenv("HUGGING_KEY")
-if token:
-    login(token)
-else:
-    print("⚠ No HUGGING_KEY found; skipping Hugging Face login.")
-    
 def load_model_and_encoder(role: str = "user"):
     if role == "bs":
         model_path = "models/intent-classifier/intent-classifier-doctor"

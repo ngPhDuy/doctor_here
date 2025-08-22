@@ -1,6 +1,20 @@
 const { Relatives, sequelize, Patient, User } = require("../models");
 const { Op } = require("sequelize");
 
+// helper: chuẩn hoá vai trò
+function normalizeRelationship(label) {
+  if (!label) return label;
+  // chuẩn hoá: bỏ khoảng trắng, hạ chữ thường, bỏ dấu
+  const raw = String(label).trim();
+  const lower = raw.toLowerCase();
+  const noAccent = lower.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // "chị" -> "chi"
+
+  if (noAccent === 'anh' || noAccent === 'chi') {
+    return 'Anh/Chị';
+  }
+  return raw; // các trường hợp khác giữ nguyên (hoặc bạn tự map thêm)
+}
+
 exports.createRelative = async (ptDI, phone, relationship) => {
   // Tìm ptID từ số điện thoại
   const patient = await User.findOne({
@@ -56,6 +70,70 @@ exports.createRelative = async (ptDI, phone, relationship) => {
   } catch (error) {
     throw new Error(error);
   }
+};
+
+exports.createRelativeByName = async (ptID, fullName, relationship) => {
+  const name = String(fullName || "").trim();
+  const rel  = normalizeRelationship(relationship);
+  if (!ptID || !name || !relationship) {
+    throw new Error("Thiếu ptID, fullName hoặc relationship");
+  }
+
+  // 1) Tìm bệnh nhân thứ 2 theo tên: ưu tiên khớp chính xác (không phân biệt hoa/thường),
+  //    nếu không có thì fallback sang chứa tên.
+  let user2 = await User.findOne({
+    where: { ho_va_ten: { [Op.iLike]: name } },
+    include: [{ model: Patient, as: "Benh_nhan", attributes: ["ma_benh_nhan"] }],
+  });
+
+  if (!user2) {
+    const candidates = await User.findAll({
+      where: { ho_va_ten: { [Op.iLike]: `%${name}%` } },
+      include: [{ model: Patient, as: "Benh_nhan", attributes: ["ma_benh_nhan"] }],
+      limit: 5,
+    });
+
+    if (candidates.length === 0) {
+      throw new Error(`Không tìm thấy bệnh nhân tên "${fullName}".`);
+    }
+    if (candidates.length > 1) {
+      // Tránh tự ý chọn sai người
+      const list = candidates
+        .map(u => `${u.ho_va_ten}(${u.Benh_nhan?.ma_benh_nhan || "N/A"})`)
+        .join(", ");
+      throw new Error(`Có nhiều bệnh nhân trùng tên, vui lòng chọn chính xác: ${list}`);
+    }
+    user2 = candidates[0];
+  }
+
+  const ptID2 = user2?.Benh_nhan?.ma_benh_nhan;
+  if (!ptID2) throw new Error("Người này không có hồ sơ bệnh nhân.");
+
+  // 2) Không cho tự liên kết chính mình
+  if (ptID === ptID2) {
+    throw new Error("Không thể tạo quan hệ với chính bạn.");
+  }
+
+  // 3) Kiểm tra quan hệ đã tồn tại (hai chiều)
+  const existing = await Relatives.findOne({
+    where: {
+      [Op.or]: [
+        { ma_benh_nhan_1: ptID,  ma_benh_nhan_2: ptID2 },
+        { ma_benh_nhan_1: ptID2, ma_benh_nhan_2: ptID  },
+      ],
+    },
+  });
+  if (existing) throw new Error("Mối quan hệ đã có sẵn.");
+
+  // 4) Tạo mới (chờ xác nhận)
+  const relative = await Relatives.create({
+    ma_benh_nhan_1: ptID,
+    ma_benh_nhan_2: ptID2,
+    than_phan: rel,
+    da_xac_nhan: false,
+  });
+
+  return relative;
 };
 
 exports.getAllRelatives = async (patientID) => {

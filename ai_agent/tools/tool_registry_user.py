@@ -31,7 +31,8 @@ from tools.user_tool import (
     turn_on_sharing_diagnosis_result,
     turn_off_sharing_diagnosis_result,
     rate_appointment,
-    update_medical_profile
+    update_medical_profile,
+    get_review_doctor
 )
 
 
@@ -99,7 +100,7 @@ TOOL_REGISTRY_USER = {
             "function": "book_appointment",
             "args": {
                 "doctor_name": "Nguyễn Văn Hùng",
-                "time": "2025-05-26T07:30:00",
+                "time": "7 giờ 30 sáng 26/5/2025",
                 "reason": "Khám đau đầu",
                 "method": "Trực tiếp"
             }
@@ -121,11 +122,12 @@ TOOL_REGISTRY_USER = {
             "required": ["doctor_name", "time"]
         },
         "function": cancel_appointment,
+        "example": "Hủy lịch khám với bác sĩ An vào lúc 8 giờ sáng ngày 28/6/2025.",
         "json": {
             "function": "cancel_appointment",
             "args": {
                 "doctor_name": "An",
-                "time": "2025-06-28T08:00:00"
+                "time": "8 giờ sáng ngày 28/6/2025."
             }
         }
     },
@@ -170,7 +172,7 @@ TOOL_REGISTRY_USER = {
             "function": "create_reminder",
             "args": {
                 "medicine_name": "Paracetamol 500mg",
-                "time": "2025-06-25T22:00:00"
+                "time": "10 giờ tối ngày 25/6"
             }
         }
     },
@@ -249,8 +251,8 @@ TOOL_REGISTRY_USER = {
         "json": {
             "function": "get_appointment_by_time",
             "args": {
-                "start_time": "2025-06-25T14:00:00",
-                "end_time": "2025-06-25T15:00:00"
+                "start_time": "14 giờ ngày 25 tháng 6 năm 2025",
+                "end_time": "15 giờ ngày 25 tháng 6 2025"
             }
         }
     },
@@ -287,7 +289,7 @@ TOOL_REGISTRY_USER = {
             "function": "get_detail_appointment",
             "args": {
                 "doctor_name": "Lê Trung Hiếu",
-                "time": "2025-06-25T14:30:00"
+                "time": "14 giờ 30 ngày 25 tháng 6 năm 2025"
             }
         }
     },
@@ -312,7 +314,7 @@ TOOL_REGISTRY_USER = {
             "function": "get_detail_diagnosis_patient",
             "args": {
                 "doctor_name": "Võ Tấn Tài",
-                "time": "2025-06-25T14:30:00"
+                "time": "14 giờ 30 ngày 25 tháng 6 năm 2025"
             }
         }
     },
@@ -650,7 +652,7 @@ TOOL_REGISTRY_USER = {
             "function": "rate_appointment",
             "args": {
             "doctor_name": "Nguyễn Văn A",
-            "time": "2025-06-25T14:00:00",
+            "time": "14h ngày 25/6/2025",
             "rating": 5,
             "comment": "Rất hài lòng"
             }
@@ -679,6 +681,25 @@ TOOL_REGISTRY_USER = {
             "blood_type": "O",
             "health_insurance_id": "123456789",
             "registered_hospital": "Trung tâm Y tế Quận 1"
+            }
+        }
+    },
+    "get_review_doctor": {
+        "name": "get_review_doctor",
+        "description": "Lấy đánh giá/nhận xét của bệnh nhân về một bác sĩ cụ thể",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "doctor_name": {"type": "string", "description": "Họ tên đầy đủ của bác sĩ"},
+            },
+            "required": ["doctor_name"]
+        },
+        "function": get_review_doctor,
+        "example": "Tôi muốn xem đánh giá của bệnh nhân về bác sĩ Nguyễn Văn An",
+        "json": {
+            "function": "get_review_doctor",
+            "args": {
+                "doctor_name": "Nguyễn Văn An",
             }
         }
     }

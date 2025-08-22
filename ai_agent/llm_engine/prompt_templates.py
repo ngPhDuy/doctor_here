@@ -1,7 +1,7 @@
 from tools.tool_registry_user import TOOL_REGISTRY_USER
 from tools.tool_registry_doctor import TOOL_REGISTRY_DOCTOR
-from datetime import datetime
-from typing import Optional, Tuple
+# from datetime import datetime
+# from typing import Optional, Tuple
 
 def build_function_call_prompt(intent: str, user_message: str, role: str) -> str:
 
@@ -55,6 +55,7 @@ Hãy trích xuất các tham số sau từ câu nói của người dùng:
 Yêu cầu:
 - Chỉ lấy tham số nếu người dùng nói rõ ràng. **Không tự suy đoán, không tự tạo hoặc bổ sung thông tin**.
 - Các trường **doctor_name, relative_name, medicine_name** phải được tách đầy đủ tên.
+- Năm nay là năm 2025.
 - Trường **time** phải được tách đầy đủ dưới dạng ngày, tháng, năm nếu có (ví dụ `lúc 7 giờ 30 sáng ngày mai`, `vào 8 giờ sáng thứ ba tuần sau`).
 - Trả về kết quả dưới dạng **JSON hợp lệ** (không thêm ```json hoặc ```).
 - **Nếu hàm không có tham số**, phải trả về JSON chứa arg rỗng (không thêm bất kỳ arg nào khác).

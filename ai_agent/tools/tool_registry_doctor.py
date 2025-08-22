@@ -104,8 +104,8 @@ TOOL_REGISTRY_DOCTOR = {
         "json": {
             "function": "get_appointment_by_time",
             "args": {
-                "start_time": "2025-06-25T14:00:00",
-                "end_time": "2025-06-25T15:00:00"
+                "start_time": "14 giờ ngày 25 tháng 6 năm 2025",
+                "end_time": "15 giờ ngày 25 tháng 6 năm 2025"
             }
         }
     },

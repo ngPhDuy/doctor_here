@@ -12,6 +12,7 @@ const {
 const bcryptjs = require("bcryptjs");
 const { sendEmail } = require("./emailServices");
 const cloudService = require("./cloud.service");
+const { Op, fn, col } = require("sequelize");
 
 exports.getAllDoctor = async () => {
   const { fn, col } = sequelize;
@@ -132,12 +133,13 @@ exports.getDoctorInfo = async (doctorID) => {
   return doctor;
 };
 
-
 exports.getDoctorInfoByName = async (doctorName) => {
   // Tìm người dùng có họ và tên trùng với tên bác sĩ và phân loại là 'bs'
+  const name = String(doctorName || "").trim();
+  if (!name) throw new Error("Thiếu tên bác sĩ");
   const user = await User.findOne({
     where: {
-      ho_va_ten: doctorName,
+      ho_va_ten: { [Op.iLike]: `%${name}%` },
       phan_loai: "bs",
     },
     attributes: ["id"],
@@ -356,6 +358,66 @@ exports.getAllSpecialization = async () => {
   });
 
   return result;
+};
+
+exports.getDoctorsBySpecializationName = async (specializationName) => {
+  const name = String(specializationName || "").trim();
+  if (!name) throw new Error("Thiếu tên chuyên khoa");
+
+  // 1) Kiểm tra chuyên khoa có tồn tại không (so khớp không phân biệt hoa/thường)
+  const spec = await Specialization.findOne({
+    where: { ten_chuyen_khoa: { [Op.iLike]: name } },   // equality case-insensitive
+    attributes: ["ten_chuyen_khoa", "img_url"],
+  });
+  if (!spec) {
+    throw new Error(`Không tồn tại chuyên khoa "${specializationName}".`);
+  }
+
+  // 2) Tìm bác sĩ thuộc chuyên khoa này
+  //    (Giữ style giống getAllDoctor: tính điểm trung bình + tổng số đánh giá)
+  const doctors = await Doctor.findAll({
+    where: { chuyen_khoa: spec.ten_chuyen_khoa },
+    attributes: {
+      include: [
+        [fn("COALESCE", fn("AVG", col("Cuoc_hen.Danh_gia.diem_danh_gia")), 0), "danh_gia_trung_binh"],
+        [fn("COALESCE", fn("COUNT", col("Cuoc_hen.Danh_gia.id")), 0),        "tong_so_danh_gia"],
+      ],
+    },
+    include: [
+      {
+        model: User,
+        as: "Nguoi_dung",
+        attributes: { exclude: ["id"] },
+        include: {
+          model: Account,
+          as: "Tai_khoan",
+          attributes: { exclude: ["mat_khau"] },
+        },
+      },
+      {
+        model: Appointment,
+        as: "Cuoc_hen",
+        attributes: [],
+        include: [
+          { model: Rating, as: "Danh_gia", attributes: [] },
+        ],
+      },
+    ],
+    group: [
+      "Doctor.id",
+      "Nguoi_dung.id",
+      "Nguoi_dung->Tai_khoan.ten_dang_nhap",
+    ],
+    order: [["ma_bac_si", "ASC"]],
+  });
+
+  // Có thể trả thẳng mảng doctors; ở đây mình trả kèm meta cho tiện.
+  return {
+    specialization: spec.ten_chuyen_khoa,
+    specialization_img: spec.img_url,
+    total: Array.isArray(doctors) ? doctors.length : 0,
+    data: doctors ?? [],
+  };
 };
 
 exports.generateTimeSlotsForDoctors = async (doctorIds) => {

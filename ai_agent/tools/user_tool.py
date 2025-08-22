@@ -39,8 +39,8 @@ def create_reminder(medicine_name: str, time: str, dosage: str = "") -> str:
 def get_all_diagnosis_results() -> str:
     return "Tất cả kết quả chẩn đoán của bạn: [giả lập - chưa có dữ liệu thật]."
 
-def get_appointment_by_time(time: str) -> str:
-    return f"Thông tin cuộc hẹn tại thời gian {time}: [giả lập - chưa có dữ liệu thật]."
+def get_appointment_by_time(start_time: str, end_time: str) -> str:
+    return f"Thông tin cuộc hẹn từ {start_time} đến {end_time}: [giả lập - chưa có dữ liệu thật]."
 
 def get_appointment() -> str:
     return "Danh sách tất cả các cuộc hẹn của bạn: [giả lập - chưa có dữ liệu thật]."
@@ -154,6 +154,9 @@ def update_medical_profile(medical_history: str = None, blood_type: str = None,
 
 def rate_appointment(doctor_name: str, time: str, rating: int, comment: str = None) -> str:
     return f"✅ Đã đánh giá {rating} sao cho cuộc hẹn với bác sĩ {doctor_name} vào {time}."
+
+def get_review_doctor(doctor_name): 
+    return f"Đánh giá của bác sĩ {doctor_name}: [Mock]"
 
 
 

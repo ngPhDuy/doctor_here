@@ -10,9 +10,12 @@ const ratingService = require("./rating.service");
 const doctorService = require("./doctor.service");
 const doctorScheduleService = require("./doctorSchedule.service");
 const diagnosisService = require("./diagnosis.service");
+const loveListService = require("./loveList.service");
+const relativeService = require("./relative.service");
 const { DateTime } = require("luxon");
+
 // Khai báo map các function
-const FUNCTION_MAP = {
+const FUNCTION_MAP_BS = {
     // EX:  Tôi muốn tìm hiểu về bác sĩ Nguyễn Văn Tâm.
     get_doctor_info: async (args) => await getDoctorInfoByName(args.doctor_name),
     // EX:  Tôi muốn tìm hiểu về bác sĩ Nguyễn Văn Tâm.
@@ -341,21 +344,252 @@ const FUNCTION_MAP = {
                 error: error.message,
             };
         }
-    },
-
+    }
 };
 
-async function handleLLMResponse(parsed, ma_user) {
-  const { function: fn, args, message, reply } = parsed; 
+const FUNCTION_MAP_BN = {
+    // Cho tôi danh sách tất cả các cuộc hẹn đã lên lịch nhưng chưa diễn ra : 11.16s
+    get_appointment_undone : async (_args, ma_user, _role, suggestions) => {
+        try {
+            const status = "Đang chờ";
+            const ptID = ma_user;
 
-  const handler = FUNCTION_MAP[fn];
+            const appointments = await appointmentService.getAllByStatusAndPtID(status, ptID);
+
+            return { message: "get_appointment_undone", total: appointments.length, appointments, suggestions };
+
+
+        } catch (error) {
+            throw new Error(`Error in get_appointment_undone: ${error.message}`);
+        }
+    },
+    // Xem toàn bộ các lịch hẹn đã hoàn tất: 9.52s
+    get_appointment_done : async (_args, ma_user, _role, suggestions) => {
+        try {
+            const status = "Hoàn thành";
+            const ptID = ma_user;
+
+            const appointments = await appointmentService.getAllByStatusAndPtID(status, ptID);
+
+            return { message: "get_appointment_done", total: appointments.length, appointments, suggestions };
+
+        } catch (error) {
+            throw new Error(`Error in get_appointment_done: ${error.message}`);
+        }
+    },
+    // Hiển thị danh sách lịch hẹn đã hủy trên hệ thống
+    get_appointment_canceled : async (_args, ma_user, _role, suggestions) => {
+        try {
+            const status = "Đã hủy";
+            const ptID = ma_user;
+
+            const appointments = await appointmentService.getAllByStatusAndPtID(status, ptID);
+
+            return { message: "get_appointment_canceled", total: appointments.length, appointments, suggestions };
+
+        } catch (error) {
+            throw new Error(`Error in get_appointment_done: ${error.message}`);
+        }
+    },
+    // Tôi đã có những cuộc hẹn nào trước đây? 8.78s
+    get_appointment: async (_args, ma_user, _role, suggestions) => {
+        try {
+            const ptID = ma_user;
+
+            // Lấy toàn bộ cuộc hẹn theo id bệnh nhân
+            const appointments = await appointmentService.getAllByPatientID(ptID);
+
+            return { message: "get_appointment", total: appointments.length, appointments, suggestions };
+        } catch (error) {
+            throw new Error(`Error in get_appointment: ${error.message}`);
+        }
+    },
+    // Cho tôi xem các bác sĩ tôi yêu thích. 9.49s
+    get_love_list: async (_args, ma_user, _role, suggestions) => {
+        try {
+            const ptID = ma_user;
+            const list = await loveListService.getLoveListByPatient(ptID);
+            return { message: "get_love_list", total: list.length, data: list , suggestions};
+        } catch (error) {
+            throw new Error(`Error in get_love_list: ${error.message}`);
+        }
+    },
+    // Tôi muốn biết thông tin chi tiết cuộc hẹn với bác sĩ Nguyễn Trung Hiếu lúc 7h ngày 24/09/2025. :17.79s
+    get_detail_appointment: async (args, ma_user, _role, suggestions) => {
+        const { doctor_name, time } = args;
+        if (!doctor_name || !time) throw new Error("Thiếu doctor_name hoặc time");
+
+        const luxonDate = DateTime.fromISO(time, { zone: "Asia/Ho_Chi_Minh" });
+        const start_time = luxonDate.toUTC().toJSDate();
+
+        const appointment = await appointmentService.getAppointmentByDoctorNameAndTime(
+            ma_user,
+            doctor_name,
+            start_time
+        );
+
+        return { message: "get_detail_appointment", noi_dung_van_ban: appointment, suggestions };
+    },
+    // Tôi muốn xem các cuộc hẹn từ 7 giờ đến 9 giờ sáng ngày 24/9. 15.20 s
+    get_appointment_by_time: async (args, ma_user, _role, suggestions) => {
+        const { start_time, end_time } = args;
+
+        const appointments = await appointmentService.getAppointmentsByTimeRangeForPatient (ma_user, start_time, end_time);
+
+        return {
+            message: "get_appointment_by_time",
+            total: appointments.length,
+            data: appointments,
+            suggestions
+        };
+    },
+    // Thêm bác sĩ Nguyễn Trung Hiếu vào danh sách yêu thích. 11.42s
+    add_love_list: async (args, ma_user, _role, suggestions) => {
+        const { doctor_name } = args;
+        const result = await loveListService.addDoctorToLoveListByName(ma_user, doctor_name);
+
+        if (!result.ok) {
+            return { message: "add_love_list_failed", detail: result.message };
+        }
+        return { message: "add_love_list", data: result.data, suggestions };
+    },
+    // Xoá bác sĩ Nguyễn Trung Hiếu khỏi danh sách yêu thích.  11.76s
+    delete_love_list: async (args, ma_user, _role, suggestions) => {
+        const { doctor_name } = args;
+        const result = await loveListService.deleteDoctorFromLoveListByName(ma_user, doctor_name);
+
+        if (!result.ok) {
+            return { message: "delete_love_list_failed", detail: result.message };
+        }
+        return { message: "delete_love_list", data: result.data, suggestions };
+    },
+    // Tôi muốn xem các người thân đã khai báo trong hồ sơ. 9.64s
+    get_relatives: async (_args, ma_user, _role, suggestions) => {
+        try {
+            const list = await relativeService.getAllRelatives(ma_user);
+            return {
+                message: "get_relatives",
+                total: Array.isArray(list) ? list.length : 0,
+                data: list || [],
+                suggestions,
+            };
+        } catch (error) {
+            throw new Error(`Error in get_relatives: ${error.message}`);
+        }
+    },
+    // Thêm người thân tên Lại Nguyễn Tuấn Khanh là Anh vào danh sách gia đình
+    // TH nhập tên
+    add_relative: async (args, ma_user, _role, suggestions) => {
+        const { relative_name, role: relationship } = args || {};
+
+        if (!relative_name?.trim() || !relationship?.trim()) {
+            return {
+                message: "add_relative_failed",
+                detail: "Thiếu relative_name hoặc role."
+            };
+            }
+
+        try {
+            const data = await relativeService.createRelativeByName(
+                ma_user,
+                relative_name.trim(),
+                relationship.trim()
+            );
+            return { message: "add_relative", data, suggestions };
+        } catch (e) {
+            return { message: "add_relative_failed", detail: e.message };
+        }
+    },
+    // Cho tôi danh sách tất cả chuyên khoa hiện có trên hệ thống
+    get_all_specializations: async (_args, _ma_user, _role, suggestions) => {
+        const list = await doctorService.getAllSpecialization();
+        return {
+            message: "get_all_specializations",
+            total: Array.isArray(list) ? list.length : 0,
+            data: list ?? [],
+            suggestions
+        };
+    },
+    // Hiển thị toàn bộ kết quả chẩn đoán bệnh của tôi.
+    get_all_diagnosis_results: async (_args, ma_user, _role, suggestions) => {
+        try {
+            const results = await diagnosisService.getDiagnosisByPatient(ma_user);
+            return {
+                message: "get_all_diagnosis_results",
+                total: results?.length ?? 0,
+                data: results ?? [],
+                suggestions
+            };
+        } catch (error) {
+            throw new Error(`Error in get_all_diagnosis_results: ${error.message}`);
+        }
+    },
+    // Liệt kê toàn bộ bác sĩ hiện có trong hệ thống.
+    get_doctor_list: async (_args, _ma_user, _role, suggestions) => {
+        try {
+            const doctors = await doctorService.getAllDoctor();
+            return {
+                message: "get_doctor_list",
+                total: Array.isArray(doctors) ? doctors.length : 0,
+                data: doctors ?? [],
+                suggestions: Array.isArray(suggestions)
+                    ? suggestions
+                    : (suggestions ? [suggestions] : []),
+                };
+        } catch (error) {
+            throw new Error(`Error in get_doctor_list: ${error.message}`);
+        }
+    },
+    // Cho tôi biết thông tin về bác sĩ Nguyễn Trung Hiếu.
+    get_doctor_info: async (args, _ma_user, _role, suggestions) => {
+        try {
+            const { doctor_name } = args || {};
+            const info = await doctorService.getDoctorInfoByName(doctor_name);
+            return {
+                message: "get_doctor_info",
+                data: info,
+                suggestions: Array.isArray(suggestions)
+                ? suggestions
+                : (suggestions ? [suggestions] : []),
+            };
+        } catch (error) {
+            throw new Error(`Error in get_doctor_info: ${error.message}`);
+        }
+    },
+    // Cho tôi danh sách bác sĩ chuyên khoa Tim mạch.
+    get_doctor_specialization: async (args, _ma_user, _role, suggestions) => {
+        const { specialization } = args || {};
+        try {
+            const result = await doctorService.getDoctorsBySpecializationName(specialization);
+            return {
+                message: "get_doctor_specialization",
+                ...result, // specialization, specialization_img, total, data
+                suggestions: Array.isArray(suggestions) ? suggestions : (suggestions ? [suggestions] : []),
+            };
+        } catch (error) {
+            throw new Error(`Error in get_doctor_specialization: ${error.message}`);
+        }
+    },
+
+}
+function pickMap(role) {
+  const r = String(role || "").toLowerCase();
+  if (r === "bs") return FUNCTION_MAP_BS;
+  if (r === "bn") return FUNCTION_MAP_BN;
+}
+
+async function handleLLMResponse(parsed, ma_user, role) {
+  const { function: fn, args, message, reply, suggestions } = parsed; 
+  console.log ("handleLLMResponse", { fn, args, message, reply, ma_user, role });
+  const MAP = pickMap(role);
+  const handler = MAP[fn];
 
   if (!handler) {
     return "⚠️ Không hiểu yêu cầu bạn vừa gửi.";
   }
 
   try {
-    return await handler(args, ma_user);
+    return await handler(args, ma_user, role, suggestions);
   } catch (err) {
     console.error(`❌ Lỗi khi gọi hàm ${fn}:`, err);
     return "⚠️ Có lỗi xảy ra khi xử lý yêu cầu.";
